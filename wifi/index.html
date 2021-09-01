@@ -1,0 +1,322 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>X-plore File Manager</title>
+<link rel="shortcut icon" href="img/icon.png" />
+<link href="main.less" rel="stylesheet/less" type="text/css" />
+<script src="js/jquery-3.5.1.js"></script>
+<script src="g.js"></script>
+<script src="js/less.js"></script>
+<script src="main.js"></script>
+
+<style>
+.hidden{ display: none; }
+</style>
+
+</head>
+
+<body id="body">
+
+<div id="bgnd-img"></div>
+
+<div id="title_bar" class="hidden">
+<a href='http://www.lonelycatgames.com/apps/xplore' target="_new"><img id="icon" src="img/icon.png"></a>
+<span id="title">X-plore WiFi file manager</span>
+
+<button id="menu" class="but" img='img/menu.png'>
+<div id="submenu" class="hidden">
+<p onclick="opReloadPage();"><img src='img/op_refresh.png'><span _text='19'>Reload page</span></p>
+<p onclick="showHelp();"><img src='img/help.png' ><span _text='18'>Help</span></p>
+<!-- <p><img src='img/tools.png'>Tools <span type="checkbox" checked='true'></span></p> -->
+<!-- <p onclick="opBookmark();"><span __text='17'>Bookmark</span></p> -->
+<p onclick="opExit();"><img src='img/op_exit.png' ><span _text='17'>Exit</span></p>
+</div>
+</button>
+
+<button class="but hidden" id="audio_but" img='op_music'></button>
+<button class="but hidden debug" title="Reload page" onclick="opReloadPage();" img='op_refresh'></button>
+<button class="but hidden debug" onclick="testBut();" img='img/op_help.png'></button>
+
+<div id="device_name"></div>
+
+</div>
+
+<div id="cover" class="cover"></div>
+
+
+<table id="browser_pane" border="0" class="hidden">
+   <tr>
+   <td class="files_pane">
+      <div style="position: relative;">
+         <div id="up" class="drag_scroll" onDrag="dragTreeScroll"></div>
+         <div id="tree_list" class="tree_list"></div>
+         <div id="down" class="drag_scroll" onDrag="dragTreeScroll"></div>
+      </div>
+   </td>
+   
+   <td id="separator"></td>
+   
+   <td class="files_pane">
+      <div id="grid_list">
+         <div id="toolbar">
+            <button class="but" id="dirUp" _title="1" disabled="1" img='img/op_up_dir.png'></button>
+            <button class="but" id="delete" _title="2" disabled="1" img='img/op_delete.png' onDrag="deleteDrag"></button>
+            <button class="but" id="dirNew" _title='7' disabled="1" img='img/op_new_folder.png'></button>
+            <button class="but" id="rename" _title="3" onclick="opRename();" img='img/op_rename.png' onDrag="renameDrag"></button>
+            <button class="but" id="upload" _title="27" img='img/upload.png'></button>
+            <input id="in_upload" type="file" multiple onchange="opUploadPick(event);">
+            <button class="but" id="get_zip" _title="30" img='img/download_zip.png' onclick="opDownloadAsZip();" onDrag="zipDrag"></button>
+            <div id="files_info">
+               <div id="counters">
+                  <img src="img/le_folder.png">
+                  <span id="num_dirs">0</span>
+                  <img src="img/le_file.png">
+                  <span id="num_files">0</span>
+                  <span id="num_hidden"></span>
+               </div>
+               <!-- <div id="num_files">0 files</div> -->
+               <div id="num_marked"><img src='img/check_marker_on.png'><div id="text"></div></div>
+            </div>
+            <span id="onRight">
+               <button class="but" id="showHidden" _title="4" onclick="opShowHidden();" img='img/op_show_hidden.png'></button>
+               <button class="but" id="marker" _title='11' img='img/check_marker_on.png'></button>
+               <button class="but" _title="5" onclick="opDirRefresh();" img='op_refresh'></button>
+            </span>
+         </div>
+         <div id="grid_scroll">
+            <div id="grid_in" class="grid_list">
+         </div>
+         <div id="read_only" class="hidden" _text="28"></div>
+         </div>
+      </div>
+      
+      <div id="media_viewer" class="worktable">
+         <div id="canvas"></div>
+         <div id="toolbar">
+            <div id="info">
+               <div id="counter"></div>
+               <div id="name"></div>
+               <div id="media_info">1600x1200</div>
+            </div>
+            <div id="controls">
+               <button class="but" id="prev" _title="36" img='img/previous.png'></button>
+               <button class="but" id="next" _title="37" img='img/next.png'></button>
+               
+               <button class="but" id="slideshow" _title="39" img='img/slideshow_on.png'></button>
+               <button class="but" id="rename" _title="3" img='img/op_rename.png'></button>
+               <button class="but" id="download" _title="31" img='img/download.png'></button>
+               <button class="but" id="delete" _title="2" img='img/op_delete.png'></button>
+            </div>
+            <div id="onRight">
+               <button class="but" id="options" _title="40" img='img/op_settings.png'></button>
+               <button class="but" id="fullscreen" _title="35" img='img/imgv_fullscreen.png'></button>
+               <button class="but" id="close" _title="34" img='ic_close'></button>
+            </div>
+         </div>
+      </div>
+      
+      <div id="text_view" class="worktable">
+         <div id="canvas">
+            <textarea id="text"></textarea>
+         </div>
+         <div id="toolbar">
+            <div id="info">
+               <!-- <div id="counter"></div> -->
+               <div id="name"></div>
+               <div id="media_info">!</div>
+            </div>
+            <div id="controls">
+               <button class="but" id="save" _title="47" img='img/save.png'></button>
+               <button class="but" id="start_edit" _title="48" img='img/op_text_edit.png'></button>
+               <button class="but" id="wrap" _title="51" img='img/wrap_text_off.png'></button>
+               <!--
+               <button class="but" id="rename" _title="3" img='img/op_rename.png'></button>
+               <button class="but" id="download" _title="31" img='img/op_download.png'></button>
+               <button class="but" id="delete" _title="2" img='img/op_delete.png'></button>
+               -->
+               <span id="edit_info" _text="48"></span>
+            </div>
+            <div id="onRight">
+               <!-- <button class="but" id="options" _title="40" img='img/op_settings.png'></button> -->
+               <button class="but" id="close" _title="34" img='ic_close'></button>
+            </div>
+         </div>
+      </div>
+   </td>
+   </tr>
+</table>
+ 
+<div id="repository" class="hidden">
+   <!-- <div class="tree_list" style="float:left;"> -->
+      <div id="le_volume" class="le">
+         <div class="le_in" onDrag="leDrag">
+            <p id="exp" expanded="false"></p>
+            <p id="icon"></p>
+            <span id="title">Vol</span>
+            <span id="dir_size"></span>
+            <span id="file_size">Free: 4MB/12GB</span>
+         </div>
+      </div>
+      
+      <div id="le_dir" class="le">
+         <div class="le_in" onDrag="leDrag">
+            <p id="exp" expanded="false"></p>
+            <p id="icon"></p>
+            <span id="title">Dir</span>
+            <span id="dir_size"></span>
+            <div id="mark"></div>
+         </div>
+      </div>
+   
+      <div id="progress-circle">
+         <img src="img/circle_progress.png">
+      </div>
+   <!-- </div>
+   
+   <div class="grid_list" style="float:left;"> -->
+   
+   <div id="le_file" class="le">
+      <div class="le_in">
+         <p id="icon"></p>
+         <span id="title">File</span>
+         <span id="file_size">123KB</span>
+         <span id="time">2014-03-14 23:53</span>
+         <div id="mark"></div>
+      </div>
+   </div>
+   
+   <div id="le_media" class="le">
+      <div class="le_in">
+         <p id="icon"></p>
+         <span id="title">Image</span>
+         <span id="file_size">123KB</span>
+         <span id="time">2014-03-14 23:53</span>
+         <div id="mark"></div>
+      </div>
+   </div>
+   <!-- </div> -->
+   
+   <div class="but"><div class="icon"></div></div>
+   
+   <table id="popup" border="0" cellspacing="0">
+      <tr id="trt"><td id="lt"><td id="t"><td id="rt">
+      <tr><td id="l"><td id="c">
+      <div id="title"></div>
+      <div id="items">
+         <div id="item"><img src='img/help.png' ><span id="text">Help</span></div>
+      </div>
+      
+      <td id="r">
+      <tr id="trb"><td id="lb"><td id="b"><td id="rb">
+   </table>
+</div>
+
+<div id="drag-toast" class ="hidden">Copy</div>
+
+<script>
+$(document).ready(onReady);
+</script>
+
+<div id="dlgEnterName" class="dlg hidden">
+   <div id="title" class="no-select">
+      <div id="icon"></div>
+      <div id="text"></div>
+   </div>
+   <form id="in">
+      <div id="msg"></div>
+      <input id="text" type="text" autocomplete="off" spellcheck="false">
+   
+      <div id="buttons">
+         <input type="submit" _value='0' value="OK"> 
+         <button type="button" onclick="unCover();" _text='16'>Cancel</button>
+      </div>
+   </form>
+</div>
+
+<div id="dlgOkCancel" class="dlg hidden">
+   <div id="title" class="no-select">
+      <div id="icon"></div>
+      <div id="text"></div>
+   </div>
+   <div id="in">
+      <div id="msg">msg</div>
+
+      <div id="buttons">
+         <button id="ok" _text='0'></button> 
+         <button id="cancel" _text='16'></button>
+      </div>
+   </div>
+</div>
+
+<div id="dlgCancelable" class="dlg hidden">
+   <div id="title" class="no-select">
+      <div id="icon"></div>
+      <div id="text"></div>
+   </div>
+   <div id="in">
+      <div id="msg">msg</div>
+
+      <div id="buttons">
+         <button onclick="unCover();" _text='16'>Cancel</button>
+      </div>
+   </div>
+</div>
+
+<div id="dlgAudioPlay" class="dlg hidden">
+   <div id="title" class="no-select">
+      <img id="icon" src="img/op_music.png">
+      <button class="but" id="bgnd" _title="46" img='but_move_up'></button>
+      <div id="text" _text="43"></div>
+   </div>
+   <div id="in">
+      <div id="counter"></div>
+      <div id="name"></div>
+      <audio controls></audio>
+
+      <div id="toolbar">
+         <button class="but" id="prev" _title="36" img='img/previous.png'></button>
+         <button class="but" id="next" _title="37" img='img/next.png'></button>
+         <div id="onRight">
+            <button class="but checkbox" id="repeat" _title="44" img='img/repeat.png'></button>
+            <button class="but checkbox" id="shuffle" _title="45" img='img/shuffle.png'></button>
+            <button class="but" id="close" _title="34"></button>
+         </div>
+      </div>
+   </div>
+</div>
+
+<table id="bottom_bar">
+<tr>
+   <td id="info_line">
+      <div id="in" >
+         <div id="icon"></div>
+         <div id="msg"></div>
+      </div>
+   </td>
+   <td id="uploads" class="hidden">
+      <div id="queue">
+         <div id="title" _text="25"></div>
+         <div id="in"></div>
+         <div id="cancel_all"><div class="but_bgnd" _text="26">Cancel all</div></div>
+         <div id="remain_time">-1:23</div>
+      </div>
+      <div id='progress'>
+         <div id="bar"><div id="pos"></div></div>
+         <div id="percent">0%</div>
+         <div id="stat">12KB/s</div>
+      </div>
+      <div id="counter">1/2</div>
+      <div class="file">
+         <button class="but" id="cancel" _title='16'></button>
+         <div id="size">123KB</div>
+         <div id="name">Name</div>
+      </div>
+   </td>
+</tr>
+</table>
+
+<noscript class="no-script">Please enable Javascript in your browser for this to work.</noscript>
+
+</body>
+</html>
