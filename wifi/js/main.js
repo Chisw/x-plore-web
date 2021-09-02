@@ -1,86 +1,81 @@
 const URL_PREFIX = location.host.startsWith('127.0.0.1') ? 'http://127.0.0.1:2999' : ''
 
-/**
- * Global namespace.
- */
-var g = {
+const g = {
   nl2br(s) {
     if (s) {
-      s = s.toString();
-      s = s.replace(/\n/g, "<br>"); // /\n+/g
+      s = s.toString()
+      s = s.replace(/\n/g, '<br>')
     }
-    return s;
+    return s
   },
   niceJson(s) {
-    s = JSON.stringify(s, null, 3);
-    s = g.nl2br(s);
+    s = JSON.stringify(s, null, 3)
+    s = g.nl2br(s)
     if (s)
-      s = s.replace(/\s/g, "&nbsp;");
-    return s;
+      s = s.replace(/\s/g, '&nbsp;')
+    return s
   },
   getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"), results = regex.exec(location.search);
-    return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]')
+    const regex = new RegExp(`[\\?&]${name}=([^&#]*)`)
+    const results = regex.exec(location.search)
+    return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
   },
-  formatShortDateTime:
-    /**
-     * @param {Date} now
-     * @param {number} time
-     * @returns {String}
-     */
-    function (now, time) {
-      var tm = new Date(time);
-      var y = tm.getFullYear();
-      var s = '';
+  formatShortDateTime(now, time) {
+    const tm = new Date(time)
+    let y = tm.getFullYear()
+    let s = ''
 
-      if (y === now.getFullYear())
-        y = undefined;
-      var m = tm.getMonth() + 1;
-      var d = tm.getDate();
-      s = d + '.' + m + '.';
-      if (y)
-        s += y;
-      s += "  " + tm.getHours() + ":" + tm.getMinutes();
-      return s;
-    },
+    if (y === now.getFullYear()) {
+      y = undefined
+    }
+    const m = tm.getMonth() + 1
+    const d = tm.getDate()
+    s = `${d}.${m}.`
+    if (y) {
+      s += y
+    }
+    s += '  ' + tm.getHours() + ':' + tm.getMinutes()
+    return s
+  },
   getReadableFileSizeString(v) {
-    var byteUnits = ['B', 'KB', 'MB', 'GB'];
-    var i = 0;
+    var byteUnits = ['B', 'KB', 'MB', 'GB']
+    var i = 0
     while (v > 900 && i < 3) {
-      v /= 1024;
-      i++;
+      v /= 1024
+      i++
     }
     if (i > 0) {
       if (v < 1)
-        v = v.toFixed(2);
+        v = v.toFixed(2)
       else if (v < 10)
-        v = v.toFixed(1);
+        v = v.toFixed(1)
       else
-        v = v.toFixed();
+        v = v.toFixed()
     }
-    return v + byteUnits[i];
+    return v + byteUnits[i]
   },
   urlEncode(s) {
-    var a = s.split('/');
-    for (var i = a.length; --i >= 0;)
-      a[i] = encodeURIComponent(a[i]);
-    s = a.join('/');
-    return s;
+    var a = s.split('/')
+    for (var i = a.length; --i >= 0;) {
+      a[i] = encodeURIComponent(a[i])
+    }
+    s = a.join('/')
+    return s
   },
   getScrollBarWidth() {
-    var _in = document.createElement('p');
-    _in.style.width = "100%";
-    _in.style.height = "200px";
+    var _in = document.createElement('p')
+    _in.style.width = '100%'
+    _in.style.height = '200px'
 
     var out = document.createElement('div');
-    out.style.position = "absolute";
-    out.style.top = "0px";
-    out.style.left = "0px";
-    out.style.visibility = "hidden";
-    out.style.width = "200px";
-    out.style.height = "150px";
-    out.style.overflow = "hidden";
+    out.style.position = 'absolute';
+    out.style.top = '0px';
+    out.style.left = '0px';
+    out.style.visibility = 'hidden';
+    out.style.width = '200px';
+    out.style.height = '150px';
+    out.style.overflow = 'hidden';
     out.appendChild(_in);
 
     document.body.appendChild(out);
@@ -282,21 +277,6 @@ function SpeedCounter() {
 }
 
 
-// https://developers.google.com/closure/compiler/docs/js-for-compiler#types
-/*
-Debug parameters:
-
-specify device's address:
-jsonp=192.168.1.22:1111
-
-debug mode:
-debug=<n>
- 1 = print debug info, shorter timeout
- 2 = simulate actions on server (upload, delete, ...)
- 3 = don't connect to server, test UI elements
-
-*/
-
 function log(n) {
   console.log(n);
 }
@@ -326,7 +306,7 @@ var readOnly;
 /**
  * @type jQueryObject
  */
-var browserPane;  // #browser_pane
+var $mainPane;
 
 /**
  * @type jQueryObject
@@ -334,7 +314,7 @@ var browserPane;  // #browser_pane
 var $header;
 var treeList;  // #tree_list
 var gridScroll;
-var gridIn; // #grid_in
+var gridIn;
 var gridToolbar, butDelete, butRename, butDirNew, butUpload, butGetZip, butMarker;
 var filesInfo;
 var wrapText = true;
@@ -345,13 +325,13 @@ function resized() {
   var winH = win.height();
 //  log("resized h "+winH);
 
-  var h = winH - browserPane.position().top - 80;
-  var l = Math.floor((winW-browserPane.outerWidth()) / 2);
+  var h = winH - $mainPane.position().top - 80;
+  var l = Math.floor((winW-$mainPane.outerWidth()) / 2);
   l = Math.max(0, l);
-  browserPane.css("left", l);
+  // $mainPane.css("left", l);
   
-  browserPane.find("#tree_list, #grid_list").height(h);
-  gridScroll.height(h - gridToolbar.outerHeight());
+  // $mainPane.find("#tree_list, #grid-list").height(h);
+  // gridScroll.height(h - gridToolbar.outerHeight());
   
   divUploads.find("#queue #in").css("max-height", (h)+"px");  // height of uploads queue same as browser height
 }
@@ -642,7 +622,7 @@ function elementHitTest(domE, x, y, stop){
 function onDragMove(ev, dragData){
   
   var x = ev.clientX, y = ev.clientY;
-  var stop = browserPane.parent().get(0);
+  var stop = $mainPane.parent().get(0);
   var currT = dragData.currTarget ? dragData.currTarget.get(0) : null;
   if(currT && elementHitTest(currT, x, y, stop))
     return;  // current target remains, fast quit
@@ -676,9 +656,6 @@ function onDragEnd(dragData){
  */
 function dragMouseDown(ev){
   if(ev.button!==0){
-    /*log(ev.button)
-    if(ev.button===1)
-      processRightClick(ev);*/
     return;
   }
   if(readOnly)
@@ -731,8 +708,6 @@ function dragMouseDown(ev){
         drag.push(d);
       });
       drag.data = onDragBegin(sel);
-//      t.text(localizedStrings[21]);
-//      t.show();
       drag.data.markTargetValid = function(is){
         var cls = "drag-target-invalid";
         drag.forEach(function(sd){
@@ -751,7 +726,6 @@ function dragMouseDown(ev){
   });
   doc.one("mouseup", function(e){
     doc.off("mousemove");
-//    return;  // TEST
     if(drag){
       drag.forEach(function(d){
         d.leDrag.remove();
@@ -760,20 +734,12 @@ function dragMouseDown(ev){
       onDragEnd(drag.data);
     }
   });
-  // cancel out any text selections
-//  document.body.focus();
-  
-  // prevent text selection in IE
-  //document.onselectstart = function(){ return false; };
-  // prevent IE from trying to drag an image
-  //target.ondragstart = function() { return false; };
   return false;
 }
 
 function flashReadOnly(){
   var rd = $("#read_only");
   if(!rd.is(":animated")){
-//  rd.stop(true, false);
     var off = { opacity: .2 }, on = { opacity: 1 }, tm = 100;
     for(var i=0; i<3; i++)
       rd.animate(off, tm).animate(on, tm);
@@ -1273,10 +1239,9 @@ function UploadTask(){
       }, delay);
   }
   
-  var bar = $("#bottom_bar");
+  var bar = $("#bottom-bar");
   divUploads.hover(function(ev){
     isQueueVisible = ev.type=="mouseenter";
-    //deb(ev.type);
     if(isQueueVisible){
       bar.css("z-index", 11);
       coverShow(function(){
@@ -1285,23 +1250,15 @@ function UploadTask(){
         bar.css("z-index", '');
         pinned = false;
       });
-//      initCoverClick();
       showQueue();
     }else{
       if(!pinned)
         unCover();
     }
   });
-  /*queue.show();
-  hideQueueWithDelay(1000);*/
   queue.hide();
   
-  /*this.shortShowQueue = function(){
-    if(!isQueueVisible){
-      showQueue();
-      hideQueueWithDelay(2000);
-    }
-  };*/
+
   divUploads.fadeIn("slow");
   
 }
@@ -1320,21 +1277,12 @@ function startUploadOfFiles(de, files, items){
       var item = items[i];
       if(item && (typeof item.webkitGetAsEntry === "function")){
         fsEntry = item.webkitGetAsEntry();
-        // check for Mozilla's window.FileSystemEntry, as it doesn't work properly on Chrome - FileSystemFileEntry.file() hangs
-        /*try{
-          if(!(fsEntry instanceof FileSystemEntry))
-            fsEntry = null;
-        }catch(e){
-          fsEntry = null;
-        }*/
-        //if(fsEntry.constructor.name != "FileSystemEntry")
       }
     }
     uploadTask.add(de, basePath, files[i], fsEntry);
   }
   
   uploadTask.showCounter();
-//  uploadTask.shortShowQueue();
   if(create)
     uploadTask.startNext();
 }
@@ -1372,17 +1320,11 @@ function detectMediaFeatures(){
   var v = $("<video>")[0];
   if(v instanceof HTMLMediaElement && v.canPlayType)
     canPlayVideoMp4 = !!v.canPlayType("video/mp4");
-  
-  /*var a = $("<audio>")[0];
-  if(a instanceof HTMLMediaElement && a.canPlayType)
-    //canPlayAudioMp3 = !!a.canPlayType("audio/mpeg");
-    canPlayAudioMp3 = canPlayAudio("audio/mpeg");*/
 }
 
 function onReady(){
 
   showHidden = g.getBooleanPref("showHidden", false);
-//  $(".button").button();
   var win = $(window);
   win.resize(resized);
   win.on("beforeunload", beforePageClose);
@@ -1392,47 +1334,33 @@ function onReady(){
   divUploads = $("#uploads");
   if(debugMode==3) divUploads.show();
 
-//  showInfoMsg("Ha ha\nLopo");
-  browserPane = $("#browser_pane");
+  $mainPane = $("#main-pane");
   cover = $("#cover");
   cover.on("contextmenu", function(){ unCover(); return false; });
   cover.click(unCover);
   var body = $("#body");
   body.on("contextmenu", function(ev){
-//    console.dir(ev);
     return false;
   });
   localize();
   
-  treeList = browserPane.find("#tree_list");
-  var gl = browserPane.find("#grid_list");
+  treeList = $mainPane.find("#tree_list");
+  var gl = $mainPane.find("#grid-list");
   gridScroll = gl.find("#grid_scroll");
-  gridIn = gl.find("#grid_in");
+  gridIn = gl.find("#grid-in");
   bindDragAndDropEvents(gridIn, gridListDrag);
   gridToolbar = gl.find("#toolbar");
 
   filesInfo = gridToolbar.find("#files_info");
-  var repository = $("#repository");
-  /*if(debugMode)
-    repository.show();*/
-  
-  if(debugMode)  // show all debug elements
-    $(".debug").show();
-  {
-    // fix pane to include scrollbar width
-    var sw = g.getScrollBarWidth();
-    var e = gl.find("#grid_in");//browserPane;
-    var w = parseInt(e.css("width"));
-    e.css("width", (w+sw)+"px");
-  }
+  var $templates = $("#templates");
 
-  buttonDef = repository.find(".but");
-
-  leVolume = repository.find("#le_volume");
-  leDir = repository.find("#le_dir");
-  leFile = repository.find("#le_file");
-  leMedia = repository.find("#le_media");
-  popupMenu = repository.find("#popup");
+  buttonDef = $templates.find(".but");
+  leVolume = $templates.find("#le_volume");
+  leVolumeDir = $templates.find("#le_volume_dir");
+  leDir = $templates.find("#le_dir");
+  leFile = $templates.find("#le_file");
+  leMedia = $templates.find("#le_media");
+  popupMenu = $templates.find("#popup");
 
   leDir.find(".le_in").mousedown(dragMouseDown);
 
@@ -1441,20 +1369,18 @@ function onReady(){
     var varleDirsIn = leDirs.find(".le_in");
     varleDirsIn.click(onDirInClicked);
     bindDragAndDropEvents(varleDirsIn, deDrag);
-//    leDirs.find("#exp").click(onExpandClicked);
     leDir.hover(dirHover);
   }
 
   var leFiles = leFile.add(leMedia);
   leFiles.click(onEntryClicked).mousedown(dragMouseDown);
-  //  bindDragAndDropEvents(leFiles, dragPrevent);
 
-  repository.find(".le_in").on("contextmenu", processRightClick);
+  $templates.find(".le_in").on("contextmenu", processRightClick);
   $(".le #mark").click(onMarkClicked);
   
   body.keydown(onKeyDown);
   
-  divProgress = repository.find("#progress-circle");
+  divProgress = $templates.find("#progress-circle");
   
   $(".but").each(function(){
     if(this===buttonDef.get(0))
@@ -1471,7 +1397,6 @@ function onReady(){
     if(img){
       if(img.indexOf('/')==-1)
         img = "img/"+img+".png";
-      //log(img);
       cssBgndImg(b.find(".icon"), img);
     }
     var h = el.html();
@@ -1489,13 +1414,13 @@ function onReady(){
   butGetZip = gridToolbar.find("#get-zip");
   butMarker = gridToolbar.find("#marker");
 
-  browserPane.show();
+  $mainPane.removeClass('hidden').addClass('flex');
   resized();
   
   $header = $('#header');
   
   // disable accidental drag&drop on page to redirect to the file
-  bindDragAndDropEvents(browserPane.add($header).add(cover), dragPrevent);
+  bindDragAndDropEvents($mainPane.add($header).add(cover), dragPrevent);
   
   $header.removeClass('hidden').addClass('flex');
   updateMarked();
@@ -1527,22 +1452,14 @@ function centerDialog(d){
   d.css("margin-top", "-"+(d.outerHeight()/2)+"px");
 }
 
-/**
- * Show dialog.
- * @param d = dialog
- * @param showCoverCb = function to call when cover is dismissed
- */
 function showDialog(d, showCoverCb){
   if(showCoverCb){
-//    initCoverClick();
     coverShow(function(){
       showCoverCb();
-//      d.hide();
       d.fadeOut(100);
     });
   }
   centerDialog(d);
-//  d.show();
   d.fadeIn(100);
   return d;
 }
@@ -1553,7 +1470,6 @@ function opReloadPage(){
 }
 
 function beforePageClose(ev){
-//  log("page close");
   if(uploadTask)
     return "Uploads are in progress. Close page anyway?";
   var textEd = $("#text_view");
@@ -1575,7 +1491,6 @@ function showInfoMsg(msg, isError){
   infoLine.fadeTo(0, 1);
   var l = msg.length;
   l = Math.max(4000, Math.min(15000, l*40));
-//  log(l);
   infoLine.find("#icon").attr("err", isError ? 1 : 0);
   
   if(debugMode===3) return;
@@ -1593,11 +1508,7 @@ function showError(msg){
   showInfoMsg(msg, true);
 }
 
-/**
- * @param a {Object}
- * @param b {Object}
- * @returns {Number}
- */
+
 function sortEntries(a, b){
   // first sort by type
   var tD = a.t-b.t;
@@ -1638,10 +1549,7 @@ function bindIconUri(le, uri){
   cssBgndImg(le.find("#icon"), uri);
 }
 
-/**
- * @param le {jQueryObject}
- * @param iconId {Number}
- */
+
 function bindIconId(le, iconId){
   if(iconId){
     var uri = '/' + iconId+"?cmd=res_id";
@@ -1652,27 +1560,21 @@ function bindIconId(le, iconId){
 
 function bindAppIcon(le, ext){
   var uri = '/' + ext+"?cmd=ext_icon";
-//  log(uri);
   bindIconUri(le, uri);
 }
 
 function bindThumbnail(ie, path){
   var uri = g.urlEncode(path)+"?cmd=thumbnail";
-//  log(uri);
   bindIconUri(ie, uri);
 }
 
-/**
- * @constructor
- * @param le {jQueryObject}
- */
+
 function BackgroundTask(le){
   this.le = le;
   if(le){
     le.find(".le_in").first().append(divProgress);
   }else
     gridIn.append(divProgress);
-//  this.initTimeOut();
 }
 
 BackgroundTask.prototype = {
@@ -1693,9 +1595,7 @@ BackgroundTask.prototype = {
   }
 };
 
-/**
- * @type BackgroundTask
- */
+
 var currTask;
 
 function setCurrTask(t){
@@ -1715,11 +1615,7 @@ function getLeParent(le){
   return le.data("parent");
 }
 
-/**
- * Set button enabled or disabled.
- * @param b {jQueryObject}
- * @param clickCb {Function} for click or null to disable
- */
+
 function setButtonEnabled(b, clickCb, force){
   var isEn = !b.attr("disabled");
   var en = !!clickCb;
@@ -1733,10 +1629,6 @@ function setButtonEnabled(b, clickCb, force){
   }
 }
 
-
-/**
- * @param de {jQueryObject}
- */
 function setCurrentDir(de){
   if(de)
     de = getDirInTreeList(de);
@@ -1790,9 +1682,6 @@ function collapseDir(de, inTreeOnly){
     bindExpandable(de, false);
 }
 
-/**
- * @param de {jQueryObject}
- */
 function collapseAllSiblings(de){
   while(true){
     de.siblings(".le").each(function(i, v){
@@ -1828,7 +1717,6 @@ function getLeUri(le, type){
 function getLeVolume(le){
   while(le && le.attr("id")!="le_volume")
     le = getLeParent(le);
-  //return le.closest("#le_volume");
   return le;
 }
 
@@ -1888,7 +1776,6 @@ function updateMarked(){
   //var markTit;
   var markIc;
   butMarker.off("click");
-  //log("numM: "+numMarked + ", numA: "+leAll.length);
   if(numMarked==0){
     //markTit = "Mark all";
     markIc = "on";
@@ -1898,7 +1785,6 @@ function updateMarked(){
     markIc = "off";
     butMarker.click(clearAllMarked);
   }
-  cssBgndImg(butMarker.find(".icon"), "img/check_marker_"+markIc+".png");
   //log(allM.length);
   var numM = filesInfo.find("#num_marked");
   if(numMarked==0)
@@ -1933,7 +1819,6 @@ function markAll(){
 function clearAllMarked(){
   var m = getMarkedLeInGrid();
   if(m.length){
-    //m.removeAttr("marked");
     getAllLeInGrid().each(function(){
       setLeMark($(this), false);
     });
@@ -2000,21 +1885,7 @@ function onExpandClicked(ev){
 }
 
 function downloadFile(url){
-//  window.open(url);
-  window.location.assign(url);
-  
-  /*
-  $('<iframe>').attr('src', url).appendTo('body').load(function() {
-    //$(this).remove();
-    log("!");
-  });
-  */
-  /*var a = document.createElement("a");
-  a.href = url;
-  $("body").append($(a));
-  a.click();
-  */
-//  a.remove();
+  window.location.assign(url)
 }
 
 function isMediaViewableMime(mime){
@@ -2096,10 +1967,6 @@ function onEntryClicked(ev){
 
 function getDirSize(de){
   
-  /*var sz = de.data("dirSize");
-  if(sz!==undefined){
-    showDirSize(de, sz);
-  }else{*/
     if(currTask){
       if(entriesEqual(currTask.le, de)){
         return;
@@ -2135,7 +2002,6 @@ function dirHover(ev){
     return;
   
   var on = ev.type=="mouseenter";
-//  deb(getLeName(le)+": "+on)
   var t = le.data("hoverTimer");
   if(on){
     if(lastDirHoverT){
@@ -2178,9 +2044,7 @@ function bindVolumeSize(ve, szFree, szTotal){
 
 var wasReadOnly;
 
-/**
- * @const 
- */
+
 var
   DIR_LIST_TREE = 1 // expand into tree view
   , DIR_LIST_GRID = 2 // expand into grid list
@@ -2188,9 +2052,7 @@ var
   , DIR_LIST_DEFAULT = 7  // list to both plus special behavior: collapse siblings
   ;
 
-/**
- * @param task {BackgroundTask}
- */
+
 function onDirListed(js, task, listMode, isRootList){
   
   task.finished();
@@ -2345,9 +2207,7 @@ function onDirListed(js, task, listMode, isRootList){
   }
   if(putToGrid){
     gridIn.scrollTop(0);
-    /*var s = files.length+' '+(files.length==1 ? "item" : "items");
-    if(numH)
-      s += " ("+numH+" hidden)";*/
+
     filesInfo.find("#num_dirs").text(numD);
     filesInfo.find("#num_files").text(numF);
     var h = filesInfo.find("#num_hidden");
@@ -2514,13 +2374,7 @@ function copyMoveSingleFile(t, de, sel, i, cd, copy){
     if(++i==sel.length || !ok)
       t.finished();
     if(ok){
-      /*
-      if(isEntryChildOf(cd, le, true)){
-        cd = getLeParent(le);
-        //setCurrentDir(cd);
-        log("deleted curr dir or parent, new cd is "+getLeFullPath(cd));
-      }
-      */
+
       if(i<sel.length)
         copyMoveSingleFile(t, de, sel, i, cd, copy);
       else{
@@ -3005,11 +2859,6 @@ function getTreeSibling(de, offs){
   return null;
 }
 
-/**
- * @const
- */
-//var KEY_MODIFY_CTRL = 0x2000, KEY_MODIFY_ALT = 0x4000, KEY_MODIFY_SHIFT = 0x8000;
-
 var keyShortcuts = {
     46: function(){  // Del
       if(canDelete())
@@ -3027,9 +2876,7 @@ var keyShortcuts = {
         opRename();
     }
     , 33: function(){ // Page up
-      /*var p = getLeParent(currentDir);
-      if(p)
-        onDirClicked(p);*/
+
       opUpDir();
     }
     , 37: function(){ // Left
@@ -3120,12 +2967,6 @@ var keyShortcuts = {
     }
 };
 
-/**
- * Process keyboard shortcuts.
- * @param shortcuts is object which maps keyCode to function to be called
- *   the func may return false to indicate that shortcut shall not be consumed
- * @returns {Boolean} it shortcut was consumed
- */
 function processKeyShortcuts(ev, shortcuts, _this){
   var fn = shortcuts[ev.keyCode];
   if(fn){
@@ -3156,15 +2997,6 @@ function onKeyDown(ev){
   else if(debugMode && ev.ctrlKey && ev.keyCode!=17)
     log("Key: "+ev.key+", code: "+ev.keyCode);
 }
-
-/*
-function menuClick(ev){
-  //var origin = ev.target; log(origin.tagName);
-  //log("menuClick");
-//  menu.attr("active", true);
-//  initCoverClick();
-}
-*/
 
 function checkFileExists(path, cb){
   var q = "cmd=exists";
@@ -3281,59 +3113,6 @@ function showCancelableDialog(icon, title, msg, onCancel){
   return dlg;
 }
 
-/*
-function ImageViewer1(allImgs, currI){
-  
-  // cache file's url -> { blob, url }
-  var cachedBlobUrls = (typeof URL!="undefined" && 1) ? {} : null;
-  
-  function limitBlobCache(){
-    if(!cachedBlobUrls)
-      return;
-    var i = currI;
-    // get urls of current image and prev/next
-    var uP = i>0 ? getLeFileUri(allImgs[i-1]) : '';
-    var uC = getLeFileUri(allImgs[i]);
-    var uN = i<num-1 ? getLeFileUri(allImgs[i+1]) : '';
-    for(var url in cachedBlobUrls){
-      if(url==uP || url==uC || url==uN)
-        continue;
-      var bu = cachedBlobUrls[url];
-      deb("Remove blob from cache: "+getFileNameWithouPath(url)+" > "+bu.url);
-      window.URL.revokeObjectURL(bu.url);
-      delete cachedBlobUrls[url];
-    }
-  }
-    // actual load of image
-    if(cachedBlobUrls){
-      var x = new XMLHttpRequest();
-      x.open("GET", url, true);
-      x.responseType = 'blob';
-      x.onreadystatechange = function(e){
-        if(this.readyState==4){
-          if(this.status==200 && cachedBlobUrls){
-//            deb("blob loaded");
-            var bu = cachedBlobUrls[url];  // duplicitly loaded?
-            if(!bu){
-              // no, put it to cache
-              var blob = this.response;
-              bu = { b: blob, url: window.URL.createObjectURL(blob) };
-              deb("Cache blob: "+bu.url);
-              cachedBlobUrls[url] = bu;
-            }
-            if(DEBUG_SPEED){
-              window.setTimeout(function(){loadSuccess(bu.url);}, 2000);
-            }else
-              loadSuccess(bu.url);
-          }else{
-            err("Can't load image");
-            loadDone();
-          }
-        }
-      };
-      x.send();      
-}
-*/
 
 function changeMediaVolume(dir){
   var vol = Math.round(this.volume*10 + dir);
@@ -3351,7 +3130,7 @@ function showMediaViewer(allMedia, currI){
 
   var num = allMedia.length;
   
-  var viewer = browserPane.find("#media_viewer");
+  var viewer = $mainPane.find("#media_viewer");
   var canvasHolder = viewer.find("#canvas");
   var counter = viewer.find("#counter");
   var mediaInfo = viewer.find("#media_info"); mediaInfo.text('');
@@ -3534,9 +3313,6 @@ function showMediaViewer(allMedia, currI){
   function showImage(img){
     img.css('image-orientation', 'from-image');
     showCanvas(img);
-    /*var e = img[0];
-    if(e.width && e.height)
-      mediaInfo.text(e.width+'x'+e.height);*/  // disabled, it shows wrong resolution
   }
 
   function showVideo(le){
@@ -3548,14 +3324,12 @@ function showMediaViewer(allMedia, currI){
     v.src = url;
     
     v.controls = true;
-//    v.preload = "metadata";
     
     var vol = g.getPref("volume");
     if(!vol)
       vol = 50;
     v.volume = parseInt(vol)/100;
     v.onvolumechange = function(){
-//      log(this.volume);
       var v = Math.round(this.volume*100);
       g.setPref("volume", v);
       showInfoMsg(localizedStrings[38]+' '+v+'%');
@@ -3563,7 +3337,6 @@ function showMediaViewer(allMedia, currI){
     v.onended = function(){
       if(slideShowOn && slideshowVideoPlay)
         goToNext();
-        //slideShowScheduleNext();
     };
     showCanvas(vid);
     
@@ -3578,7 +3351,7 @@ function showMediaViewer(allMedia, currI){
     if(currVideo){
       currVideo.removeAttr("poster");
       var v = currVideo[0];
-      v.src = ''; // don't set to null or undefined, FF will try to load it
+      v.src = '';
       v.onvolumechange = null;
       v.onended = null;
       currVideo = null;
@@ -3628,7 +3401,6 @@ function showMediaViewer(allMedia, currI){
     }
     
     var url = getLeImageUri(le);
-//    deb("Img url: "+url);
     {
       var img = imgCache[url];
       if(img){
@@ -3971,7 +3743,7 @@ function debugStartAudioPlayer(){
 function startTextViewer(le){
   
   var body = $("body");
-  var viewer = browserPane.find("#text_view");
+  var viewer = $mainPane.find("#text_view");
   var canvas = viewer.find("#canvas");
   var textArea = viewer.find("#text");
   textArea.text('');

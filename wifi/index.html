@@ -5,145 +5,143 @@
   <title>X-plore Web File Manager</title>
   <link rel="shortcut icon" href="img/icon.png" />
   <link href="css/tailwind.min.css" rel="stylesheet" type="text/css" />
+  <link href="css/style.css" rel="stylesheet" type="text/css" />
   <link href="css/main.less" rel="stylesheet/less" type="text/css" />
-  <link href="css/override.less" rel="stylesheet/less" type="text/css" />
   <script src="js/less.js"></script>
 </head>
 <body id="body">
 
-  <!-- header -->
-  <div id="header" class="hidden p-4 flex items-center">
+  <div class="web-container absolute inset-0 flex flex-col">
 
-    <a href="http://www.lonelycatgames.com/apps/xplore" target="_blank">
-      <img id="icon" src="img/icon.png" class="w-10 h-10">
-    </a>
+      <!-- header -->
+      <div id="header" class="hidden px-4 h-20 flex items-center flex-shrink-0">
+        <a href="http://www.lonelycatgames.com/apps/xplore" target="_blank">
+          <img id="icon" src="img/icon.png" class="w-10 h-10">
+        </a>
+        <div class="px-3 flex-grow">
+          <p class="font-bold">X-plore Web File Manager</p>
+          <p id="device-name" class="text-gray-600 text-xs">--</p>
+        </div>
+        <a href="javascript:;" id="audio-btn" class="hidden">
+          <img src="img/music.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
+        </a>
+        <a href="https://github.com/Chisw/x-plore-web" target="_blank">
+          <img src="img/github.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
+        </a>
+        <a href="https://www.lonelycatgames.com/docs/xplore/wifi-share/in-web" target="_blank">
+          <img src="img/help.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
+        </a>
+        <a href="javascript:opReloadPage();">
+          <img src="img/refresh.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
+        </a>
+        <a href="javascript:opExit();">
+          <img src="img/logout.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
+        </a>
+      </div>
 
-    <div class="px-3 flex-grow">
-      <p class="font-bold">X-plore Web File Manager</p>
-      <p id="device-name" class="text-gray-600 text-xs">--</p>
-    </div>
-
-    <a href="javascript:;" id="audio-btn" class="hidden">
-      <img src="img/music.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
-    </a>
-    <a href="https://github.com/Chisw/x-plore-web" target="_blank">
-      <img src="img/github.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
-    </a>
-    <a href="https://www.lonelycatgames.com/docs/xplore/wifi-share/in-web" target="_blank">
-      <img src="img/help.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
-    </a>
-    <a href="javascript:opReloadPage();">
-      <img src="img/refresh.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
-    </a>
-    <a href="javascript:opExit();">
-      <img src="img/logout.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
-    </a>
-
-  </div>
-
-  <div id="cover" class="cover"></div>
-
-  <table id="browser_pane" class="hidden">
-    <tr>
-      <td class="files_pane">
-        <div style="position: relative;">
+      <!-- main-pane -->
+      <div id="main-pane" class="hidden flex border-t overflow-hidden flex-grow">
+        <div class="relative h-full border-r">
           <div id="up" class="drag_scroll" onDrag="dragTreeScroll"></div>
           <div id="tree_list" class="tree_list"></div>
           <div id="down" class="drag_scroll" onDrag="dragTreeScroll"></div>
         </div>
-      </td>
-      <td id="separator"></td>
-      <td class="files_pane">
-        <div id="grid_list">
-          <div id="toolbar">
-            <input type="button" class="but" id="dirUp" _title="1" disabled img="img/back.svg"></input>
-            <input type="button" class="but" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
-            <input type="button" class="but" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
-            <input type="button" class="but" id="upload" _title="27" img="img/upload.svg"></input>
-            <input type="file" class="hidden" id="real-upload" multiple onchange="opUploadPick(event)">
-            <input type="button" class="but" id="get-zip" _title="30" img="img/download-zip.svg" onclick="opDownloadAsZip()" onDrag="zipDrag"></input>
-            <input type="button" class="but" id="delete" _title="2" disabled img="img/delete.svg" onDrag="deleteDrag"></input>
-            <input type="button" class="but" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
-            <input type="button" class="but" id="marker" _title="11" img="img/checkmark-on.svg"></input>
-            <input type="button" class="but" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
+        <div class="flex-grow h-full overflow-y-auto">
+          <div id="grid-list">
+            <div id="toolbar" class="w-full border-b bg-gray-200 flex">
 
-            <div id="files_info">
-              <div id="counters">
-                <img src="img/folder.svg">
-                <span id="num_dirs">0</span>
-                <img src="img/file.svg">
-                <span id="num_files">0</span>
-                <span id="num_hidden"></span>
+              <input type="button" class="but border-r" id="dirUp" _title="1" disabled img="img/back.svg"></input>
+              <input type="button" class="but border-r border-l ml-2" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
+              <input type="button" class="but border-r" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
+              <input type="button" class="but border-r" id="upload" _title="27" img="img/upload.svg"></input>
+              <input type="button" class="but border-r" id="get-zip" _title="30" img="img/download-zip.svg" onclick="opDownloadAsZip()" onDrag="zipDrag"></input>
+              <input type="button" class="but border-r" id="delete" _title="2" disabled img="img/delete.svg" onDrag="deleteDrag"></input>
+              <input type="button" class="but border-r border-l ml-2" id="marker" _title="11" img="img/checkmark.svg"></input>
+              <input type="button" class="but border-r" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
+              <input type="button" class="but border-r" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
+              <input type="file" class="hidden" id="real-upload" multiple onchange="opUploadPick(event)">
+
+              <div id="files_info" class="flex p-2">
+                <div id="counters" class="flex items-center">
+                  <img src="img/folder.svg">
+                  <span id="num_dirs">0</span>
+                  <img src="img/file.svg">
+                  <span id="num_files">0</span>
+                  <span id="num_hidden"></span>
+                </div>
+                <div id="num_marked" class="flex items-center ml-1">
+                  <img src="img/checkmark.svg">
+                  <div id="text"></div>
+                </div>
               </div>
-              <div id="num_marked">
-                <img src='img/checkmark-on.svg'>
-                <div id="text"></div>
+            </div>
+            <div id="grid_scroll">
+              <div id="grid-in" class="grid-list"></div>
+              <div id="read_only" class="hidden" _text="28"></div>
+            </div>
+          </div>
+      
+          <div id="media_viewer" class="worktable">
+            <div id="canvas"></div>
+            <div id="toolbar">
+              <div id="info">
+                <div id="counter"></div>
+                <div id="name"></div>
+                <div id="media_info">1600x1200</div>
+              </div>
+              <div id="controls">
+                <button class="but" id="prev" _title="36" img="img/previous.png"></button>
+                <button class="but" id="next" _title="37" img="img/next.png"></button>
+                <button class="but" id="slideshow" _title="39" img="img/slideshow_on.png"></button>
+                <button class="but" id="rename" _title="3" img="img/edit.svg"></button>
+                <button class="but" id="download" _title="31" img="img/download.svg"></button>
+                <button class="but" id="delete" _title="2" img="img/delete.svg"></button>
+              </div>
+              <div id="onRight">
+                <button class="but" id="options" _title="40" img="img/op_settings.png"></button>
+                <button class="but" id="fullscreen" _title="35" img="img/imgv_fullscreen.png"></button>
+                <button class="but" id="close" _title="34" img="ic_close"></button>
               </div>
             </div>
           </div>
-          <div id="grid_scroll">
-            <div id="grid_in" class="grid_list"></div>
-            <div id="read_only" class="hidden" _text="28"></div>
-          </div>
-        </div>
       
-        <div id="media_viewer" class="worktable">
-          <div id="canvas"></div>
-          <div id="toolbar">
-            <div id="info">
-              <div id="counter"></div>
-              <div id="name"></div>
-              <div id="media_info">1600x1200</div>
+          <div id="text_view" class="worktable">
+            <div id="canvas">
+              <textarea id="text"></textarea>
             </div>
-            <div id="controls">
-              <button class="but" id="prev" _title="36" img='img/previous.png'></button>
-              <button class="but" id="next" _title="37" img='img/next.png'></button>
-              <button class="but" id="slideshow" _title="39" img='img/slideshow_on.png'></button>
-              <button class="but" id="rename" _title="3" img='img/edit.svg'></button>
-              <button class="but" id="download" _title="31" img='img/download.svg'></button>
-              <button class="but" id="delete" _title="2" img='img/delete.svg'></button>
-            </div>
-            <div id="onRight">
-              <button class="but" id="options" _title="40" img='img/op_settings.png'></button>
-              <button class="but" id="fullscreen" _title="35" img='img/imgv_fullscreen.png'></button>
-              <button class="but" id="close" _title="34" img='ic_close'></button>
-            </div>
-          </div>
-        </div>
-      
-        <div id="text_view" class="worktable">
-          <div id="canvas">
-            <textarea id="text"></textarea>
-          </div>
-          <div id="toolbar">
-            <div id="info">
-              <!-- <div id="counter"></div> -->
-              <div id="name"></div>
-              <div id="media_info">!</div>
-            </div>
-            <div id="controls">
-              <button class="but" id="save" _title="47" img='img/save.png'></button>
-              <button class="but" id="start_edit" _title="48" img='img/op_text_edit.png'></button>
-              <button class="but" id="wrap" _title="51" img='img/wrap_text_off.png'></button>
-              <!--
-              <button class="but" id="rename" _title="3" img='img/edit.svg'></button>
-              <button class="but" id="download" _title="31" img='img/op_download.svg'></button>
-              <button class="but" id="delete" _title="2" img='img/delete.svg'></button>
-              -->
-              <span id="edit_info" _text="48"></span>
-            </div>
-            <div id="onRight">
-              <!-- <button class="but" id="options" _title="40" img='img/op_settings.png'></button> -->
-              <button class="but" id="close" _title="34" img='ic_close'></button>
+            <div id="toolbar">
+              <div id="info">
+                <!-- <div id="counter"></div> -->
+                <div id="name"></div>
+                <div id="media_info">!</div>
+              </div>
+              <div id="controls">
+                <button class="but" id="save" _title="47" img="img/save.png"></button>
+                <button class="but" id="start_edit" _title="48" img="img/op_text_edit.png"></button>
+                <button class="but" id="wrap" _title="51" img="img/wrap_text_off.png"></button>
+                <!--
+                  <button class="but" id="rename" _title="3" img='img/edit.svg'></button>
+                  <button class="but" id="download" _title="31" img='img/op_download.svg'></button>
+                  <button class="but" id="delete" _title="2" img='img/delete.svg'></button>
+                  -->
+                <span id="edit_info" _text="48"></span>
+              </div>
+              <div id="onRight">
+                <!-- <button class="but" id="options" _title="40" img='img/op_settings.png'></button> -->
+                <button class="but" id="close" _title="34" img='ic_close'></button>
+              </div>
             </div>
           </div>
         </div>
-      </td>
-    </tr>
-  </table>
+      </div>
+
+  </div>
+
+  <div id="cover" class="cover"></div>
  
-  <div id="repository" class="hidden">
-    <!-- <div class="tree_list" style="float:left;"> -->
+  <!-- templates -->
+  <div id="templates" class="hidden">
+
       <div id="le_volume" class="le">
         <div class="le_in" onDrag="leDrag">
           <p id="exp" expanded="false"></p>
@@ -151,6 +149,16 @@
           <span id="title">Vol</span>
           <span id="dir_size"></span>
           <span id="file_size">Free: 4MB/12GB</span>
+        </div>
+      </div>
+
+      <div id="le_volume_dir" class="le">
+        <div class="le_in" onDrag="leDrag">
+          <p id="exp" expanded="false"></p>
+          <p id="icon"></p>
+          <span id="title">Dir</span>
+          <span id="dir_size"></span>
+          <div id="mark"></div>
         </div>
       </div>
       
@@ -167,9 +175,6 @@
       <div id="progress-circle">
         <img src="img/refresh.svg">
       </div>
-    <!-- </div>
-    
-    <div class="grid_list" style="float:left;"> -->
     
     <div id="le_file" class="le">
       <div class="le_in">
@@ -190,7 +195,6 @@
         <div id="mark"></div>
       </div>
     </div>
-    <!-- </div> -->
     
     <div class="but"><div class="icon"></div></div>
     
@@ -199,7 +203,7 @@
       <tr><td id="l"><td id="c">
       <div id="title"></div>
       <div id="items">
-        <div id="item"><img src='img/help.png' ><span id="text">Help</span></div>
+        <div id="item"><img src='img/help.svg' ><span id="text">Help</span></div>
       </div>
       
       <td id="r">
@@ -277,7 +281,7 @@
     </div>
   </div>
 
-  <table id="bottom_bar">
+  <table id="bottom-bar">
     <tr>
       <td id="info_line">
         <div id="in" >
