@@ -312,7 +312,7 @@ var $mainPane;
  * @type jQueryObject
  */
 var $header;
-var treeList;  // #tree_list
+var treeList;
 var gridScroll;
 var gridIn;
 var gridToolbar, butDelete, butRename, butDirNew, butUpload, butGetZip, butMarker;
@@ -326,12 +326,6 @@ function resized() {
 //  log("resized h "+winH);
 
   var h = winH - $mainPane.position().top - 80;
-  var l = Math.floor((winW-$mainPane.outerWidth()) / 2);
-  l = Math.max(0, l);
-  // $mainPane.css("left", l);
-  
-  // $mainPane.find("#tree_list, #grid-list").height(h);
-  // gridScroll.height(h - gridToolbar.outerHeight());
   
   divUploads.find("#queue #in").css("max-height", (h)+"px");  // height of uploads queue same as browser height
 }
@@ -426,7 +420,7 @@ function leDrag(dragCmd, dt){
   switch(dragCmd){
   case DRAG_TARGET:
 //    logLe(de);
-    if(de.closest("#tree_list").length && !isDirExpanded(de)){
+    if(de.closest("#tree-list").length && !isDirExpanded(de)){
       // expand dir in tree list after pointing on it for a while
       this.timer = window.setTimeout(function(){
         onDirClicked(de, DIR_LIST_TREE);
@@ -612,7 +606,7 @@ function elementHitTest(domE, x, y, stop){
       if(dt.attr("disabled")) // skip if draggable target is disabledon 
         return false;
       // exception for scrollers
-      if(dt.hasClass("drag_scroll"))
+      if(dt.hasClass("drag-scroll"))
         return dt;
     }
   }
@@ -1344,7 +1338,7 @@ function onReady(){
   });
   localize();
   
-  treeList = $mainPane.find("#tree_list");
+  treeList = $mainPane.find("#tree-list");
   var gl = $mainPane.find("#grid-list");
   gridScroll = gl.find("#grid_scroll");
   gridIn = gl.find("#grid-in");

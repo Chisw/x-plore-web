@@ -6,8 +6,6 @@
   <link rel="shortcut icon" href="img/icon.png" />
   <link href="css/tailwind.min.css" rel="stylesheet" type="text/css" />
   <link href="css/style.css" rel="stylesheet" type="text/css" />
-  <link href="css/main.less" rel="stylesheet/less" type="text/css" />
-  <script src="js/less.js"></script>
 </head>
 <body id="body">
 
@@ -42,14 +40,23 @@
       <!-- main-pane -->
       <div id="main-pane" class="hidden flex border-t overflow-hidden flex-grow">
         <div class="relative h-full border-r">
-          <div id="up" class="drag_scroll" onDrag="dragTreeScroll"></div>
-          <div id="tree_list" class="tree_list"></div>
-          <div id="down" class="drag_scroll" onDrag="dragTreeScroll"></div>
+          <div
+            id="up"
+            class="drag-scroll absolute left-0 top-0 w-full h-12 -mt-12"
+            onDrag="dragTreeScroll"
+          >
+          </div>
+          <div id="tree-list" class="tree-list h-full overflow-y-auto"></div>
+          <div
+            id="down"
+            class="drag-scroll absolute left-0 bottom-0 w-full h-12 -mb-12"
+            onDrag="dragTreeScroll"
+          >
+          </div>
         </div>
-        <div class="flex-grow h-full overflow-y-auto">
-          <div id="grid-list">
+        <div class="flex-grow h-full">
+          <div id="grid-list" class="h-full flex flex-col">
             <div id="toolbar" class="w-full border-b bg-gray-200 flex">
-
               <input type="button" class="but border-r" id="dirUp" _title="1" disabled img="img/back.svg"></input>
               <input type="button" class="but border-r border-l ml-2" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
               <input type="button" class="but border-r" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
@@ -60,7 +67,6 @@
               <input type="button" class="but border-r" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
               <input type="button" class="but border-r" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
               <input type="file" class="hidden" id="real-upload" multiple onchange="opUploadPick(event)">
-
               <div id="files_info" class="flex p-2">
                 <div id="counters" class="flex items-center">
                   <img src="img/folder.svg">
@@ -74,10 +80,10 @@
                   <div id="text"></div>
                 </div>
               </div>
-            </div>
-            <div id="grid_scroll">
-              <div id="grid-in" class="grid-list"></div>
               <div id="read_only" class="hidden" _text="28"></div>
+            </div>
+            <div id="grid_scroll" class="flex-grow p-2">
+              <div id="grid-in" class="grid-list"></div>
             </div>
           </div>
       
@@ -172,7 +178,7 @@
         </div>
       </div>
     
-      <div id="progress-circle">
+      <div id="progress-circle" class="loading absolute top-0 right-0 w-4 h-4">
         <img src="img/refresh.svg">
       </div>
     
