@@ -1355,7 +1355,7 @@ function setCurrentDir(de) {
   if (currentDir)
     currentDir.removeAttr("active");
   if (currNoSep)
-    currNoSep.removeClass("no_separator");
+    currNoSep.removeClass("no-separator");
   currentDir = de;
   if (de)
     de.attr("active", true);
@@ -1374,7 +1374,7 @@ function setCurrentDir(de) {
     }
     if (p) {
       p = p.find(".le_in").first();
-      p.addClass("no_separator");
+      p.addClass("no-separator");
     }
     currNoSep = p;
   } else {
@@ -1457,7 +1457,7 @@ function isDir(le) {
 }
 
 function isLeHidden(le) {
-  return le.attr("le_hidden");
+  return le.attr("view-hidden");
 }
 
 function logLe(le) {
@@ -1768,30 +1768,29 @@ var
 
 function onDirListed(js, task, listMode, isRootList) {
 
-  task.finished();
+  task.finished()
 
-  var putToGrid = (listMode & DIR_LIST_GRID) !== 0;
-  var putToTree = (listMode & DIR_LIST_TREE) !== 0;
+  readOnly = js['read_only']
+  var files = js['files']
+  var treeParent = task.le
+  var nextPath = task.listPath
+  var putToGrid = (listMode & DIR_LIST_GRID) !== 0
+  var putToTree = (listMode & DIR_LIST_TREE) !== 0
+
+  if (!files) return false
+  if (nextPath != '/') nextPath += '/'
+
+  var l = files.length
 
   putToGrid && clearAllMarked()
-  readOnly = js['read_only']
+
   if (wasReadOnly !== readOnly) {
     wasReadOnly = readOnly
     updateButtonsByReadOnly()
   }
 
-  var files = js['files']
-  if (!files) return false
-
   if (!isRootList) files.sort(sortEntries)
 
-  var nextPath = task.listPath;
-  if (nextPath != '/') nextPath += '/'
-
-  var l = files.length
-
-
-  var treeParent = task.le
   if (!treeParent) {
     treeParent = treeList
   } else if (putToTree) {
@@ -1804,59 +1803,61 @@ function onDirListed(js, task, listMode, isRootList) {
   if (putToGrid)
     getAllLeInGrid().remove()
 
-  var numD = 0, numF = 0, numH = 0
+  let dirCount = 0
+  let fileCount = 0
+  let hiddenCount = 0
 
   for (var i = 0; i < l; i++) {
     var f = files[i];
     var hidden = f['hidden'];
     if (!showHidden && hidden) {
-      ++numH;
+      ++hiddenCount;
       continue;
     }
-    var le = null;
-    var type = f['t'];
-    var name = f['n'];
-    var fullPath = nextPath + name;
+    var le = null
+    var type = f['t']
+    var name = f['n']
+    var fullPath = nextPath + name
     switch (type) {
-      case 0: // FILE_TYPE_VOLUME
-        le = leVolume.clone(true);
-        var szTotal = f["space_total"];
-        le.data("totalSpace", szTotal);
-        bindVolumeSize(le, f["space_free"], szTotal);
-        fullPath = f["mount"];
-        var ic = f["icon_id"];
+      case 0: // VOLUME
+        le = leVolume.clone(true)
+        var szTotal = f['space_total']
+        le.data('totalSpace', szTotal)
+        bindVolumeSize(le, f['space_free'], szTotal)
+        fullPath = f['mount']
+        var ic = f['icon_id']
         if (ic)
-          bindIconId(le, ic);
+          bindIconId(le, ic)
         if (!name)
-          name = '/';
-        var label = f["label"];
+          name = '/'
+        var label = f['label']
         if (label)
-          name = name + " (" + label + ')';
-        break;
-      case 1: // FILE_TYPE_DIR
-        le = leDir.clone(true);
-        if (!f["has_children"]) {
-          bindExpandable(le, '');  // hide expand mark
-          le.data("no_children", true);
+          name = name + ' (' + label + ')'
+        break
+      case 1: // DIR
+        le = leDir.clone(true)
+        if (!f['has_children']) {
+          bindExpandable(le, '')  // hide expand mark
+          le.data('no_children', true)
         }
-        bindIconId(le, f["icon_id"]);
-        break;
-      case 2: // FILE_TYPE_FILE
+        bindIconId(le, f['icon_id'])
+        break
+      case 2: // FILE
         if (!putToGrid)
-          continue;
-        var mimeType = f["mime"];
+          continue
+        var mimeType = f['mime']
         if (mimeType) {
-          var mtb = g.getMimeTypeBase(mimeType);
-          if (mtb == "image" || mtb == "video") {
-            le = leMedia.clone(true);
-            bindThumbnail(le, fullPath);
+          var mtb = g.getMimeTypeBase(mimeType)
+          if (mtb == 'image' || mtb == 'video') {
+            le = leMedia.clone(true)
+            bindThumbnail(le, fullPath)
           }
         }
         if (!le) {
-          le = leFile.clone(true);
-          var ext = g.getExtension(name);
+          le = leFile.clone(true)
+          var ext = g.getExtension(name)
           if (ext)
-            bindAppIcon(le, ext);
+            bindAppIcon(le, ext)
         }
         if (mimeType)
           le.data("mime", mimeType);
@@ -1864,8 +1865,7 @@ function onDirListed(js, task, listMode, isRootList) {
           "file_size", g.getReadableFileSizeString(f["size"]));
         break;
     }
-    if (!le)
-      continue;
+    if (!le) continue
     {
       var fs = f["fs"]; // save file system of entry
       if (fs)
@@ -1880,72 +1880,74 @@ function onDirListed(js, task, listMode, isRootList) {
       }
     }
 
-    bindTitle(le, name, type != 2);
-    le.data("fullPath", fullPath);
+    bindTitle(le, name, type != 2)
+    le.data('fullPath', fullPath)
     if (hidden)
-      le.attr("le_hidden", 1);
+      le.attr('view-hidden', 1)
     if (task.le)
-      le.data("parent", task.le);
+      le.data('parent', task.le)
     if (type != 2) {
-      le.data("dir", 1);
+      le.data('dir', 1)
       if (putToTree) {
         // dirs are added to tree view, and copy is created for grid view
-        var le1 = le.clone(true);
-        le1.data("dir", 1);
-        // link tree and grid items together
-        le1.data("treeLe", le);
-        le.data("gridLe", le1);
+        var le1 = le.clone(true)
 
-        le.find("#exp").click(onExpandClicked);
-        //        le.find("#exp").click(onExpandClicked);
-        treeParent.append(le);
+        // jsw
+
+        le1.data('dir', 1)
+        // link tree and grid items together
+        le1.data('treeLe', le)
+        le.data('gridLe', le1)
+
+        le.find('#exp').click(onExpandClicked)
+        treeParent.append(le)
         le = le1;
       }
-      ++numD;
+      dirCount++
     } else
-      ++numF;
+      fileCount++
     if (putToGrid)
-      gridIn.append(le);
+      gridIn.append(le)
   }
   if (putToGrid) {
-    gridIn.scrollTop(0);
+    gridIn.scrollTop(0)
 
-    filesInfo.find("#num_dirs").text(numD);
-    filesInfo.find("#num_files").text(numF);
-    var h = filesInfo.find("#num_hidden");
-    if (numH) {
-      h.text('(' + numH + ' ' + localizedStrings[20] + ')');
-      h.show();
+    filesInfo.find('#num_dirs').text(dirCount)
+    filesInfo.find('#num_files').text(fileCount)
+    var h = filesInfo.find('#num_hidden')
+    if (hiddenCount) {
+      h.text('(' + hiddenCount + ' ' + localizedStrings[20] + ')')
+      h.show()
     } else
-      h.hide();
-    filesInfo.show();
-    updateMarked();
+      h.hide()
+    filesInfo.show()
+    updateMarked()
   }
 
   if (task.le) {
     // smooth scroll so that expanded dir is visible
-    var allE = treeList.find(".le");
+    var allE = treeList.find('.le')
     if (allE.length) {
-      //var totH = allE.first().height();
-      var avlH = treeList.height();
+      //var totH = allE.first().height()
+      var avlH = treeList.height()
       //if(totH>avlH)
       { // scrolling possible?
-        var sTop = treeList.scrollTop();
-        var sTo = sTop;
-        var leChld = task.le.find(".le_in");
-        var leH = leChld.outerHeight();
-        var deI = allE.index(task.le);
-        var sMin = deI * leH;
-        var sMax = (deI + leChld.length + 1) * leH;
-        var sVisBot = sMax - avlH;
-        sTo = Math.min(Math.max(sTo, sVisBot), sMin);
+        var sTop = treeList.scrollTop()
+        var sTo = sTop
+        var leChld = task.le.find('.le_in')
+        var leH = leChld.outerHeight()
+        var deI = allE.index(task.le)
+        var sMin = deI * leH
+        var sMax = (deI + leChld.length + 1) * leH
+        var sVisBot = sMax - avlH
+        sTo = Math.min(Math.max(sTo, sVisBot), sMin)
         if (sTo != sTop)
-          //treeList.scrollTop(sTo);
-          treeList.animate({ "scrollTop": sTo }, 200);
+          //treeList.scrollTop(sTo)
+          treeList.animate({ 'scrollTop': sTo }, 200)
       }
     }
   }
-  return true;
+  return true
 }
 
 function canDelete() {
@@ -1958,7 +1960,7 @@ function doDelete(sel, onResult, noDirRefresh) {
   t.i = 0;
   t.cd = currentDir;
 
-  var dlg = showCancelableDialog("img/delete.svg", 29, '', function () {
+  var dlg = showCancelableDialog('img/delete.svg', 29, '', function () {
     if (t.i < sel.length) {
       var isActiveTask = currTask == t;
       t.cancel();
@@ -1966,7 +1968,7 @@ function doDelete(sel, onResult, noDirRefresh) {
         onDirClicked(t.cd);
     }
   });
-  t.divMsg = dlg.find("#msg");
+  t.divMsg = dlg.find('#msg');
 
   var volFreeSpace = null;
 
@@ -1977,7 +1979,7 @@ function doDelete(sel, onResult, noDirRefresh) {
     {
       var s = getFileNameWithouPath(path);
       if (t.sel.length > 1) {
-        s = "<b>" + (t.i + 1) + '/' + t.sel.length + "</b> " + `<div>${s}}</div>`;
+        s = '<b>' + (t.i + 1) + '/' + t.sel.length + '</b> ' + `<div>${s}}</div>`;
         t.divMsg.html(s);
       } else
         t.divMsg.text(s);
@@ -1989,11 +1991,11 @@ function doDelete(sel, onResult, noDirRefresh) {
           onResult(false);
         return;
       }
-      var ok = js["ok"];
+      var ok = js['ok'];
       if (++task.i === task.sel.length || !ok)
         task.finished();
       if (ok) {
-        volFreeSpace = js["vol_free_space"] || volFreeSpace;
+        volFreeSpace = js['vol_free_space'] || volFreeSpace;
         if (task.cd && isEntryChildOf(task.cd, le, true)) {
           task.cd = getLeParent(le);
         }
@@ -2008,7 +2010,7 @@ function doDelete(sel, onResult, noDirRefresh) {
 
       if (volFreeSpace) {
         // update volume's free space info
-        var ve = task.cd.closest("#le_volume");
+        var ve = task.cd.closest('#le_volume');
         if (ve)
           bindVolumeSize(ve, volFreeSpace);
       }
@@ -2021,9 +2023,9 @@ function doDelete(sel, onResult, noDirRefresh) {
       if (onResult)
         onResult(ok);
     }
-    var q = "cmd=delete";
+    var q = 'cmd=delete';
     q = appendFileSystemParam(le, q);
-    ajaxCall(path, q, deleteDone, t, "DELETE", true);
+    ajaxCall(path, q, deleteDone, t, 'DELETE', true);
   }
   deleteSingleFile();
 }
@@ -2033,7 +2035,7 @@ function askToDelete(sel, onResult, noDirRefresh) {
     sel.length === 1 ?
       getLeName(sel) :
       sel.length + ' ' + localizedStrings[23];
-  dlgOkCancel("img/delete.svg", 2, msg, function () {
+  dlgOkCancel('img/delete.svg', 2, msg, function () {
     doDelete(sel, onResult, noDirRefresh);
   });
 }
@@ -2051,10 +2053,10 @@ function copyMoveSingleFile(t, de, sel, i, cd, copy) {
   var srcPath = getLeFullPath(le);
   var dstPath = getLeFullPath(de);
   var leDstPath = dstPath + '/' + getFileNameWithouPath(srcPath);
-  var cmd = "cmd=rename&n=" + encodeURIComponent(leDstPath);
+  var cmd = 'cmd=rename&n=' + encodeURIComponent(leDstPath);
   cmd = appendFileSystemParam(le, cmd);
   ajaxCall(srcPath, cmd, function (js, task) {
-    var ok = js["ok"];
+    var ok = js['ok'];
     if (++i == sel.length || !ok)
       t.finished();
     if (ok) {
@@ -2069,7 +2071,7 @@ function copyMoveSingleFile(t, de, sel, i, cd, copy) {
       }
     } else
       showError(localizedStrings[24] + ' ' + srcPath);
-  }, t, "PUT", copy);  // if copying, don't use timeout (it takes time on device)
+  }, t, 'PUT', copy);  // if copying, don't use timeout (it takes time on device)
 }
 
 function doCopyMove(de, sel, copy) {
@@ -2086,8 +2088,8 @@ function askCopyMove(de, sel, copy) {
       getLeName(sel) :
       sel.length + ' ' + localizedStrings[23];
 
-  msg += " &rarr; " + getLeName(de);
-  dlgOkCancel("img/op_move.png", copy ? 21 : 22, msg, function () {
+  msg += ' &rarr; ' + getLeName(de);
+  dlgOkCancel('img/op_move.png', copy ? 21 : 22, msg, function () {
     doCopyMove(de, sel, copy);
   });
 }
@@ -2105,18 +2107,18 @@ function askRename(le, onResult) {
 
   function doRename(dstName) {
     var dstPath = path + '/' + dstName;
-    var q = "cmd=rename&n=" + encodeURIComponent(dstPath);
+    var q = 'cmd=rename&n=' + encodeURIComponent(dstPath);
     q = appendFileSystemParam(le, q);
     ajaxCall(path + '/' + srcName, q,
       function (js, task) {
         task.finished();
-        if (js["ok"]) {
+        if (js['ok']) {
           bindTitle(le, dstName, false);
-          le.data("fullPath", dstPath);
-          var tle = le.data("treeLe");
+          le.data('fullPath', dstPath);
+          var tle = le.data('treeLe');
           if (tle) {
             bindTitle(tle, dstName, true);
-            tle.data("fullPath", dstPath);
+            tle.data('fullPath', dstPath);
           } else {
             if (!onResult)
               opDirRefresh();
@@ -2126,12 +2128,12 @@ function askRename(le, onResult) {
           return;
         }
         showError(localizedStrings[14] + ' ' + srcName);
-      }, new BackgroundTask(le), "PUT");
+      }, new BackgroundTask(le), 'PUT');
   }
-  //  doRename(srcName, "!"); return;
-  showNameDialog("img/edit.svg", 3, srcName + " &rarr; [?]", function (n) {
+  //  doRename(srcName, '!'); return;
+  showNameDialog('img/edit.svg', 3, srcName + ' &rarr; [?]', function (n) {
     doRename(n);
-  }, { "path": path }, srcName);
+  }, { path }, srcName);
 }
 
 function opRename(sel) {
@@ -2257,9 +2259,9 @@ function opHideUnhide(le, hide) {
     if (js["ok"]) {
       le = le.add(le.data("treeLe")).add(le.data("gridLe"));
       if (hide)
-        le.attr("le_hidden", 1);
+        le.attr("view-hidden", 1);
       else
-        le.removeAttr("le_hidden");
+        le.removeAttr("view-hidden");
       return;
     }
     showError("Error");
@@ -3392,10 +3394,10 @@ function startTextViewer(le) {
 
   function updateWrap() {
     if (wrapText) {
-      textArea.removeClass("text-no-wrap");
+      textArea.removeClass("no-text-wrap");
       setBg(butWrap.find(".icon"), "img/wrap_text_on.png");
     } else {
-      textArea.addClass("text-no-wrap");
+      textArea.addClass("no-text-wrap");
       setBg(butWrap.find(".icon"), "img/wrap_text_off.png");
     }
   }

@@ -36,7 +36,7 @@
         <a href="javascript:opExit();">
           <img src="img/logout.svg" class="ml-1 p-2 w-10 h-10 rounded hover:bg-gray-200">
         </a>
-      </div>
+      </div><!-- header -->
 
       <!-- main-pane -->
       <div id="main-pane" class="hidden flex border-t overflow-hidden flex-grow">
@@ -48,7 +48,7 @@
             onDrag="dragTreeScroll"
           >
           </div>
-          <div id="tree-list" class="tree-list h-full overflow-y-auto"></div>
+          <div id="tree-list" class="tree-list w-80 h-full overflow-y-auto"></div>
           <div
             id="down"
             class="drag-scroll absolute left-0 bottom-0 w-full h-12 -mb-12"
@@ -63,15 +63,15 @@
 
             <div id="toolbar" class="w-full border-b bg-gray-200 flex">
 
-              <input type="button" class="but border-r" id="dirUp" _title="1" disabled img="img/back.svg"></input>
-              <input type="button" class="but border-r border-l ml-2" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
-              <input type="button" class="but border-r" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
-              <input type="button" class="but border-r" id="upload" _title="27" img="img/upload.svg"></input>
-              <input type="button" class="but border-r" id="get-zip" _title="30" img="img/download-zip.svg" onclick="opDownloadAsZip()" onDrag="zipDrag"></input>
-              <input type="button" class="but border-r" id="delete" _title="2" disabled img="img/delete.svg" onDrag="deleteDrag"></input>
-              <input type="button" class="but border-r border-l ml-2" id="marker" _title="11" img="img/checkmark.svg"></input>
-              <input type="button" class="but border-r" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
-              <input type="button" class="but border-r" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="dirUp" _title="1" disabled img="img/back.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r border-l ml-2" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="upload" _title="27" img="img/upload.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="get-zip" _title="30" img="img/download-zip.svg" onclick="opDownloadAsZip()" onDrag="zipDrag"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="delete" _title="2" disabled img="img/delete.svg" onDrag="deleteDrag"></input>
+              <input type="button" class="but relative w-10 h-10 border-r border-l ml-2" id="marker" _title="11" img="img/checkmark.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
+              <input type="button" class="but relative w-10 h-10 border-r" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
               <input type="file" class="hidden" id="real-upload" multiple onchange="opUploadPick(event)">
 
               <div id="files_info" class="flex p-1">
@@ -107,17 +107,17 @@
                 <div id="media_info">1600x1200</div>
               </div>
               <div id="controls">
-                <button class="but" id="prev" _title="36" img="img/previous.png"></button>
-                <button class="but" id="next" _title="37" img="img/next.png"></button>
-                <button class="but" id="slideshow" _title="39" img="img/slideshow_on.png"></button>
-                <button class="but" id="rename" _title="3" img="img/edit.svg"></button>
-                <button class="but" id="download" _title="31" img="img/download.svg"></button>
-                <button class="but" id="delete" _title="2" img="img/delete.svg"></button>
+                <button class="but relative w-10 h-10" id="prev" _title="36" img="img/previous.png"></button>
+                <button class="but relative w-10 h-10" id="next" _title="37" img="img/next.png"></button>
+                <button class="but relative w-10 h-10" id="slideshow" _title="39" img="img/slideshow_on.png"></button>
+                <button class="but relative w-10 h-10" id="rename" _title="3" img="img/edit.svg"></button>
+                <button class="but relative w-10 h-10" id="download" _title="31" img="img/download.svg"></button>
+                <button class="but relative w-10 h-10" id="delete" _title="2" img="img/delete.svg"></button>
               </div>
-              <div id="onRight">
-                <button class="but" id="options" _title="40" img="img/op_settings.png"></button>
-                <button class="but" id="fullscreen" _title="35" img="img/imgv_fullscreen.png"></button>
-                <button class="but" id="close" _title="34" img="ic_close"></button>
+              <div>
+                <button class="but relative w-10 h-10" id="options" _title="40" img="img/op_settings.png"></button>
+                <button class="but relative w-10 h-10" id="fullscreen" _title="35" img="img/imgv_fullscreen.png"></button>
+                <button class="but relative w-10 h-10" id="close" _title="34" img="ic_close"></button>
               </div>
             </div>
           </div>
@@ -133,19 +133,19 @@
                 <div id="media_info">!</div>
               </div>
               <div id="controls">
-                <button class="but" id="save" _title="47" img="img/save.png"></button>
-                <button class="but" id="start_edit" _title="48" img="img/op_text_edit.png"></button>
-                <button class="but" id="wrap" _title="51" img="img/wrap_text_off.png"></button>
+                <button class="but relative w-10 h-10" id="save" _title="47" img="img/save.png"></button>
+                <button class="but relative w-10 h-10" id="start_edit" _title="48" img="img/op_text_edit.png"></button>
+                <button class="but relative w-10 h-10" id="wrap" _title="51" img="img/wrap_text_off.png"></button>
                 <!--
-                  <button class="but" id="rename" _title="3" img='img/edit.svg'></button>
-                  <button class="but" id="download" _title="31" img='img/op_download.svg'></button>
-                  <button class="but" id="delete" _title="2" img='img/delete.svg'></button>
+                  <button class="but relative w-10 h-10" id="rename" _title="3" img='img/edit.svg'></button>
+                  <button class="but relative w-10 h-10" id="download" _title="31" img='img/op_download.svg'></button>
+                  <button class="but relative w-10 h-10" id="delete" _title="2" img='img/delete.svg'></button>
                   -->
                 <span id="edit_info" _text="48"></span>
               </div>
-              <div id="onRight">
-                <!-- <button class="but" id="options" _title="40" img='img/op_settings.png'></button> -->
-                <button class="but" id="close" _title="34" img='ic_close'></button>
+              <div>
+                <!-- <button class="but relative w-10 h-10" id="options" _title="40" img='img/op_settings.png'></button> -->
+                <button class="but relative w-10 h-10" id="close" _title="34" img='ic_close'></button>
               </div>
             </div>
           </div>
@@ -156,67 +156,84 @@
   </div><!-- web-container -->
 
 
- 
   <!-- templates -->
   <div id="templates" class="hidden">
 
-    <div id="le_volume" class="le">
-      <div class="le_in" onDrag="leDrag">
-        <p id="exp" expanded="false"></p>
-        <p id="icon"></p>
-        <span id="title">Vol</span>
-        <span id="dir_size"></span>
-        <span id="file_size">Free: 4MB/12GB</span>
+    <div id="le_volume" class="le relative cursor-pointer select-none">
+      <div class="le_in relative h-8" onDrag="leDrag">
+        <div
+          id="exp"
+          class="hover:bg-gray-200 bg-no-repeat bg-center w-8 h-8"
+          expanded="false"
+        >
+        </div>
+        <div id="icon"></div>
+        <div id="title">Vol</div>
+        <div id="dir_size"></div>
+        <div id="file_size">Free: 4MB/12GB</div>
       </div>
     </div>
 
-    <div id="le_volume_dir" class="le">
-      <div class="le_in" onDrag="leDrag">
-        <p id="exp" expanded="false"></p>
-        <p id="icon"></p>
-        <span id="title">Dir</span>
-        <span id="dir_size"></span>
-        <div id="mark"></div>
+    <div id="le_volume_dir" class="le relative cursor-pointer select-none">
+      <div class="le_in relative h-8" onDrag="leDrag">
+        <div
+          id="exp"
+          class="hover:bg-gray-200 bg-no-repeat bg-center w-8 h-8"
+          expanded="false"
+        >
+        </div>
+        <div id="icon"></div>
+        <div id="title">Dir</div>
+        <div id="dir_size"></div>
+        <div id="mark" class="absolute top-0 right-0 p-1 w-6 h-6 bg-contain opacity-50 hover:opacity-100"></div>
       </div>
     </div>
     
-    <div id="le_dir" class="le">
-      <div class="le_in" onDrag="leDrag">
-        <p id="exp" expanded="false"></p>
-        <p id="icon"></p>
-        <span id="title">Dir</span>
-        <span id="dir_size"></span>
-        <div id="mark"></div>
+    <div id="le_dir" class="le relative cursor-pointer select-none">
+      <div class="le_in relative h-8" onDrag="leDrag">
+        <div
+          id="exp"
+          class="hover:bg-gray-200 bg-no-repeat bg-center w-8 h-8"
+          expanded="false"
+        >
+        </div>
+        <div id="icon" class="bg-contain"></div>
+        <div id="title">Dir</div>
+        <div id="dir_size"></div>
+        <div id="mark" class="absolute top-0 right-0 p-1 w-6 h-6 bg-contain opacity-50 hover:opacity-100"></div>
       </div>
     </div>
   
+   
+    <div id="le_file" class="le relative cursor-pointer select-none">
+      <div class="le_in relative h-8">
+        <div id="icon"></div>
+        <div id="title">File</div>
+        <div id="file_size">123KB</div>
+        <div id="time">2014-03-14 23:53</div>
+        <div id="mark" class="absolute top-0 right-0 p-1 w-6 h-6 bg-contain opacity-50 hover:opacity-100"></div>
+      </div>
+    </div>
+    
+    <div id="le_media" class="le relative cursor-pointer select-none">
+      <div class="le_in relative h-8">
+        <div id="icon"></div>
+        <div id="title">Image</div>
+        <div id="file_size">123KB</div>
+        <div id="time">2014-03-14 23:53</div>
+        <div id="mark" class="absolute top-0 right-0 p-1 w-6 h-6 bg-contain opacity-50 hover:opacity-100"></div>
+      </div>
+    </div>
+
     <div id="progress-circle" class="loading absolute top-0 right-0 w-4 h-4">
       <img src="img/refresh.svg" class="animate-spin">
     </div>
     
-    <div id="le_file" class="le">
-      <div class="le_in">
-        <p id="icon"></p>
-        <span id="title">File</span>
-        <span id="file_size">123KB</span>
-        <span id="time">2014-03-14 23:53</span>
-        <div id="mark"></div>
-      </div>
+    <div class="but relative w-10 h-10">
+      <div class="icon w-3/5 h-3/5 absolute inset-0 m-auto bg-cover"></div>
     </div>
     
-    <div id="le_media" class="le">
-      <div class="le_in">
-        <p id="icon"></p>
-        <span id="title">Image</span>
-        <span id="file_size">123KB</span>
-        <span id="time">2014-03-14 23:53</span>
-        <div id="mark"></div>
-      </div>
-    </div>
-    
-    <div class="but"><div class="icon"></div></div>
-    
-    <table id="popup" cellspacing="0">
+    <table id="popup" cellspacing="0" class="fixed z-10">
       <tr id="trt"><td id="lt"><td id="t"><td id="rt">
       <tr><td id="l"><td id="c">
       <div id="title"></div>
@@ -232,7 +249,7 @@
 
    <!-- overlays -->
   <div id="cover" class="hidden fixed inset-0 z-10 bg-black opacity-50"></div>
-  <div id="drag-toast" class ="hidden">Copy</div>
+  <div id="drag-toast" class ="hidden fixed z-10 p-1 bg-white text-black border">Copy</div>
 
   <div id="dlgEnterName" class="hidden fixed bg-white z-10">
     <div id="title" class="select-none p-2">
@@ -282,7 +299,7 @@
   <div id="dlgAudioPlay" class="hidden fixed bg-white z-10">
     <div id="title" class="select-none p-2">
       <img id="icon" class="mr-2 w-8 h-8 bg-cover" src="img/music.svg">
-      <button class="but" id="bgnd" _title="46" img='but_move_up'></button>
+      <button class="but relative w-10 h-10" id="bgnd" _title="46" img='but_move_up'></button>
       <div id="text" _text="43"></div>
     </div>
     <div id="in" class="p-2">
@@ -291,41 +308,45 @@
       <audio controls></audio>
 
       <div id="toolbar">
-        <button class="but" id="prev" _title="36" img='img/previous.png'></button>
-        <button class="but" id="next" _title="37" img='img/next.png'></button>
-        <div id="onRight">
-          <button class="but checkbox" id="repeat" _title="44" img='img/repeat.png'></button>
-          <button class="but checkbox" id="shuffle" _title="45" img='img/shuffle.png'></button>
-          <button class="but" id="close" _title="34"></button>
+        <button class="but relative w-10 h-10" id="prev" _title="36" img='img/previous.png'></button>
+        <button class="but relative w-10 h-10" id="next" _title="37" img='img/next.png'></button>
+        <div>
+          <button class="but relative w-10 h-10 checkbox" id="repeat" _title="44" img='img/repeat.png'></button>
+          <button class="but relative w-10 h-10 checkbox" id="shuffle" _title="45" img='img/shuffle.png'></button>
+          <button class="but relative w-10 h-10" id="close" _title="34"></button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- bottom-bar -->
-  <table id="bottom-bar">
+  <table id="bottom-bar" class="fixed left-0 right-0 bottom-0 z-10">
     <tr>
       <td id="info_line">
-        <div id="in" >
-          <div id="icon"></div>
+        <div id="in" class="max-h-48 overflow-y-auto">
+          <div id="icon" class="w-8 h-8 bg-contain"></div>
           <div id="msg" class="m-2"></div>
         </div>
       </td>
-      <td id="uploads" class="hidden">
+      <td id="uploads" class="hidden w-1/2 border">
         <div id="queue">
           <div id="title" _text="25"></div>
           <div id="in"></div>
-          <div id="cancel_all"><div class="but_bgnd" _text="26">Cancel all</div></div>
-          <div id="remain_time">-1:23</div>
+          <div id="cancel_all" class="w-32">
+            <div class="but relative w-10 h-10_bgnd" _text="26">Cancel all</div>
+          </div>
+          <div id="remain_time" class="absolute bottom-0 right-0">-1:23</div>
         </div>
-        <div id='progress'>
-          <div id="bar"><div id="pos"></div></div>
+        <div id='progress' class="relative w-32 h-8">
+          <div id="bar" class="absolute inset-0 h-2">
+            <div id="pos" class="w-3/5 h-full bg-green-500"></div>
+          </div>
           <div id="percent">0%</div>
           <div id="stat">12KB/s</div>
         </div>
         <div id="counter">1/2</div>
-        <div class="file">
-          <button class="but" id="cancel" _title='16'></button>
+        <div class="file h-8">
+          <button class="but relative w-10 h-10" id="cancel" _title='16'></button>
           <div id="size">123KB</div>
           <div id="name">Name</div>
         </div>
