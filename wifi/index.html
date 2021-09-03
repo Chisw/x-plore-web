@@ -13,7 +13,7 @@
   <div class="web-container absolute inset-0 flex flex-col">
 
       <!-- header -->
-      <div id="header" class="hidden px-4 h-20 flex items-center flex-shrink-0">
+      <div prevent-dnd class="px-4 h-20 flex items-center flex-shrink-0">
         <a href="http://www.lonelycatgames.com/apps/xplore" target="_blank">
           <img id="icon" src="img/icon.png" class="w-10 h-10">
         </a>
@@ -39,7 +39,7 @@
       </div><!-- header -->
 
       <!-- main-pane -->
-      <div id="main-pane" class="hidden flex border-t overflow-hidden flex-grow">
+      <div prevent-dnd id="main-pane" class="flex border-t overflow-hidden flex-grow">
         <!-- pane tree-list -->
         <div class="relative h-full border-r">
           <div
@@ -248,7 +248,7 @@
   </div><!-- templates -->
 
    <!-- overlays -->
-  <div id="cover" class="hidden fixed inset-0 z-10 bg-black opacity-50"></div>
+  <div prevent-dnd id="cover" class="hidden fixed inset-0 z-10 bg-black opacity-50"></div>
   <div id="drag-toast" class ="hidden fixed z-10 p-1 bg-white text-black border">Copy</div>
 
   <div id="dlgEnterName" class="hidden fixed bg-white z-10">
