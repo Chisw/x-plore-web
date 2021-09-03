@@ -10,16 +10,6 @@ body {
    min-height: 480px;
 }
 
-@keyframes rot360 {
-   100% {
-      transform: rotate(360deg);
-   }
-}
-
-.loading img {
-   animation: rot360 1s infinite;
-}
-
 /* --------------- */
 
 .le {
@@ -133,9 +123,6 @@ body {
 }
 
 .tree-list .le #title {
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
    padding-right: 4px;
 }
 
@@ -285,9 +272,6 @@ body {
 }
 
 .grid-list #le_media #title {
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
    position: absolute;
    left: 4px;
    max-width: 300px;
@@ -335,103 +319,6 @@ body {
    float: left;
 }
 
-#main-pane .worktable {
-   display: none;
-   z-index: 5;
-   position: absolute;
-   top: 0;
-   bottom: 0;
-   left: 0;
-   right: 0;
-}
-
-#main-pane .worktable #canvas,
-#main-pane .worktable #toolbar {
-   position: absolute;
-   left: 0;
-   right: 0;
-}
-
-#main-pane .worktable #canvas {
-   bottom: 0;
-   top: 45px;
-}
-
-#main-pane .worktable #toolbar {
-   top: 0;
-   padding: 6px;
-   background-color: #222222;
-   border-top: 1px solid #000;
-   border-left: 1px solid #000;
-   border-bottom: 1px solid #333;
-   border-right: 1px solid #333;
-   box-sizing: content-box;
-   color: #ccc;
-   font-size: 12px;
-}
-
-#main-pane .worktable #toolbar #info {
-   float: left;
-   width: 300px;
-   height: 100%;
-}
-
-#main-pane .worktable #toolbar #info #name {
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
-}
-
-#main-pane .worktable #toolbar #info #media_info {
-   margin-top: 4px;
-}
-
-#main-pane .worktable #toolbar #controls {
-   float: left;
-}
-
-#main-pane #media_viewer #canvas {
-   background-color: #000;
-}
-
-#main-pane #media_viewer #canvas .canvas {
-   background-color: #000;
-   position: absolute;
-   width: 100%;
-   height: 100%;
-}
-
-#main-pane #media_viewer #canvas .canvas .error {
-   color: #f00;
-   text-align: center;
-}
-
-#main-pane #media_viewer #canvas .canvas .error,
-#main-pane #media_viewer #canvas .canvas img,
-#main-pane #media_viewer #canvas .canvas video {
-   position: absolute;
-   top: 0;
-   bottom: 0;
-   left: 0;
-   right: 0;
-   margin: auto;
-}
-
-#main-pane #media_viewer #toolbar #info #counter {
-   float: left;
-   margin-right: 10px;
-   font-style: italic;
-}
-
-#main-pane #media_viewer #toolbar #controls #next {
-   margin-right: 20px;
-}
-
-#main-pane #media_viewer.fullscreen {
-   position: fixed;
-   margin: 0;
-}
-
 #main-pane #media_viewer.fullscreen #canvas {
    top: 0;
 }
@@ -445,20 +332,6 @@ body {
 
 #main-pane #media_viewer.fullscreen #toolbar:hover {
    opacity: 1;
-}
-
-#main-pane #text_view #toolbar #edit_info {
-   margin-left: 20px;
-}
-
-#main-pane #text_view.dirty #edit_info {
-   color: #f00;
-}
-
-#main-pane #text_view #canvas {
-   background-color: #fff;
-   padding: 4px;
-   box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.4) inset;
 }
 
 #main-pane #text_view #canvas #text {
@@ -547,80 +420,6 @@ body {
    left: 0;
    margin: auto;
    background-size: 100% 100%;
-}
-
-.cover {
-   display: none;
-   background-color: #000;
-   opacity: .5;
-   position: fixed;
-   left: 0;
-   right: 0;
-   top: 0;
-   bottom: 0;
-   z-index: 10;
-}
-
-.dlg {
-   position: fixed;
-   margin: 0;
-   background-color: #fff;
-   top: 50%;
-   left: 50%;
-   z-index: 12;
-   padding-bottom: 20px;
-}
-
-.dlg #title {
-   padding: 8px;
-}
-
-.dlg #title #icon {
-   width: 24px;
-   height: 24px;
-   float: left;
-   background-size: 100% 100%;
-   vertical-align: middle;
-   margin-right: 10px;
-}
-
-.dlg #in {
-   margin: 5px 20px;
-   font-size: 14px;
-}
-
-.dlg #in #msg {
-   margin: 10px 0;
-}
-
-.dlg #buttons {
-   margin: 20px 0px;
-}
-
-.dlg #buttons button,
-.dlg #buttons input {
-   margin-left: 10px;
-   float: right;
-}
-
-#dlgEnterName,
-#dlgCancelable {
-   min-width: 240px;
-}
-
-#dlgEnterName #text,
-#dlgCancelable #text {
-   width: 100%;
-}
-
-#dlgCancelable {
-   width: 320px;
-}
-
-#dlgCancelable #msg {
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
 }
 
 #bottom-bar {
@@ -750,9 +549,6 @@ body {
 #bottom-bar #uploads .file #name {
    margin-left: 5px;
    padding-top: 2px;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
 }
 
 #bottom-bar #uploads #progress {
@@ -820,9 +616,6 @@ body {
 
 #dlgAudioPlay #in #name {
    width: 100%;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
 }
 
 #dlgAudioPlay #in audio {
@@ -874,9 +667,6 @@ body {
    color: #fff;
    position: relative;
    top: -5px;
-   white-space: nowrap;
-   overflow: hidden;
-   text-overflow: ellipsis;
 }
 
 #popup td {

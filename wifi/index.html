@@ -9,6 +9,7 @@
 </head>
 <body id="body">
 
+  <!-- web-container -->
   <div class="web-container absolute inset-0 flex flex-col">
 
       <!-- header -->
@@ -39,6 +40,7 @@
 
       <!-- main-pane -->
       <div id="main-pane" class="hidden flex border-t overflow-hidden flex-grow">
+        <!-- pane tree-list -->
         <div class="relative h-full border-r">
           <div
             id="up"
@@ -53,10 +55,14 @@
             onDrag="dragTreeScroll"
           >
           </div>
-        </div>
+        </div><!-- pane tree-list -->
+
+        <!-- pane grid-list -->
         <div class="flex-grow h-full">
           <div id="grid-list" class="h-full flex flex-col">
+
             <div id="toolbar" class="w-full border-b bg-gray-200 flex">
+
               <input type="button" class="but border-r" id="dirUp" _title="1" disabled img="img/back.svg"></input>
               <input type="button" class="but border-r border-l ml-2" id="new-folder" _title="7" disabled img="img/new-folder.svg"></input>
               <input type="button" class="but border-r" id="rename" _title="3" onclick="opRename()" img="img/edit.svg" onDrag="renameDrag"></input>
@@ -67,7 +73,8 @@
               <input type="button" class="but border-r" id="showHidden" _title="4" onclick="opShowHidden()" img="img/view.svg"></input>
               <input type="button" class="but border-r" _title="5" onclick="opDirRefresh()" img="img/refresh.svg"></input>
               <input type="file" class="hidden" id="real-upload" multiple onchange="opUploadPick(event)">
-              <div id="files_info" class="flex p-2">
+
+              <div id="files_info" class="flex p-1">
                 <div id="counters" class="flex items-center">
                   <img src="img/folder.svg">
                   <span id="num_dirs">0</span>
@@ -80,16 +87,20 @@
                   <div id="text"></div>
                 </div>
               </div>
+
               <div id="read_only" class="hidden" _text="28"></div>
+
             </div>
-            <div id="grid_scroll" class="flex-grow p-2">
+
+            <div id="grid_scroll" class="relative flex-grow p-2">
               <div id="grid-in" class="grid-list"></div>
             </div>
+
           </div>
       
-          <div id="media_viewer" class="worktable">
-            <div id="canvas"></div>
-            <div id="toolbar">
+          <div id="media_viewer" class="hidden absolute z-10 inset-0">
+            <div id="canvas" class="bg-black absolute left-0 right-0 bottom-0" style="top: 45px;"></div>
+            <div id="toolbar" class="absolute left-0 right-0 top-0 p-2 bg-gray-900 border">
               <div id="info">
                 <div id="counter"></div>
                 <div id="name"></div>
@@ -111,11 +122,11 @@
             </div>
           </div>
       
-          <div id="text_view" class="worktable">
-            <div id="canvas">
+          <div id="text_view" class="hidden absolute z-10 inset-0">
+            <div id="canvas" class="absolute left-0 right-0 bottom-0" style="top: 45px;">
               <textarea id="text"></textarea>
             </div>
-            <div id="toolbar">
+            <div id="toolbar" class="absolute left-0 right-0 top-0 p-2 bg-gray-900 border">
               <div id="info">
                 <!-- <div id="counter"></div> -->
                 <div id="name"></div>
@@ -138,49 +149,50 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </div><!-- pane grid-list -->
 
-  </div>
+      </div><!-- main-pane -->
 
-  <div id="cover" class="cover"></div>
+  </div><!-- web-container -->
+
+
  
   <!-- templates -->
   <div id="templates" class="hidden">
 
-      <div id="le_volume" class="le">
-        <div class="le_in" onDrag="leDrag">
-          <p id="exp" expanded="false"></p>
-          <p id="icon"></p>
-          <span id="title">Vol</span>
-          <span id="dir_size"></span>
-          <span id="file_size">Free: 4MB/12GB</span>
-        </div>
+    <div id="le_volume" class="le">
+      <div class="le_in" onDrag="leDrag">
+        <p id="exp" expanded="false"></p>
+        <p id="icon"></p>
+        <span id="title">Vol</span>
+        <span id="dir_size"></span>
+        <span id="file_size">Free: 4MB/12GB</span>
       </div>
+    </div>
 
-      <div id="le_volume_dir" class="le">
-        <div class="le_in" onDrag="leDrag">
-          <p id="exp" expanded="false"></p>
-          <p id="icon"></p>
-          <span id="title">Dir</span>
-          <span id="dir_size"></span>
-          <div id="mark"></div>
-        </div>
+    <div id="le_volume_dir" class="le">
+      <div class="le_in" onDrag="leDrag">
+        <p id="exp" expanded="false"></p>
+        <p id="icon"></p>
+        <span id="title">Dir</span>
+        <span id="dir_size"></span>
+        <div id="mark"></div>
       </div>
-      
-      <div id="le_dir" class="le">
-        <div class="le_in" onDrag="leDrag">
-          <p id="exp" expanded="false"></p>
-          <p id="icon"></p>
-          <span id="title">Dir</span>
-          <span id="dir_size"></span>
-          <div id="mark"></div>
-        </div>
-      </div>
+    </div>
     
-      <div id="progress-circle" class="loading absolute top-0 right-0 w-4 h-4">
-        <img src="img/refresh.svg">
+    <div id="le_dir" class="le">
+      <div class="le_in" onDrag="leDrag">
+        <p id="exp" expanded="false"></p>
+        <p id="icon"></p>
+        <span id="title">Dir</span>
+        <span id="dir_size"></span>
+        <div id="mark"></div>
       </div>
+    </div>
+  
+    <div id="progress-circle" class="loading absolute top-0 right-0 w-4 h-4">
+      <img src="img/refresh.svg" class="animate-spin">
+    </div>
     
     <div id="le_file" class="le">
       <div class="le_in">
@@ -215,17 +227,20 @@
       <td id="r">
       <tr id="trb"><td id="lb"><td id="b"><td id="rb">
     </table>
-  </div>
 
+  </div><!-- templates -->
+
+   <!-- overlays -->
+  <div id="cover" class="hidden fixed inset-0 z-10 bg-black opacity-50"></div>
   <div id="drag-toast" class ="hidden">Copy</div>
 
-  <div id="dlgEnterName" class="dlg hidden">
-    <div id="title" class="select-none">
-      <div id="icon"></div>
+  <div id="dlgEnterName" class="hidden fixed bg-white z-10">
+    <div id="title" class="select-none p-2">
+      <div id="icon" class="mr-2 w-8 h-8 bg-cover"></div>
       <div id="text"></div>
     </div>
-    <form id="in">
-      <div id="msg"></div>
+    <form id="in" class="p-2">
+      <div id="msg" class="m-2"></div>
       <input id="text" type="text" autocomplete="off" spellcheck="false">
     
       <div id="buttons">
@@ -235,13 +250,13 @@
     </form>
   </div>
 
-  <div id="dlgOkCancel" class="dlg hidden">
-    <div id="title" class="select-none">
-      <div id="icon"></div>
+  <div id="dlgOkCancel" class="hidden fixed bg-white z-10">
+    <div id="title" class="select-none p-2">
+      <div id="icon" class="mr-2 w-8 h-8 bg-cover"></div>
       <div id="text"></div>
     </div>
-    <div id="in">
-      <div id="msg">msg</div>
+    <div id="in" class="p-2">
+      <div id="msg" class="m-2">msg</div>
 
       <div id="buttons">
         <button id="ok" _text='0'></button> 
@@ -250,13 +265,13 @@
     </div>
   </div>
 
-  <div id="dlgCancelable" class="dlg hidden">
-    <div id="title" class="select-none">
-      <div id="icon"></div>
+  <div id="dlgCancelable" class="hidden fixed bg-white z-10">
+    <div id="title" class="select-none p-2">
+      <div id="icon" class="mr-2 w-8 h-8 bg-cover"></div>
       <div id="text"></div>
     </div>
-    <div id="in">
-      <div id="msg">msg</div>
+    <div id="in" class="p-2">
+      <div id="msg" class="m-2">msg</div>
 
       <div id="buttons">
         <button onclick="unCover()" _text='16'>Cancel</button>
@@ -264,13 +279,13 @@
     </div>
   </div>
 
-  <div id="dlgAudioPlay" class="dlg hidden">
-    <div id="title" class="select-none">
-      <img id="icon" src="img/music.svg">
+  <div id="dlgAudioPlay" class="hidden fixed bg-white z-10">
+    <div id="title" class="select-none p-2">
+      <img id="icon" class="mr-2 w-8 h-8 bg-cover" src="img/music.svg">
       <button class="but" id="bgnd" _title="46" img='but_move_up'></button>
       <div id="text" _text="43"></div>
     </div>
-    <div id="in">
+    <div id="in" class="p-2">
       <div id="counter"></div>
       <div id="name"></div>
       <audio controls></audio>
@@ -287,12 +302,13 @@
     </div>
   </div>
 
+  <!-- bottom-bar -->
   <table id="bottom-bar">
     <tr>
       <td id="info_line">
         <div id="in" >
           <div id="icon"></div>
-          <div id="msg"></div>
+          <div id="msg" class="m-2"></div>
         </div>
       </td>
       <td id="uploads" class="hidden">
@@ -315,7 +331,7 @@
         </div>
       </td>
     </tr>
-  </table>
+  </table><!-- bottom-bar -->
 
 </body>
 <script src="js/jquery-3.5.1.js"></script>
