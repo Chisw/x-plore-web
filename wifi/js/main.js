@@ -1,6 +1,29 @@
 const URL_PREFIX = location.host.startsWith('127.0.0.1') ? 'http://127.0.0.1:2999' : ''
 
+let READONLY = false
+
+var $mainPane
+var treeList
+var gridScroll
+var gridIn
+var gridToolbar, butDelete, butRename, butDirNew, butUpload, butGetZip, butMarker
+var filesInfo
+var wrapText = true
+var deviceInfo = {}
+var infoLine
+var divUploads
+var infoMsgTimeOut
+var showHidden
+var leVolume, leDir, leFile, leMedia
+var popupMenu
+var divProgress
+var cover
+var localizedStrings = []
+
 const g = {
+  canUseStorage: typeof Storage !== 'undefined',
+  canUseSSE: typeof EventSource !== 'undefined',
+
   getReadableFileSizeString(v) {
     var byteUnits = ['B', 'KB', 'MB', 'GB']
     var i = 0
@@ -28,9 +51,6 @@ const g = {
     return s
   },
 
-  canUseStorage: typeof (Storage) !== 'undefined',
-  canUseSSE: typeof (EventSource) !== 'undefined',
-
   getPref(key) {
     if (this.canUseStorage) {
       try {
@@ -39,18 +59,21 @@ const g = {
       }
     }
   },
+
   getBooleanPref(key, defaultVal) {
     var v = this.getPref(key)
     if (v)
       return v == 'true'
     return !!defaultVal
   },
+
   getIntPref(key) {
     var v = this.getPref(key)
     if (v)
       v = parseInt(v)
     return v
   },
+
   setPref(key, val) {
     if (this.canUseStorage) {
       try {
@@ -59,6 +82,7 @@ const g = {
       }
     }
   },
+
   setSessionPref(key, val) {
     if (this.canUseStorage) {
       try {
@@ -68,6 +92,7 @@ const g = {
     }
 
   },
+
   getSessionPref(key) {
     if (this.canUseStorage) {
       try {
@@ -76,16 +101,19 @@ const g = {
       }
     }
   },
+
   getExtension(fn) {
     var v = fn.split('.')
     if (v.length <= 1)
       return null
     return v.pop()
   },
+
   getParentPath(fn) {
     var si = fn.lastIndexOf('/')
     return si == -1 ? null : fn.substring(0, si)
   },
+
   getMimeTypeBase(mt) {
     if (mt) {
       var sI = mt.indexOf('/')
@@ -94,15 +122,17 @@ const g = {
     }
     return mt
   },
+
   isPathInPath(what, where) {
-      var whatL = what.length
-      if (whatL === 0)
-        return false
-      var whereL = where.length
-      if (whatL > whereL || where.indexOf(what) !== 0)
-        return false
-      return (whatL === whereL || where.charAt(whatL) === '/' || what === '/')
-    },
+    var whatL = what.length
+    if (whatL === 0)
+      return false
+    var whereL = where.length
+    if (whatL > whereL || where.indexOf(what) !== 0)
+      return false
+    return (whatL === whereL || where.charAt(whatL) === '/' || what === '/')
+  },
+
   isValidFile(f, cb) {
     if (f.size > 1024 * 100) {
       cb(true)
@@ -166,20 +196,6 @@ function SpeedCounter() {
   }
 }
 
-var readOnly
-var $mainPane
-var treeList
-var gridScroll
-var gridIn
-var gridToolbar, butDelete, butRename, butDirNew, butUpload, butGetZip, butMarker
-var filesInfo
-var wrapText = true
-var deviceInfo = {}
-var infoLine
-var divUploads
-var infoMsgTimeOut
-var showHidden
-
 function bindTexts(le) {
   for (var i = 1; i < arguments.length; i += 2)
     le.find('#' + arguments[i]).text(arguments[i + 1])
@@ -188,12 +204,6 @@ function bindTexts(le) {
 function bindExpandable(le, b) {
   le.find('#exp').attr('expanded', b)
 }
-
-var leVolume, leDir, leFile, leMedia
-var popupMenu
-var divProgress
-var cover
-var localizedStrings = []
 
 function localize() {
   $.ajax({
@@ -224,7 +234,7 @@ function localize() {
 var DRAG_TARGET = 0, DRAG_LEAVE = 1, DRAG_DROP = 2
 
 function leDrag(dragCmd, dt) {
-  var de = dt.parent() // dt is '.le_in', so get le from it
+  var de = dt.parent() // dt is '.le-inner', so get le from it
   var allowCopyMove = false // copying not implemented in copyMoveSingleFile
   switch (dragCmd) {
     case DRAG_TARGET:
@@ -247,7 +257,7 @@ function leDrag(dragCmd, dt) {
       if (allowCopyMove) {
         // catch also ctrl for switching copy/move mode
         var _this = this
-        de.attr('tabindex', 0) // for key to work
+        de.attr('tab-index', 0)
         de.keydown(function (e) {
           if (e.keyCode == 17)
             _this.setCopying(true)
@@ -273,7 +283,7 @@ function leDrag(dragCmd, dt) {
     case DRAG_LEAVE:
       if (allowCopyMove) {
         de.off('keydown').off('keyup')
-        de.removeAttr('tabindex')
+        de.removeAttr('tab-index')
       }
       break
     case DRAG_DROP:
@@ -326,7 +336,7 @@ function dragTreeScroll(dragCmd, dt, data) {
   data = data || this
   data.timer = window.setTimeout(function () {
     var sTop = treeList.scrollTop()
-    var leChld = treeList.find('.le_in')
+    var leChld = treeList.find('.le-inner')
     var leH = leChld.outerHeight() || 30
 
     var sTo = sTop + leH * (up ? -1 : 1)
@@ -336,7 +346,7 @@ function dragTreeScroll(dragCmd, dt, data) {
 }
 
 function onDragBegin(_sel) {
-  if (!readOnly) {
+  if (!READONLY) {
     var fake = function () { }
     setButton(butDelete, fake)
     if (_sel.length == 1)
@@ -431,7 +441,7 @@ function dragMouseDown(ev) {
   if (ev.button !== 0) {
     return
   }
-  if (readOnly)
+  if (READONLY)
     return
   var le = $(this).closest('.le')
   if (!getLeParent(le))
@@ -519,7 +529,7 @@ function dragMouseDown(ev) {
 }
 
 function flashReadOnly() {
-  var rd = $('#read_only')
+  var rd = $('#read-only')
   if (!rd.is(':animated')) {
     var off = { opacity: .2 }, on = { opacity: 1 }, tm = 100
     for (var i = 0; i < 3; i++)
@@ -528,7 +538,7 @@ function flashReadOnly() {
 }
 
 function deDrag(ev) {
-  if (readOnly) {
+  if (READONLY) {
     flashReadOnly()
     return
   }
@@ -606,9 +616,9 @@ function processRightClick(ev) {
 
   // init items
   var items = [
-    { text: 7, icon: 'img/new-folder.svg', isEnabled: () => dir && !readOnly, fn: opNewDir },
-    { text: 2, icon: 'img/delete.svg', isEnabled: () => !readOnly && !isRoot, fn: opDelete },
-    { text: 3, icon: 'img/edit.svg', isEnabled: () => !readOnly && !isRoot, fn: opRename },
+    { text: 7, icon: 'img/new-folder.svg', isEnabled: () => dir && !READONLY, fn: opNewDir },
+    { text: 2, icon: 'img/delete.svg', isEnabled: () => !READONLY && !isRoot, fn: opDelete },
+    { text: 3, icon: 'img/edit.svg', isEnabled: () => !READONLY && !isRoot, fn: opRename },
     { text: 30, icon: 'img/download-zip.svg', fn: opDownloadAsZip },
     { text: 31, icon: 'img/download.svg', isEnabled: () => !dir, fn: opDownload },
     { text: 32, icon: 'img/view-off.svg', isEnabled: () => canHideUnhide() && !hidden, fn: () => opHideUnhide(le, true) },
@@ -678,7 +688,7 @@ function UploadTask() {
   var fileTempl = divUploads.find('.file')
   fileTempl.hide()
 
-  var cancelAll = queue.find('#cancel_all')
+  var cancelAll = queue.find('#cancel-all')
 
   var currFile = null // {jQueryObject}
   var isQueueVisible = false
@@ -699,7 +709,7 @@ function UploadTask() {
   var $Pos = _prog.find('#pos'), $Perc = _prog.find('#percent')
   var stat = _prog.find('#stat')
   var cnt = divUploads.find('#counter')
-  var remTime = queue.find('#remain_time')
+  var remTime = queue.find('#remain-time')
   remTime.text('')
   cnt.hide()
 
@@ -853,11 +863,10 @@ function UploadTask() {
       }
       progress(0, 0)
 
-      var onSuccess = function (js) {
-        var len = js['length']
+      var onSuccess = function (res) {
         currFile = null
 
-        volFreeSpace = js['vol_free_space'] || volFreeSpace
+        volFreeSpace = res.vol_free_space || volFreeSpace
         if (entriesEqual(de, currentDir)) {
           // refresh current dir (not too frequently)
           if (!currDirRefreshTimer) {
@@ -932,8 +941,7 @@ function UploadTask() {
         var q = 'cmd=delete'
         q = appendFileSystemParam(de, q)
         // try to delete the file (no error checking)
-        ajaxCall(path, q, function (js, task) {
-        }, null, 'DELETE')
+        ajaxCall(path, q, function (res, task) {}, null, 'DELETE')
         _this.startNext()
       } else {
         _this.showCounter()
@@ -1061,7 +1069,7 @@ function onReady() {
   showHidden = g.getBooleanPref('showHidden', false)
   var win = $(window)
   win.on('beforeunload', beforePageClose)
-  infoLine = $('#info_line #in')
+  infoLine = $('#info-line #in')
   infoLine.hide()
 
   divUploads = $('#uploads')
@@ -1073,43 +1081,48 @@ function onReady() {
   })
   cover.click(unCover)
   var body = $('#body')
-  body.on('contextmenu', function (ev) {
-    return false
-  })
+  body.on('contextmenu', () => false)
   localize()
 
   treeList = $mainPane.find('#tree-list')
   var gl = $mainPane.find('#grid-list')
-  gridScroll = gl.find('#grid_scroll')
+  gridScroll = gl.find('#grid-scroll')
   gridIn = gl.find('#grid-in')
   bindDragAndDropEvents(gridIn, gridListDrag)
   gridToolbar = gl.find('#toolbar')
 
-  filesInfo = gridToolbar.find('#files_info')
+  filesInfo = gridToolbar.find('#files-info')
   var $templates = $('#templates')
 
   buttonDef = $templates.find('.but')
-  leVolume = $templates.find('#le_volume')
-  leVolumeDir = $templates.find('#le_volume_dir')
-  leDir = $templates.find('#le_dir')
-  leFile = $templates.find('#le_file')
-  leMedia = $templates.find('#le_media')
+  leVolume = $templates.find('#le-volume')
+  leDir = $templates.find('#le-dir')
+  leFile = $templates.find('#le-file')
+  leMedia = $templates.find('#le-media')
   popupMenu = $templates.find('#popup')
 
-  leDir.find('.le_in').mousedown(dragMouseDown)
+  leDir.find('.le-inner').mousedown(dragMouseDown)
 
-  {
-    var leDirs = leVolume.add(leDir)
-    var varleDirsIn = leDirs.find('.le_in')
-    varleDirsIn.click(onDirInClicked)
-    bindDragAndDropEvents(varleDirsIn, deDrag)
-    leDir.hover(dirHover)
-  }
+  var leDirs = leVolume.add(leDir)
+  var varleDirsIn = leDirs.find('.le-inner')
+
+  varleDirsIn.click(function (e) {
+    var de = $(this).closest('.le') // get actual le, as clicks are detected on .le-inner
+    if (e.ctrlKey) {
+      toggleMarked(de)
+    } else {
+      clearAllMarked()
+      onDirClicked(de)
+    }
+  })
+
+  bindDragAndDropEvents(varleDirsIn, deDrag)
+  leDir.hover(dirHover)
 
   var leFiles = leFile.add(leMedia)
   leFiles.click(onEntryClicked).mousedown(dragMouseDown)
 
-  $templates.find('.le_in').on('contextmenu', processRightClick)
+  $templates.find('.le-inner').on('contextmenu', processRightClick)
   $('.le #mark').click(onMarkClicked)
 
   body.keydown(onKeyDown)
@@ -1178,7 +1191,7 @@ function opReloadPage() {
 function beforePageClose(ev) {
   if (uploadTask)
     return 'Uploads are in progress. Close page anyway?'
-  var textEd = $('#text_view')
+  var textEd = $('#text-view')
   if (textEd.is(':visible') && textEd.hasClass('dirty'))
     return 'Text editor has unsaved changes.'
 }
@@ -1251,7 +1264,7 @@ function bindThumbnail(ie, path) {
 function BackgroundTask(le) {
   this.le = le
   if (le) {
-    le.find('.le_in').first().append(divProgress)
+    le.find('.le-inner').first().append(divProgress)
   } else
     gridIn.append(divProgress)
 }
@@ -1331,14 +1344,14 @@ function setCurrentDir(de) {
         p = null
     }
     if (p) {
-      p = p.find('.le_in').first()
+      p = p.find('.le-inner').first()
       p.addClass('no-separator')
     }
     currNoSep = p
   } else {
     setButton(butDirNew, false)
     setButton(butUpload, false)
-    filesInfo.find('#num_marked').hide()
+    filesInfo.find('#num-marked').hide()
     filesInfo.hide()
   }
   g.setSessionPref('currDir', getLeFullPath(de))
@@ -1394,7 +1407,7 @@ function getLeUri(le, type) {
 }
 
 function getLeVolume(le) {
-  while (le && le.attr('id') != 'le_volume')
+  while (le && le.attr('id') != 'le-volume')
     le = getLeParent(le)
   return le
 }
@@ -1461,7 +1474,7 @@ function updateMarked() {
     markIc = 'off'
     butMarker.click(clearAllMarked)
   }
-  var numM = filesInfo.find('#num_marked')
+  var numM = filesInfo.find('#num-marked')
   if (numMarked == 0)
     numM.hide()
   else {
@@ -1473,7 +1486,7 @@ function updateMarked() {
 function setLeMark(le, on) {
   le = le.add(le.data('treeLe')).add(le.data('gridLe'))  // set mark on both 
   if (on)
-    le.attr('marked', 1)
+    le.attr('marked', 'true')
   else
     le.removeAttr('marked')
 }
@@ -1524,17 +1537,6 @@ function onDirClicked(de, listMode) {
     collapseAllSiblings(de)
   if ((listMode & DIR_LIST_GRID) !== 0) // listing into grid impies setting current dir
     setCurrentDir(de)
-}
-
-function onDirInClicked(ev) {
-  var de = $(this).closest('.le') // get actual le, as clicks are detected on .le_in
-
-  if (ev.ctrlKey) {
-    toggleMarked(de)
-  } else {
-    clearAllMarked()
-    onDirClicked(de)
-  }
 }
 
 function isDirExpanded(de) {
@@ -1652,17 +1654,14 @@ function getDirSize(de) {
   }
 
   var t = new BackgroundTask(de)
-  ajaxCall(path, 'cmd=dir_size', function (js, task) {
+  ajaxCall(path, 'cmd=dir_size', function (res, task) {
     task.finished()
-
-    var sz = js['size']
-    showDirSize(de, sz)
+    showDirSize(de, res.size)
   }, t, null, true)
-  //  }
 }
 
 function showDirSize(de, sz) {
-  de = de.add(de.data('treeLe')).add(de.data('gridLe')).find('#dir_size:first')
+  de = de.add(de.data('treeLe')).add(de.data('gridLe')).find('#dir-size:first')
   de.text(g.getReadableFileSizeString(sz))
 }
 
@@ -1700,45 +1699,45 @@ function dirHover(ev) {
 }
 
 function updateButtonsByReadOnly() {
-  var m = $('#read_only')
-  if (readOnly) {
+  var m = $('#read-only')
+  if (READONLY) {
     m.show()
   } else {
     m.hide()
   }
 }
 
-function bindVolumeSize(ve, szFree, szTotal) {
-  if (!szTotal)
-    szTotal = ve.data('totalSpace')
-  var sz = localizedStrings[6] + ' ' + g.getReadableFileSizeString(szFree) + '/' + g.getReadableFileSizeString(szTotal)
-  bindTexts(ve, 'file_size', sz)
+function bindVolumeSize(ve, szFree, space_total) {
+  if (!space_total)
+    space_total = ve.data('space-total')
+  var sz = localizedStrings[6] + ' ' + g.getReadableFileSizeString(szFree) + '/' + g.getReadableFileSizeString(space_total)
+  bindTexts(ve, 'file-size', sz)
 }
 
 var wasReadOnly
-var
-  DIR_LIST_TREE = 1 // expand into tree view
-  , DIR_LIST_GRID = 2 // expand into grid list
-  , DIR_LIST_BOTH = 3
-  , DIR_LIST_DEFAULT = 7  // list to both plus special behavior: collapse siblings
+var DIR_LIST_TREE = 1,    // expand into tree view
+    DIR_LIST_GRID = 2,    // expand into grid list
+    DIR_LIST_BOTH = 3,   
+    DIR_LIST_DEFAULT = 7  // list to both plus special behavior: collapse siblings
   
 
-function onDirListed(js, task, listMode, isRootList) {
+function onDirListed(res, task, listMode, isRootList) {
 
   task.finished()
 
-  readOnly = js['read_only']
-  var files = js['files']
+  READONLY = res.read_only
+
+  var files = res.files
   var treeParent = task.le
   var nextPath = task.listPath
-  var putToGrid = (listMode & DIR_LIST_GRID) !== 0
   var putToTree = (listMode & DIR_LIST_TREE) !== 0
+  var putToGrid = (listMode & DIR_LIST_GRID) !== 0
 
   if (!files) return false
   if (nextPath != '/') nextPath += '/'
 
-  if (wasReadOnly !== readOnly) {
-    wasReadOnly = readOnly
+  if (wasReadOnly !== READONLY) {
+    wasReadOnly = READONLY
     updateButtonsByReadOnly()
   }
 
@@ -1747,8 +1746,7 @@ function onDirListed(js, task, listMode, isRootList) {
   if (!treeParent) {
     treeParent = treeList
   } else if (putToTree) {
-    var isEmpty = js['empty']
-    bindExpandable(treeParent, isEmpty ? '' : 'true')
+    bindExpandable(treeParent, res.empty ? '' : 'true')
   }
 
   if (putToTree) {
@@ -1769,18 +1767,18 @@ function onDirListed(js, task, listMode, isRootList) {
     const {
       n: _name,
       t: type,
-      hidden,
-      space_total: szTotal,
-      space_free,
-      mount,
-      label,
-      icon_id,
-      has_children,
-      sym_link,
-      mime,
+      fs,
       time,
       size,
-      fs,
+      mime,
+      label,
+      mount,
+      hidden,
+      icon_id,
+      space_free,
+      space_total,
+      has_children,
+      sym_link,
     } = file
 
     if (!showHidden && hidden) {
@@ -1795,8 +1793,8 @@ function onDirListed(js, task, listMode, isRootList) {
     switch (type) {
       case 0: // VOLUME
         le = leVolume.clone(true)
-        le.data('totalSpace', szTotal)
-        bindVolumeSize(le, space_free, szTotal)
+        le.data('space-total', space_total)
+        bindVolumeSize(le, space_free, space_total)
         fullPath = mount
         if (icon_id)
           bindIconId(le, icon_id)
@@ -1833,7 +1831,7 @@ function onDirListed(js, task, listMode, isRootList) {
         if (mime) le.data('mime', mime)
         bindTexts(le,
           'time', new Date(time).toISOString(),
-          'file_size', g.getReadableFileSizeString(size)
+          'file-size', g.getReadableFileSizeString(size)
         )
         break
     }
@@ -1878,6 +1876,7 @@ function onDirListed(js, task, listMode, isRootList) {
     }
       
     if (putToGrid) {
+      le.find('#exp').remove()
       gridIn.append(le)
     }
       
@@ -1886,10 +1885,10 @@ function onDirListed(js, task, listMode, isRootList) {
   if (putToGrid) {
     gridIn.scrollTop(0)
 
-    filesInfo.find('#num_dirs').text(dirCount)
-    filesInfo.find('#num_files').text(fileCount)
+    filesInfo.find('#num-dirs').text(dirCount)
+    filesInfo.find('#num-files').text(fileCount)
 
-    var $hid = filesInfo.find('#num_hidden')
+    var $hid = filesInfo.find('#num-hidden')
 
     if (hiddenCount) {
       $hid.text('(' + hiddenCount + ' ' + localizedStrings[20] + ')').show()
@@ -1911,7 +1910,7 @@ function onDirListed(js, task, listMode, isRootList) {
       { // scrolling possible?
         var sTop = treeList.scrollTop()
         var sTo = sTop
-        var leChld = task.le.find('.le_in')
+        var leChld = task.le.find('.le-inner')
         var leH = leChld.outerHeight()
         var deI = allE.index(task.le)
         var sMin = deI * leH
@@ -1928,10 +1927,10 @@ function onDirListed(js, task, listMode, isRootList) {
 }
 
 function canDelete() {
-  return !readOnly && (numMarked || getLeParent(currentDir))
+  return !READONLY && (numMarked || getLeParent(currentDir))
 }
 
-function doDelete(sel, onResult, noDirRefresh) {
+function doDelete(sel, onSuccess, noDirRefresh) {
   var t = new BackgroundTask(currentDir)
   t.sel = sel
   t.i = 0
@@ -1962,17 +1961,17 @@ function doDelete(sel, onResult, noDirRefresh) {
         t.divMsg.text(s)
     }
 
-    function deleteDone(js, task) {
+    function deleteDone(res, task) {
       if (task.canceled) {
-        if (onResult)
-          onResult(false)
+        if (onSuccess)
+          onSuccess(false)
         return
       }
-      var ok = js['ok']
+      var ok = res.ok
       if (++task.i === task.sel.length || !ok)
         task.finished()
       if (ok) {
-        volFreeSpace = js['vol_free_space'] || volFreeSpace
+        volFreeSpace = res.vol_free_space || volFreeSpace
         if (task.cd && isEntryChildOf(task.cd, le, true)) {
           task.cd = getLeParent(le)
         }
@@ -1987,7 +1986,7 @@ function doDelete(sel, onResult, noDirRefresh) {
 
       if (volFreeSpace) {
         // update volume's free space info
-        var ve = task.cd.closest('#le_volume')
+        var ve = task.cd.closest('#le-volume')
         if (ve)
           bindVolumeSize(ve, volFreeSpace)
       }
@@ -1997,8 +1996,8 @@ function doDelete(sel, onResult, noDirRefresh) {
         setCurrentDir(task.cd)
       if (task.cd && !noDirRefresh)
         listDir(getLeFullPath(task.cd), task.cd)  // refresh curr dir  
-      if (onResult)
-        onResult(ok)
+      if (onSuccess)
+        onSuccess(ok)
     }
     var q = 'cmd=delete'
     q = appendFileSystemParam(le, q)
@@ -2007,13 +2006,13 @@ function doDelete(sel, onResult, noDirRefresh) {
   deleteSingleFile()
 }
 
-function askToDelete(sel, onResult, noDirRefresh) {
+function askToDelete(sel, onSuccess, noDirRefresh) {
   var msg =
     sel.length === 1 ?
       getLeName(sel) :
       sel.length + ' ' + localizedStrings[23]
   dlgOkCancel('img/delete.svg', 2, msg, function () {
-    doDelete(sel, onResult, noDirRefresh)
+    doDelete(sel, onSuccess, noDirRefresh)
   })
 }
 
@@ -2030,8 +2029,8 @@ function copyMoveSingleFile(t, de, sel, i, cd, copy) {
   var leDstPath = dstPath + '/' + getFileNameWithouPath(srcPath)
   var cmd = 'cmd=rename&n=' + encodeURIComponent(leDstPath)
   cmd = appendFileSystemParam(le, cmd)
-  ajaxCall(srcPath, cmd, function (js, task) {
-    var ok = js['ok']
+  ajaxCall(srcPath, cmd, function (res, task) {
+    var ok = res.ok
     if (++i == sel.length || !ok)
       t.finished()
     if (ok) {
@@ -2070,12 +2069,12 @@ function askCopyMove(de, sel, copy) {
 }
 
 function canRename() {
-  return !readOnly &&
+  return !READONLY &&
     (numMarked == 1 || (numMarked == 0 && getLeParent(currentDir)))
 }
 
 
-function askRename(le, onResult) {
+function askRename(le, onSuccess) {
   var path = getLeFullPath(le)
   var srcName = getFileNameWithouPath(path)
   path = g.getParentPath(path)
@@ -2085,9 +2084,9 @@ function askRename(le, onResult) {
     var q = 'cmd=rename&n=' + encodeURIComponent(dstPath)
     q = appendFileSystemParam(le, q)
     ajaxCall(path + '/' + srcName, q,
-      function (js, task) {
+      function (res, task) {
         task.finished()
-        if (js['ok']) {
+        if (res.ok) {
           bindTitle(le, dstName)
           le.data('fullPath', dstPath)
           var tle = le.data('treeLe')
@@ -2095,11 +2094,11 @@ function askRename(le, onResult) {
             bindTitle(tle, dstName)
             tle.data('fullPath', dstPath)
           } else {
-            if (!onResult)
+            if (!onSuccess)
               opDirRefresh()
           }
-          if (onResult)
-            onResult(dstName)
+          if (onSuccess)
+            onSuccess(dstName)
           return
         }
         showError(localizedStrings[14] + ' ' + srcName)
@@ -2143,7 +2142,7 @@ function opShowHidden() {
 }
 
 function canCreateDir() {
-  return !readOnly && !numMarked && currentDir
+  return !READONLY && !numMarked && currentDir
 }
 
 function opNewDir(de) {
@@ -2229,12 +2228,12 @@ function opHideUnhide(le, hide) {
   var q = 'cmd=hide_unhide'
   if (hide)
     q += '&hide'
-  ajaxCall(getLeFullPath(le), q, function (js, task) {
+  ajaxCall(getLeFullPath(le), q, function (res, task) {
     task.finished()
-    if (js['ok']) {
+    if (res.ok) {
       le = le.add(le.data('treeLe')).add(le.data('gridLe'))
       if (hide)
-        le.attr('view-hidden', 1)
+        le.attr('view-hidden', 'true')
       else
         le.removeAttr('view-hidden')
       return
@@ -2254,10 +2253,10 @@ function getBookmarkUrl() {
 }
 
 function opExit() {
-  ajaxCall('/', 'cmd=quit', function (js, task) {
+  ajaxCall('/', 'cmd=quit', function (res, task) {
     task.finished()
     var url = getBookmarkUrl()
-    if (js['ok'])
+    if (res.ok)
       url += '#quit'
     location.replace(url)
   }, new BackgroundTask(), 'PUT')
@@ -2323,9 +2322,9 @@ function askDonation(r) {
 /**
  * @returns {jqXhr}
  */
-function ajaxCall(path, q, onResult, bgTask, method, noTimeout, _opts) {
+function ajaxCall(path, query, onSuccess, bgTask, method, noTimeout, _opts) {
 
-  var uri = g.urlEncode(path) + '?' + q
+  var uri = g.urlEncode(path) + '?' + query
 
   if (bgTask)
     setCurrTask(bgTask)
@@ -2334,7 +2333,7 @@ function ajaxCall(path, q, onResult, bgTask, method, noTimeout, _opts) {
   var opts = {
     dataType: 'json',
     success: function (data, status) {
-      onResult(data, bgTask)
+      onSuccess(data, bgTask)
     },
     error: function (xhr, st) {
       if (bgTask) {
@@ -2358,9 +2357,9 @@ function ajaxCall(path, q, onResult, bgTask, method, noTimeout, _opts) {
           var wurl = buildGcmWakeUrl(deviceInfo.gcmId)
           $.ajax(URL_PREFIX + wurl, {
             dataType: 'json',
-            success: function (js) {
-              if (js['OK']) {
-                ajaxCall(path, q, onResult, bgTask, method, noTimeout, _opts)
+            success: function (res) {
+              if (res.OK) {
+                ajaxCall(path, query, onSuccess, bgTask, method, noTimeout, _opts)
               } else
                 bgTask.onError(st)
             },
@@ -2406,9 +2405,9 @@ function listDir(path, le, listMode) {
   if ((listMode & DIR_LIST_GRID) === 0) // if not listing into grid, limit it to dirs
     q += '&filter=dirs'
   q = appendFileSystemParam(le, q)
-  ajaxCall(path, q, (js, task) => {
+  ajaxCall(path, q, (res, task) => {
     if (currTask == task)
-      onDirListed(js, task, listMode)
+      onDirListed(res, task, listMode)
     else {
       console.log('task not active')
       // task is no longer active one, ignore
@@ -2420,8 +2419,8 @@ function listDir(path, le, listMode) {
 
 function listRoot(openDir) {
 
-  function dirListed(js, task) {
-    if (onDirListed(js, task, DIR_LIST_TREE, !task.le)) {
+  function dirListed(res, task) {
+    if (onDirListed(res, task, DIR_LIST_TREE, !task.le)) {
       var des = (task.le || treeList).find('.le')
       var de = null
       var endSearch = true
@@ -2458,16 +2457,16 @@ function listRoot(openDir) {
   }
 
   var path = '/'
-  ajaxCall(path, 'cmd=list_root&filter=dirs', function (js, task) {
+  ajaxCall(path, 'cmd=list_root&filter=dirs', function (res, task) {
     // fetch device data
-    deviceInfo.gcmId = js['gcm_id']
-    var dev = js['device_name']
+    deviceInfo.gcmId = res.gcm_id
+    var dev = res.device_name
     deviceInfo.deviceName = dev
-    deviceInfo.deviceUuid = js['device_uuid']
+    deviceInfo.deviceUuid = res.device_uuid
 
     $('#device-name').text(dev)
     // continue with dir listing
-    dirListed(js, task)
+    dirListed(res, task)
   }, new ListingTask(path))
 }
 
@@ -2486,7 +2485,7 @@ function coverShow(onDismiss) {
 
 function getTreeSibling(de, offs) {
   if (de) {
-    var allLe = treeList.find('.le_in').parent()
+    var allLe = treeList.find('.le-inner').parent()
     var i = allLe.index(de[0]) + offs
     if (i >= 0 && i < allLe.length)
       return $(allLe[i])
@@ -2601,9 +2600,9 @@ function onKeyDown(ev) {
 function checkFileExists(path, cb) {
   var q = 'cmd=exists'
   //  q = appendFileSystemParam(le, q)
-  ajaxCall(path, q, function (js, task) {
+  ajaxCall(path, q, function (res, task) {
     task.finished()
-    var exists = js['exists']
+    var exists = res.exists
     if (exists !== undefined)
       cb(exists)
   }, new BackgroundTask())
@@ -2729,10 +2728,10 @@ function showMediaViewer(allMedia, currI) {
 
   var num = allMedia.length
 
-  var viewer = $mainPane.find('#media_viewer')
+  var viewer = $mainPane.find('#media-viewer')
   var canvasHolder = viewer.find('#canvas')
   var counter = viewer.find('#counter')
-  var mediaInfo = viewer.find('#media_info')
+  var mediaInfo = viewer.find('#media-info')
   mediaInfo.text('')
   var name = viewer.find('#name')
   name.text('')
@@ -2753,7 +2752,7 @@ function showMediaViewer(allMedia, currI) {
 
   var canList = num > 1
   var someDeleted = false
-  if (!readOnly) {
+  if (!READONLY) {
     butDel.show()
     butDel.off().click(function () {
       // try to delete current file
@@ -3303,14 +3302,14 @@ function showMediaViewer(allMedia, currI) {
 function startTextViewer(le) {
 
   var body = $('body')
-  var viewer = $mainPane.find('#text_view')
+  var viewer = $mainPane.find('#text-view')
   var canvas = viewer.find('#canvas')
   var textArea = viewer.find('#text')
   textArea.text('')
   var name = viewer.find('#name')
-  var mediaInfo = viewer.find('#media_info')
+  var mediaInfo = viewer.find('#media-info')
   mediaInfo.text('')
-  var editInfo = viewer.find('#edit_info')
+  var editInfo = viewer.find('#edit-info')
   editInfo.hide()
   var progress = divProgress.clone()
 
@@ -3357,7 +3356,7 @@ function startTextViewer(le) {
     viewer.fadeOut('fast')
   }
   var butClose = viewer.find('#close')
-  var butEdit = viewer.find('#start_edit')
+  var butEdit = viewer.find('#start-edit')
   var butSave = viewer.find('#save')
   var butWrap = viewer.find('#wrap')
 
@@ -3402,7 +3401,7 @@ function startTextViewer(le) {
       showInfo.call(this)
     })
   }
-  if (!readOnly) {
+  if (!READONLY) {
     butEdit.show()
     butEdit.click(beginEdit)
   } else {
@@ -3440,11 +3439,11 @@ function startTextViewer(le) {
       dataType: 'json',
       data: textArea.val(),
       processData: false,
-      success: function (js) {
-        if (js['ok']) {
+      success: function (res) {
+        if (res.ok) {
           afterSave()
         } else {
-          var err = js['err']
+          var err = res.err
           if (err && !closed)
             showError('Save error: ' + err)
         }
@@ -3556,8 +3555,8 @@ onerror = function (msg, url, line) {
     userAgent: navigator.userAgent,
   }
 
-  ajaxCall('', 'cmd=web_error', function (js) {
-    console.log('Error report sent ' + js['ok'])
+  ajaxCall('', 'cmd=web_error', function (res) {
+    console.log('Error report sent ' + res.ok)
   }, null, 'POST', false, {
     data: JSON.stringify(report),
     processData: false,
@@ -3566,7 +3565,6 @@ onerror = function (msg, url, line) {
   })
   return true
 }
-
 
 function startAudioPlay(tracks, currI) {
   var dlg = $('#dlgAudioPlay')
