@@ -632,7 +632,7 @@ function processRightClick(ev) {
       continue
     var itm = itmTempl.clone()
     itm.find('#text').text(localizedStrings[def.text])
-    itm.find('img').attr('src', def.icon)
+    itm.find('img').attr('src', URL_PREFIX + def.icon)
     itm.click(def.fn, function (e) {
       unCover()
       e.data(le)
@@ -1246,18 +1246,18 @@ function bindIconUri(le, uri) {
 
 function bindIconId(le, iconId) {
   if (iconId) {
-    var uri = '/' + iconId + '?cmd=res_id'
+    var uri = URL_PREFIX + '/' + iconId + '?cmd=res_id'
     bindIconUri(le, uri)
   }
 }
 
 function bindAppIcon(le, ext) {
-  var uri = '/' + ext + '?cmd=ext_icon'
+  var uri = URL_PREFIX + '/' + ext + '?cmd=ext_icon'
   bindIconUri(le, uri)
 }
 
 function bindThumbnail(ie, path) {
-  var uri = g.urlEncode(path) + '?cmd=thumbnail'
+  var uri = URL_PREFIX + g.urlEncode(path) + '?cmd=thumbnail'
   bindIconUri(ie, uri)
 }
 
@@ -1401,7 +1401,7 @@ function getLeName(le) {
 
 function getLeUri(le, type) {
   var path = getLeFullPath(le)
-  var uri = g.urlEncode(path) + '?cmd=' + type
+  var uri = URL_PREFIX + g.urlEncode(path) + '?cmd=' + type
   uri = appendFileSystemParam(le, uri)
   return uri
 }
@@ -2201,7 +2201,7 @@ function opDownloadAsZip(sel) {
         q += '&f=' + fn
       }
     }
-    var uri = path + '?' + q
+    var uri = URL_PREFIX + path + '?' + q
     downloadFile(uri)
   }
   if (butPress) {
@@ -3009,7 +3009,7 @@ function showMediaViewer(allMedia, currI) {
       // bind thumbnail first
       var thumbUrl = getLeThumbnailUri(le, 'thumbnail')
       var img = $('<img>')
-      img.attr('src', thumbUrl)
+      img.attr('src', URL_PREFIX + thumbUrl)
       showCanvas(img, true)
     }
     var img = $('<img>')
@@ -3039,7 +3039,7 @@ function showMediaViewer(allMedia, currI) {
         showError('Load error')
       }
     })
-    img.attr('src', url)
+    img.attr('src', URL_PREFIX + url)
   }
 
   var fullscreenExit = null
@@ -3670,7 +3670,7 @@ function startAudioPlay(tracks, currI) {
     tit += n
     name.text(n)
 
-    audio.attr('src', uri)
+    audio.attr('src', URL_PREFIX + uri)
     enableControls()
     audio[0].play()
 
