@@ -138,10 +138,15 @@ module.exports = {
         'orange': colors.orange,
         'gray': colors.gray,
       },
+      transitionProperty: {
+        'all': 'all',
+        'box-shadow': 'box-shadow',
+      },
     },
   },
   variants: {
     backgroundColor: ['hover', 'active'],
+    opacity: ['hover', 'active'],
   },
   plugins: [],
 }

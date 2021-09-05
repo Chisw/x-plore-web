@@ -5,7 +5,8 @@ interface DesktopProps {
   children: ReactNode
 }
 
-export default function Desktop(prop: DesktopProps) {
+export default function Desktop(props: DesktopProps) {
+
   return (
     <>
       <div
@@ -14,7 +15,7 @@ export default function Desktop(prop: DesktopProps) {
           backgroundImage: `url("${bg}")`,
         }}
       >
-        {prop.children}
+        {props.children}
       </div>
     </>
   )
