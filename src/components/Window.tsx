@@ -1,6 +1,6 @@
 import { IApp } from '../utils/types'
 import Draggable from 'react-draggable'
-import { Close16, Maximize16, Subtract16 } from '@carbon/icons-react'
+import { Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
 import { useCallback } from 'react'
 import { useRecoilState } from 'recoil'
 import { runningAppListState } from '../utils/state'
@@ -18,10 +18,12 @@ export default function Window(props: WindowProps) {
       runningId,
       title,
       icon,
+      bgImg,
       defaultSize: {
         width,
         height,
       },
+      Component,
     },
   } = props
 
@@ -47,16 +49,16 @@ export default function Window(props: WindowProps) {
     <>
       <Draggable
         handle=".drag-handler"
-        bounds="html"
+        bounds="#app-container"
         defaultPosition={{
-          x: - width / 2,
-          y: - height / 2,
+          x: (window.innerWidth * 3 - width) / 2,
+          y: (window.innerHeight - 100 - height) / 2,
         }}
       >
         <div
           className={`
-            fixed top-1/2 left-1/2 bg-white-700 bg-hazy-100 rounded-lg overflow-hidden border-white
-            transition-box-shadow duration-200
+            absolute bg-white-700 bg-hazy-100 rounded-lg overflow-hidden border-white
+            transition-box-shadow duration-200 flex flex-col
             ${isTopWindow ? 'shadow-lg' : 'shadow'}
           `}
           style={{
@@ -66,6 +68,7 @@ export default function Window(props: WindowProps) {
           }}
           onMouseDownCapture={handleMoveWindowToTop}
         >
+          {/* header */}
           <div className="w-full h-8 bg-white flex items-center select-none border-b overflow-hidden">
             <div className="drag-handler flex items-center flex-grow px-2 h-full cursor-move">
               <img src={icon} alt="icon" className="w-4 h-4" />
@@ -81,7 +84,7 @@ export default function Window(props: WindowProps) {
               <span
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
               >
-                <Maximize16 />
+                <FitToScreen16 />
               </span>
               <span
                 prevent-top="true"
@@ -92,8 +95,12 @@ export default function Window(props: WindowProps) {
               </span>
             </div>
           </div>
-          <div>
-            {runningId}
+          {/* main */}
+          <div
+            className="relative flex-grow overflow-hidden bg-center bg-cover bg-no-repeat"
+            style={{ backgroundImage: bgImg ? `url("${bgImg}")` : undefined }}
+          >
+            {Component && <Component />}
           </div>
         </div>
       </Draggable>

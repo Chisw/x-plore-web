@@ -5,6 +5,13 @@ import iconPhotoGallery from '../img/icons/app-photo-gallery.png'
 import iconMusicPlayer from '../img/icons/app-music-player.png'
 import iconVideoPlayer from '../img/icons/app-video-player.png'
 import iconSettings from '../img/icons/app-settings.png'
+import bgMusic from '../img/bg-music.jpg'
+import FileExplorer from '../apps/FileExplorer'
+import TextEditor from '../apps/TextEditor'
+import PhotoGallery from '../apps/PhotoGallery'
+import MusicPlayer from '../apps/MusicPlayer'
+import VideoPlayer from '../apps/VideoPlayer'
+import Settings from '../apps/Settings'
 
 export const APP_LIST: IApp[] = [
   {
@@ -16,6 +23,7 @@ export const APP_LIST: IApp[] = [
       width: 960,
       height: 640,
     },
+    Component: FileExplorer,
   },
   {
     id: 'text-editor',
@@ -26,6 +34,7 @@ export const APP_LIST: IApp[] = [
       width: 640,
       height: 480,
     },
+    Component: TextEditor,
   },
   {
     id: 'image-previewer',
@@ -36,16 +45,19 @@ export const APP_LIST: IApp[] = [
       width: 640,
       height: 480,
     },
+    Component: PhotoGallery,
   },
   {
     id: 'music-player',
     runningId: 0,
     title: '音乐播放器',
     icon: iconMusicPlayer,
+    bgImg: bgMusic,
     defaultSize: {
       width: 400,
       height: 200,
     },
+    Component: MusicPlayer,
   },
   {
     id: 'video-player',
@@ -56,6 +68,7 @@ export const APP_LIST: IApp[] = [
       width: 400,
       height: 320,
     },
+    Component: VideoPlayer,
   },
   {
     id: 'settings',
@@ -66,5 +79,6 @@ export const APP_LIST: IApp[] = [
       width: 500,
       height: 500,
     },
+    Component: Settings,
   },
 ]
