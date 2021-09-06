@@ -10,7 +10,7 @@ export interface IApp {
     width: number
     height: number
   }
-  Component: FC
+  AppComponent: FC
 }
 
 export interface IVolume {

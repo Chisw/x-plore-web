@@ -4,6 +4,7 @@ import { runningAppListState } from '../utils/state'
 import { APP_LIST } from '../utils/constant'
 import { IApp } from '../utils/types'
 
+
 export default function Dock() {
 
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
@@ -16,7 +17,7 @@ export default function Dock() {
   return (
     <>
       <div
-        className="fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 m-4 p-3 bg-white-500 rounded-lg shadow-lg flex bg-hazy-100"
+        className="fixed z-10 bottom-0 left-1/2 transform -translate-x-1/2 mb-4 p-3 bg-white-500 rounded-lg shadow-lg flex bg-hazy-100"
       >
         {APP_LIST.map(app => (
           <div

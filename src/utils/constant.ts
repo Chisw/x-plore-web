@@ -23,7 +23,7 @@ export const APP_LIST: IApp[] = [
       width: 960,
       height: 640,
     },
-    Component: FileExplorer,
+    AppComponent: FileExplorer,
   },
   {
     id: 'text-editor',
@@ -34,7 +34,7 @@ export const APP_LIST: IApp[] = [
       width: 640,
       height: 480,
     },
-    Component: TextEditor,
+    AppComponent: TextEditor,
   },
   {
     id: 'image-previewer',
@@ -45,7 +45,7 @@ export const APP_LIST: IApp[] = [
       width: 640,
       height: 480,
     },
-    Component: PhotoGallery,
+    AppComponent: PhotoGallery,
   },
   {
     id: 'music-player',
@@ -57,7 +57,7 @@ export const APP_LIST: IApp[] = [
       width: 400,
       height: 200,
     },
-    Component: MusicPlayer,
+    AppComponent: MusicPlayer,
   },
   {
     id: 'video-player',
@@ -68,7 +68,7 @@ export const APP_LIST: IApp[] = [
       width: 400,
       height: 320,
     },
-    Component: VideoPlayer,
+    AppComponent: VideoPlayer,
   },
   {
     id: 'settings',
@@ -79,6 +79,6 @@ export const APP_LIST: IApp[] = [
       width: 500,
       height: 500,
     },
-    Component: Settings,
+    AppComponent: Settings,
   },
 ]

@@ -137,6 +137,7 @@ module.exports = {
         'teal': colors.teal,
         'orange': colors.orange,
         'gray': colors.gray,
+        'amber': colors.amber,
       },
       transitionProperty: {
         'all': 'all',
