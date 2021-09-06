@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, ReactNode } from 'react'
 
 export interface IApp {
   id: string
@@ -37,4 +37,11 @@ export interface IDirectoryItem {
   hidden?: boolean
   timestamp?: number
   hasChildren?: boolean
+}
+
+export interface IItemIcon {
+  name: string
+  icon: ReactNode
+  bg: string
+  match: string[]
 }
