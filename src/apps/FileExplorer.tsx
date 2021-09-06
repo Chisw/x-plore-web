@@ -1,4 +1,4 @@
-import { ArrowUp20, ChevronLeft20, ChevronRight20, Cube16, Download20, Edit20, Export20, Filter20, FolderAdd20, Renew32, Star20, TrashCan20 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Renew32, Star16, TrashCan16, View16 } from '@carbon/icons-react'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
@@ -15,7 +15,7 @@ export default function FileExplorer() {
 
   const [rootInfo] = useRecoilState(rootInfoState)
 
-  const { fetch, loading, data } = useFetch(mount => getDirectoryItems(mount as string))
+  const { fetch, loading, data, setData } = useFetch(mount => getDirectoryItems(mount as string))
 
   const handleVolumeClick = useCallback((mount: string) => {
     fetch(mount)
@@ -23,9 +23,10 @@ export default function FileExplorer() {
   }, [fetch])
 
   const handleDirectoryClick = useCallback((mount: string) => {
+    setData(null)
     fetch(activePath + '/' + mount)
     setActivePath(activePath + '/' + mount)
-  }, [fetch, activePath])
+  }, [fetch, activePath, setData])
 
   const directoryItems = useMemo(() => {
     return data ? directoryItemConverter(data).sort(itemSorter) : []
@@ -63,56 +64,56 @@ export default function FileExplorer() {
               title="后退"
               className="border-r"
             >
-              <ChevronLeft20 />
+              <ChevronLeft16 />
             </ToolButton>
             <ToolButton
               title="前进"
               className="border-r"
             >
-              <ChevronRight20 />
+              <ChevronRight16 />
             </ToolButton>
             <ToolButton
               title="返回上级"
               className="border-r"
             >
-              <ArrowUp20 />
+              <ArrowUp16 />
             </ToolButton>
 
             <ToolButton
               title="新建文件夹"
               className="ml-2 border-l border-r"
             >
-              <FolderAdd20 />
+              <FolderAdd16 />
             </ToolButton>
             <ToolButton
               title="重命名"
               className="border-r"
             >
-              <Edit20 />
+              <Edit16 />
             </ToolButton>
             <ToolButton
               title="上传"
               className="border-r"
             >
-              <Export20 />
+              <Export16 />
             </ToolButton>
             <ToolButton
               title="下载"
               className="border-r"
             >
-              <Download20 />
+              <Download16 />
             </ToolButton>
             <ToolButton
               title="收藏"
               className="border-r"
             >
-              <Star20 />
+              <Star16 />
             </ToolButton>
             <ToolButton
               title="删除"
               className="border-r"
             >
-              <TrashCan20 />
+              <TrashCan16 />
             </ToolButton>
 
             <div className="flex-grow" />
@@ -121,7 +122,31 @@ export default function FileExplorer() {
               title="筛选"
               className="border-l"
             >
-              <Filter20 />
+              <Filter16 />
+            </ToolButton>
+            <ToolButton
+              title="选择"
+              className="border-l"
+            >
+              <Checkmark16 />
+            </ToolButton>
+            <ToolButton
+              title="显隐"
+              className="border-l"
+            >
+              <View16 />
+            </ToolButton>
+            <ToolButton
+              title="展示方式"
+              className="border-l"
+            >
+              <Grid16 />
+            </ToolButton>
+            <ToolButton
+              title="刷新"
+              className="border-l"
+            >
+              <Renew16 />
             </ToolButton>
           </div>
           <div className="p-4 flex-grow overflow-x-hidden overflow-y-auto">
@@ -131,12 +156,15 @@ export default function FileExplorer() {
               </span>
             )}
             <div className="flex flex-wrap">
-              {directoryItems.map(({ name, type }) => {
+              {directoryItems.map(({ name, type, hidden }) => {
                 return (
                   <div
                     key={encodeURIComponent(name)}
                     title={name}
-                    className="px-1 py-4 w-32 overflow-hidden cursor-pointer hover:bg-gray-100 rounded select-none"
+                    className={`
+                      px-1 py-4 w-32 overflow-hidden hover:bg-gray-100 rounded select-none
+                      ${hidden ? 'opacity-50' : ''}
+                    `}
                     onDoubleClick={() => type === 1 && handleDirectoryClick(name)}
                   >
                     <div className="text-center">
@@ -144,12 +172,17 @@ export default function FileExplorer() {
                         itemName={type === 1 ? `${name}._dir` : name}
                       />
                     </div>
-                    <p className="mt-2 text-sm text-center text-gray-700 truncate">{name}</p>
+                    <p className="mt-2 text-xs text-center text-gray-700 truncate">{name}</p>
                   </div>
                 )
               })}
             </div>
           </div>
+          {activePath && (
+            <div className="flex-shrink-0 border-t px-2 py-1 text-xs text-gray-500 select-none">
+              {activePath}
+            </div>
+          )}
         </div>
       </div>
     </>

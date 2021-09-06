@@ -58,9 +58,10 @@ export default function Window(props: WindowProps) {
       >
         <div
           className={`
-            absolute bg-white-800 bg-hazy-100 rounded-lg overflow-hidden border border-gray-500 border-opacity-30
+            absolute bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
+            border border-gray-500 border-opacity-30 bg-clip-padding
             transition-box-shadow duration-200 flex flex-col
-            ${isTopWindow ? 'shadow-lg' : 'shadow'}
+            ${isTopWindow ? 'shadow-xl' : 'shadow'}
           `}
           style={{
             width,

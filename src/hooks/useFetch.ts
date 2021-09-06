@@ -17,5 +17,5 @@ export default function useFetch(fn: (mount?: string) => any) {
     }
   }, [fn])
 
-  return { fetch, loading, data }
+  return { fetch, loading, data, setData }
 }
