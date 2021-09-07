@@ -7,6 +7,7 @@ import iconVideoPlayer from '../img/icons/app-video-player.png'
 import iconSettings from '../img/icons/app-settings.png'
 import iconBaiduMap from '../img/icons/app-baidu-map.png'
 import iconPQINA from '../img/icons/app-pqina.png'
+import iconPS from '../img/icons/app-ps.png'
 import bgMusic from '../img/bg-music.jpg'
 import FileExplorer from '../apps/FileExplorer'
 import TextEditor from '../apps/TextEditor'
@@ -16,6 +17,7 @@ import VideoPlayer from '../apps/VideoPlayer'
 import Settings from '../apps/Settings'
 import BaiduMap from '../apps/BaiduMap'
 import PQINA from '../apps/PQINA'
+import PS from '../apps/PS'
 
 export const APP_LIST: IApp[] = [
   {
@@ -124,5 +126,18 @@ export const APP_LIST: IApp[] = [
       minHeight: 600,
     },
     AppComponent: PQINA,
+  },
+  {
+    id: 'ps',
+    runningId: 0,
+    title: 'PS',
+    icon: iconPS,
+    width: 1000,
+    height: 800,
+    resizeRange: {
+      minWidth: 800,
+      minHeight: 600,
+    },
+    AppComponent: PS,
   },
 ]

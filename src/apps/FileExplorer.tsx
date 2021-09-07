@@ -1,5 +1,5 @@
-import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, VmdkDisk16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
 import useFetch from '../hooks/useFetch'
@@ -14,24 +14,42 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { setHeaderTitle } = props
 
-  const [activePath, setActivePath] = useState('')
-
   const [rootInfo] = useRecoilState(rootInfoState)
+  const [currentVolume, setCurrentVolume] = useState('')
+  const [currentPath, setCurrentPath] = useState('')
+  const [historyList, setHistoryList] = useState<string[]>([])
+
+  useEffect(() => {
+    console.log('historyList', historyList)
+  }, [historyList])
 
   const { fetch, loading, data, setData } = useFetch(mount => getDirItems(mount as string))
 
-  const handleVolumeClick = useCallback((mount: string) => {
-    setData(null)
-    fetch(mount)
-    setActivePath(mount)
-  }, [fetch, setData])
+  const updateHistoryList = useCallback((path: string) => {
+    setHistoryList([...historyList, path])
+  }, [historyList, setHistoryList])
 
-  const handleDirClick = useCallback((mount: string) => {
+  const handleVolumeClick = useCallback((volumeMount: string) => {
     setData(null)
-    fetch(activePath + '/' + mount)
-    setActivePath(activePath + '/' + mount)
-    setHeaderTitle(mount)
-  }, [fetch, activePath, setData, setHeaderTitle])
+    fetch(volumeMount)
+
+    setCurrentVolume(volumeMount)
+
+    setCurrentPath(volumeMount)
+    updateHistoryList(volumeMount)
+
+  }, [fetch, setData, updateHistoryList])
+
+  const handleDirClick = useCallback((dirMount: string) => {
+    const newPath = `${currentPath}/${dirMount}`
+    setData(null)
+    fetch(newPath)
+
+    setCurrentPath(newPath)
+    updateHistoryList(newPath)
+
+    setHeaderTitle(dirMount)
+  }, [fetch, currentPath, setData, setHeaderTitle, updateHistoryList])
 
   const {
     dirItems,
@@ -64,14 +82,22 @@ export default function FileExplorer(props: AppComponentProps) {
           <div>
             {rootInfo.volumeList.map(({ label, mount }, volumeIndex) => {
               const title = `${mount} (${label})`
+              const isActive = mount === currentVolume
+              const canGoVolume = currentPath !== mount
               return (
                 <div
                   key={volumeIndex}
                   title={title}
-                  className="p-1 text-sm text-gray-700 flex items-center hover:bg-gray-200 rounded cursor-pointer"
-                  onClick={() => handleVolumeClick(mount)}
+                  className={`
+                    mb-1 p-1 text-xs flex items-center rounded
+                    ${isActive
+                      ? 'bg-gray-300 text-black'
+                      : 'text-gray-500 cursor-pointer hover:bg-gray-200 hover:text-black'
+                    }
+                  `}
+                  onClick={() => canGoVolume && handleVolumeClick(mount)}
                 >
-                  <Cube16 className="flex-shrink-0" />
+                  <VmdkDisk16 className="flex-shrink-0" />
                   <span className="ml-1 truncate">{title}</span>
                 </div>
               )
@@ -82,7 +108,7 @@ export default function FileExplorer(props: AppComponentProps) {
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
           <div className="flex-shrink-0 border-b px-2 py-1 text-xs text-gray-500 select-none flex justify-between items-center">
-            <div>{activePath}</div>
+            <div>{currentPath}</div>
             <div className="flex items-center">
               <Folder16 />
               &nbsp;
