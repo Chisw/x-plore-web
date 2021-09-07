@@ -11,11 +11,20 @@ import {
 } from '@carbon/icons-react'
 import { useMemo } from 'react'
 import { IItemIcon } from '../utils/types'
-import dirRetroArch from '../img/icons/dir-retroarch.png'
-import dirDownload from '../img/icons/dir-download.png'
 import dirAndroid from '../img/icons/dir-android.png'
-import dirSogou from '../img/icons/dir-sogou.png'
+import dirAlipay from '../img/icons/dir-alipay.png'
+import dirAutonavi from '../img/icons/dir-autonavi.png'
+import dirBackup from '../img/icons/dir-backup.png'
+import dirBrowser from '../img/icons/dir-browser.png'
 import dirCamera from '../img/icons/dir-camera.png'
+import dirDownload from '../img/icons/dir-download.png'
+import dirDuokan from '../img/icons/dir-duokan.png'
+import dirRetroArch from '../img/icons/dir-retroarch.png'
+import dirSogou from '../img/icons/dir-sogou.png'
+import dirTencent from '../img/icons/dir-tencent.png'
+import dirWeiXin from '../img/icons/dir-weixin.png'
+import dirMi from '../img/icons/dir-mi.png'
+import dirQQBrowser from '../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
 
 const DEFAULT_ITEM_ICON: IItemIcon = {
@@ -29,7 +38,7 @@ const ITEM_ICON_LIST: IItemIcon[] = [
   {
     name: 'folder',
     icon: <Folder32 />,
-    bg: 'from-yellow-400 to-yellow-500 border-yellow-500',
+    bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
     match: ['_dir'],
   },
   {
@@ -88,11 +97,21 @@ const getIcon = (itemName: string) => {
 const getDirSubIcon: (name: string) => string | undefined = itemName => {
   const dirName = itemName.replace('._dir', '')
   const map = {
-    'RetroArch': dirRetroArch,
-    'Download': dirDownload,
+    'alipay': dirAlipay,
     'Android': dirAndroid,
-    'sogou': dirSogou,
+    'autonavi': dirAutonavi,
+    'backups': dirBackup,
+    'browser': dirBrowser,
     'DCIM': dirCamera,
+    'DuoKan': dirDuokan,
+    'Download': dirDownload,
+    'QQBrowser': dirQQBrowser,
+    'RetroArch': dirRetroArch,
+    'sogou': dirSogou,
+    'Tencent': dirTencent,
+    'MIUI': dirMi,
+    'miad': dirMi,
+    'WeiXin': dirWeiXin,
   }
   const dirSubIcon = get(map, dirName)
   return dirSubIcon

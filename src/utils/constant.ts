@@ -5,6 +5,7 @@ import iconPhotoGallery from '../img/icons/app-photo-gallery.png'
 import iconMusicPlayer from '../img/icons/app-music-player.png'
 import iconVideoPlayer from '../img/icons/app-video-player.png'
 import iconSettings from '../img/icons/app-settings.png'
+import iconBaiduMap from '../img/icons/app-baidu-map.png'
 import bgMusic from '../img/bg-music.jpg'
 import FileExplorer from '../apps/FileExplorer'
 import TextEditor from '../apps/TextEditor'
@@ -12,6 +13,7 @@ import PhotoGallery from '../apps/PhotoGallery'
 import MusicPlayer from '../apps/MusicPlayer'
 import VideoPlayer from '../apps/VideoPlayer'
 import Settings from '../apps/Settings'
+import BaiduMap from '../apps/BaiduMap'
 
 export const APP_LIST: IApp[] = [
   {
@@ -69,6 +71,17 @@ export const APP_LIST: IApp[] = [
       height: 320,
     },
     AppComponent: VideoPlayer,
+  },
+  {
+    id: 'baidu-map',
+    runningId: 0,
+    title: '百度地图',
+    icon: iconBaiduMap,
+    defaultSize: {
+      width: 800,
+      height: 600,
+    },
+    AppComponent: BaiduMap,
   },
   {
     id: 'settings',

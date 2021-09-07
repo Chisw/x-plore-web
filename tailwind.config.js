@@ -146,6 +146,7 @@ module.exports = {
     },
   },
   variants: {
+    display: ['hover', 'active', 'group-hover'],
     backgroundColor: ['hover', 'active'],
     opacity: ['hover', 'active'],
   },
