@@ -1,4 +1,4 @@
-import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Renew32, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
@@ -7,9 +7,12 @@ import { itemSorter } from '../utils'
 import { getDirectoryItems } from '../utils/api'
 import { directoryItemConverter } from '../utils/converters'
 import { rootInfoState } from '../utils/state'
+import { AppComponentProps } from '../utils/types'
 
 
-export default function FileExplorer() {
+export default function FileExplorer(props: AppComponentProps) {
+
+  const { setHeaderTitle } = props
 
   const [activePath, setActivePath] = useState('')
 
@@ -18,15 +21,17 @@ export default function FileExplorer() {
   const { fetch, loading, data, setData } = useFetch(mount => getDirectoryItems(mount as string))
 
   const handleVolumeClick = useCallback((mount: string) => {
+    setData(null)
     fetch(mount)
     setActivePath(mount)
-  }, [fetch])
+  }, [fetch, setData])
 
   const handleDirectoryClick = useCallback((mount: string) => {
     setData(null)
     fetch(activePath + '/' + mount)
     setActivePath(activePath + '/' + mount)
-  }, [fetch, activePath, setData])
+    setHeaderTitle(mount)
+  }, [fetch, activePath, setData, setHeaderTitle])
 
   const directoryItems = useMemo(() => {
     return data ? directoryItemConverter(data).sort(itemSorter) : []
@@ -149,12 +154,12 @@ export default function FileExplorer() {
               <Renew16 />
             </ToolButton>
           </div>
-          <div className="p-4 flex-grow overflow-x-hidden overflow-y-auto">
-            {loading && (
-              <span className="absolute top-0 right-0">
-                <Renew32 className="animate-spin" />
-              </span>
-            )}
+          <div
+            className={`
+              p-4 flex-grow overflow-x-hidden overflow-y-auto
+              ${loading ? 'bg-loading' : ''}
+            `}
+          >
             <div className="flex flex-wrap">
               {directoryItems.map(({ name, type, hidden }) => {
                 return (

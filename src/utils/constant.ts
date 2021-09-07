@@ -6,6 +6,7 @@ import iconMusicPlayer from '../img/icons/app-music-player.png'
 import iconVideoPlayer from '../img/icons/app-video-player.png'
 import iconSettings from '../img/icons/app-settings.png'
 import iconBaiduMap from '../img/icons/app-baidu-map.png'
+import iconPQINA from '../img/icons/app-pqina.png'
 import bgMusic from '../img/bg-music.jpg'
 import FileExplorer from '../apps/FileExplorer'
 import TextEditor from '../apps/TextEditor'
@@ -14,6 +15,7 @@ import MusicPlayer from '../apps/MusicPlayer'
 import VideoPlayer from '../apps/VideoPlayer'
 import Settings from '../apps/Settings'
 import BaiduMap from '../apps/BaiduMap'
+import PQINA from '../apps/PQINA'
 
 export const APP_LIST: IApp[] = [
   {
@@ -73,6 +75,17 @@ export const APP_LIST: IApp[] = [
     AppComponent: VideoPlayer,
   },
   {
+    id: 'settings',
+    runningId: 0,
+    title: '偏好设置',
+    icon: iconSettings,
+    defaultSize: {
+      width: 500,
+      height: 500,
+    },
+    AppComponent: Settings,
+  },
+  {
     id: 'baidu-map',
     runningId: 0,
     title: '百度地图',
@@ -84,14 +97,14 @@ export const APP_LIST: IApp[] = [
     AppComponent: BaiduMap,
   },
   {
-    id: 'settings',
+    id: 'pqina',
     runningId: 0,
-    title: '系统设置',
-    icon: iconSettings,
+    title: 'PQINA',
+    icon: iconPQINA,
     defaultSize: {
-      width: 500,
-      height: 500,
+      width: 800,
+      height: 600,
     },
-    AppComponent: Settings,
+    AppComponent: PQINA,
   },
 ]

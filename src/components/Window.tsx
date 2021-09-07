@@ -34,6 +34,8 @@ export default function Window(props: WindowProps) {
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
   const [initIndex] = useState(topWindowIndex)
   const [currentIndex, setCurrentIndex] = useState(initIndex)
+  const [headerLoading, setHeaderLoading] = useState(false)
+  const [headerTitle, setHeaderTitle] = useState('')
 
   // const isTopWindow = zIndex === runningAppList.length - 1
 
@@ -87,13 +89,18 @@ export default function Window(props: WindowProps) {
           onMouseDownCapture={handleMoveToFront}
         >
           {/* header */}
-          <div className="w-full h-8 bg-white flex items-center select-none border-b">
+          <div
+            className={`
+              w-full h-8 bg-white flex items-center select-none border-b
+              ${headerLoading ? 'bg-loading' : ''}
+            `}
+          >
             <div className="drag-handler flex items-center flex-grow px-2 h-full cursor-move">
               <div
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
               />
-              <span className="ml-2 text-gray-500 text-sm">{title}</span>
+              <span className="ml-2 text-gray-500 text-sm">{headerTitle || title}</span>
             </div>
             {/* Mask: prevent out of focus in iframe */}
             <div
@@ -104,17 +111,20 @@ export default function Window(props: WindowProps) {
             />
             <div className="flex items-center">
               <span
+                title="最小化"
                 prevent-to-front="true"
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
               >
                 <Subtract16 />
               </span>
               <span
+                title="缩放"
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
               >
                 <FitToScreen16 />
               </span>
               <span
+                title="关闭"
                 prevent-to-front="true"
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-red-500 hover:bg-red-500 hover:text-white active:bg-red-700"
                 onClick={handleCloseApp}
@@ -128,7 +138,10 @@ export default function Window(props: WindowProps) {
             className="relative flex-grow overflow-hidden bg-center bg-cover bg-no-repeat"
             style={{ backgroundImage: bgImg ? `url("${bgImg}")` : undefined }}
           >
-            <AppComponent />
+            <AppComponent
+              setHeaderLoading={setHeaderLoading}
+              setHeaderTitle={setHeaderTitle}
+            />
           </div>
         </div>
       </Draggable>

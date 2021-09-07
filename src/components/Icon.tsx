@@ -1,4 +1,5 @@
 import {
+  App32,
   Catalog32,
   DataBase32,
   DocumentBlank32,
@@ -83,6 +84,12 @@ const ITEM_ICON_LIST: IItemIcon[] = [
     bg: 'from-gray-300 to-gray-400 border-gray-400',
     match: ['log'],
   },
+  {
+    name: 'application',
+    icon: <App32 />,
+    bg: 'from-lime-400 to-lime-500 border-lime-500',
+    match: ['apk'],
+  }
 ]
 
 const getIcon = (itemName: string) => {
@@ -148,7 +155,7 @@ export default function Icon(props: IconProps) {
       {icon}
       {dirSubIcon && (
         <div
-          className="absolute right-0 bottom-0 -mr-1 -mb-1 w-6 h-6 bg-center bg-no-repeat bg-contain"
+          className="absolute right-0 bottom-0 -mr-1 -mb-1 w-5 h-5 bg-center bg-no-repeat bg-contain"
           style={{ backgroundImage: `url("${dirSubIcon}")` }}
         />
       )}

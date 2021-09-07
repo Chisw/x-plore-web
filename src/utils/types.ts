@@ -1,4 +1,13 @@
-import { FC, ReactNode } from 'react'
+import { ReactNode } from 'react'
+
+export interface AppComponentProps {
+  setHeaderLoading: (loading: boolean) => void
+  setHeaderTitle: (title: string) => void
+}
+
+interface IAppComponent {
+  (props: AppComponentProps): JSX.Element
+}
 
 export interface IApp {
   id: string
@@ -10,7 +19,7 @@ export interface IApp {
     width: number
     height: number
   }
-  AppComponent: FC
+  AppComponent: IAppComponent
 }
 
 export interface IVolume {

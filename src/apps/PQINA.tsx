@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { AppComponentProps } from '../utils/types'
 
-export default function BaiduMap(props: AppComponentProps) {
+export default function PQINA(props: AppComponentProps) {
 
   const { setHeaderLoading } = props
 
@@ -15,7 +15,7 @@ export default function BaiduMap(props: AppComponentProps) {
         <iframe
           title="app"
           className="w-full h-full"
-          src="https://map.baidu.com"
+          src="https://pqina.nl/photo-editor/"
           onLoad={() => setHeaderLoading(false)}
         />
       </div>
