@@ -37,7 +37,7 @@ export default function TopBar() {
  
   return (
     <>
-      <div className="fixed z-50 top-0 right-0 left-0 h-6 bg-black-300 bg-hazy-100 shadow-md text-xs text-white flex justify-between items-center select-none">
+      <div className="fixed z-20 top-0 right-0 left-0 h-6 bg-black-300 bg-hazy-100 shadow-md text-xs text-white flex justify-between items-center select-none">
         <div className="flex items-center px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
           <Wifi16 />&nbsp;&nbsp;
           <span className="">{loading ? '系统加载中' : `${rootInfo.deviceName} 已连接`}</span>

@@ -23,9 +23,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '文件管理器',
     icon: iconFileExplorer,
-    defaultSize: {
-      width: 960,
-      height: 640,
+    width: 960,
+    height: 640,
+    resizeRange: {
+      minWidth: 720,
+      minHeight: 480,
     },
     AppComponent: FileExplorer,
   },
@@ -34,9 +36,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '文本编辑器',
     icon: iconTextEditor,
-    defaultSize: {
-      width: 640,
-      height: 480,
+    width: 640,
+    height: 480,
+    resizeRange: {
+      minWidth: 240,
+      minHeight: 100,
     },
     AppComponent: TextEditor,
   },
@@ -45,9 +49,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '图片查看器',
     icon: iconPhotoGallery,
-    defaultSize: {
-      width: 640,
-      height: 480,
+    width: 640,
+    height: 480,
+    resizeRange: {
+      minWidth: 240,
+      minHeight: 200,
     },
     AppComponent: PhotoGallery,
   },
@@ -57,9 +63,13 @@ export const APP_LIST: IApp[] = [
     title: '音乐播放器',
     icon: iconMusicPlayer,
     bgImg: bgMusic,
-    defaultSize: {
-      width: 400,
-      height: 200,
+    width: 400,
+    height: 200,
+    resizeRange: {
+      maxWidth: 400,
+      maxHeight: 800,
+      minWidth: 400,
+      minHeight: 200,
     },
     AppComponent: MusicPlayer,
   },
@@ -68,9 +78,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '视频播放器',
     icon: iconVideoPlayer,
-    defaultSize: {
-      width: 400,
-      height: 320,
+    width: 400,
+    height: 320,
+    resizeRange: {
+      minWidth: 320,
+      minHeight: 240,
     },
     AppComponent: VideoPlayer,
   },
@@ -79,9 +91,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '偏好设置',
     icon: iconSettings,
-    defaultSize: {
-      width: 500,
-      height: 500,
+    width: 500,
+    height: 500,
+    resizeRange: {
+      minWidth: 500,
+      minHeight: 300,
     },
     AppComponent: Settings,
   },
@@ -90,9 +104,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: '百度地图',
     icon: iconBaiduMap,
-    defaultSize: {
-      width: 800,
-      height: 600,
+    width: 800,
+    height: 600,
+    resizeRange: {
+      minWidth: 480,
+      minHeight: 320,
     },
     AppComponent: BaiduMap,
   },
@@ -101,9 +117,11 @@ export const APP_LIST: IApp[] = [
     runningId: 0,
     title: 'PQINA',
     icon: iconPQINA,
-    defaultSize: {
-      width: 800,
-      height: 600,
+    width: 800,
+    height: 600,
+    resizeRange: {
+      minWidth: 800,
+      minHeight: 600,
     },
     AppComponent: PQINA,
   },

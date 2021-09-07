@@ -15,9 +15,13 @@ export interface IApp {
   title: string
   icon: string
   bgImg?: string
-  defaultSize: {
-    width: number
-    height: number
+  width: number
+  height: number
+  resizeRange: {
+    maxWidth?: number
+    maxHeight?: number
+    minWidth?: number
+    minHeight?: number
   }
   AppComponent: IAppComponent
 }

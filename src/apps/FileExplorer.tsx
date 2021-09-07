@@ -1,11 +1,11 @@
-import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, Cube16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
 import useFetch from '../hooks/useFetch'
 import { itemSorter } from '../utils'
-import { getDirectoryItems } from '../utils/api'
-import { directoryItemConverter } from '../utils/converters'
+import { getDirItems } from '../utils/api'
+import { dirItemConverter } from '../utils/converters'
 import { rootInfoState } from '../utils/state'
 import { AppComponentProps } from '../utils/types'
 
@@ -18,7 +18,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const [rootInfo] = useRecoilState(rootInfoState)
 
-  const { fetch, loading, data, setData } = useFetch(mount => getDirectoryItems(mount as string))
+  const { fetch, loading, data, setData } = useFetch(mount => getDirItems(mount as string))
 
   const handleVolumeClick = useCallback((mount: string) => {
     setData(null)
@@ -26,15 +26,33 @@ export default function FileExplorer(props: AppComponentProps) {
     setActivePath(mount)
   }, [fetch, setData])
 
-  const handleDirectoryClick = useCallback((mount: string) => {
+  const handleDirClick = useCallback((mount: string) => {
     setData(null)
     fetch(activePath + '/' + mount)
     setActivePath(activePath + '/' + mount)
     setHeaderTitle(mount)
   }, [fetch, activePath, setData, setHeaderTitle])
 
-  const directoryItems = useMemo(() => {
-    return data ? directoryItemConverter(data).sort(itemSorter) : []
+  const {
+    dirItems,
+    dirCount,
+    fileCount,
+  } = useMemo(() => {
+    const dirItems = data ? dirItemConverter(data).sort(itemSorter) : []
+    let dirCount = 0
+    let fileCount = 0
+    dirItems.forEach(({ type }) => {
+      if (type === 1) {
+        dirCount++
+      } else {
+        fileCount++
+      }
+    })
+    return {
+      dirItems,
+      dirCount,
+      fileCount,
+    }
   }, [data])
 
   return (
@@ -63,6 +81,18 @@ export default function FileExplorer(props: AppComponentProps) {
         </div>
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
+          <div className="flex-shrink-0 border-b px-2 py-1 text-xs text-gray-500 select-none flex justify-between items-center">
+            <div>{activePath}</div>
+            <div className="flex items-center">
+              <Folder16 />
+              &nbsp;
+              <span>{dirCount}</span>
+              &emsp;
+              <DocumentBlank16 />
+              &nbsp;
+              <span>{fileCount}</span>
+            </div>
+          </div>
           {/* tool bar */}
           <div className="h-8 bg-gray-100 flex-shrink-0 border-b flex">
             <ToolButton
@@ -78,6 +108,12 @@ export default function FileExplorer(props: AppComponentProps) {
               <ChevronRight16 />
             </ToolButton>
             <ToolButton
+              title="刷新"
+              className="border-r"
+            >
+              <Renew16 />
+            </ToolButton>
+            <ToolButton
               title="返回上级"
               className="border-r"
             >
@@ -86,7 +122,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
             <ToolButton
               title="新建文件夹"
-              className="ml-2 border-l border-r"
+              className="ml-4 border-l border-r"
             >
               <FolderAdd16 />
             </ToolButton>
@@ -147,12 +183,6 @@ export default function FileExplorer(props: AppComponentProps) {
             >
               <Grid16 />
             </ToolButton>
-            <ToolButton
-              title="刷新"
-              className="border-l"
-            >
-              <Renew16 />
-            </ToolButton>
           </div>
           <div
             className={`
@@ -161,7 +191,7 @@ export default function FileExplorer(props: AppComponentProps) {
             `}
           >
             <div className="flex flex-wrap">
-              {directoryItems.map(({ name, type, hidden }) => {
+              {dirItems.map(({ name, type, hidden }) => {
                 return (
                   <div
                     key={encodeURIComponent(name)}
@@ -170,7 +200,7 @@ export default function FileExplorer(props: AppComponentProps) {
                       px-1 py-4 w-32 overflow-hidden hover:bg-gray-100 rounded select-none
                       ${hidden ? 'opacity-50' : ''}
                     `}
-                    onDoubleClick={() => type === 1 && handleDirectoryClick(name)}
+                    onDoubleClick={() => type === 1 && handleDirClick(name)}
                   >
                     <div className="text-center">
                       <Icon
@@ -183,11 +213,6 @@ export default function FileExplorer(props: AppComponentProps) {
               })}
             </div>
           </div>
-          {activePath && (
-            <div className="flex-shrink-0 border-t px-2 py-1 text-xs text-gray-500 select-none">
-              {activePath}
-            </div>
-          )}
         </div>
       </div>
     </>

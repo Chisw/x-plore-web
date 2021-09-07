@@ -13,18 +13,19 @@ export default function WindowContainer() {
     <>
       <div
         id="app-container"
+        className="z-10"
         style={{
           position: 'absolute',
-          width: '300%',
-          height: '200%',
+          zIndex: 10,
           top: '1.5rem',
           left: '-100%',
+          width: '300%',
+          height: '200%',
         }}
       >
         {runningAppList.map(app => (
           <Window
             key={app.runningId}
-            // zIndex={appIndex}
             app={app}
             topWindowIndex={topWindowIndex}
             setTopWindowIndex={setTopWindowIndex}

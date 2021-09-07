@@ -18,7 +18,7 @@ export const rootInfoConverter: (data: any) => IRootInfo = data => {
   }
 }
 
-export const directoryItemConverter: (data: any) => IDirectoryItem[] = data => {
+export const dirItemConverter: (data: any) => IDirectoryItem[] = data => {
   const { files } = data
   return files.map(({ n, t, size, mime, hidden, time, has_children }: any) => ({
     name: n,

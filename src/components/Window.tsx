@@ -1,12 +1,11 @@
 import { IApp } from '../utils/types'
-import Draggable from 'react-draggable'
+import { Rnd } from 'react-rnd'
 import { Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { runningAppListState } from '../utils/state'
 
 interface WindowProps {
-  // zIndex: number
   app: IApp
   topWindowIndex: number
   setTopWindowIndex: (i: number) => void
@@ -15,16 +14,14 @@ interface WindowProps {
 export default function Window(props: WindowProps) {
 
   const {
-    // zIndex,
     app: {
       runningId,
       title,
       icon,
       bgImg,
-      defaultSize: {
-        width,
-        height,
-      },
+      width,
+      height,
+      resizeRange,
       AppComponent,
     },
     topWindowIndex,
@@ -37,17 +34,6 @@ export default function Window(props: WindowProps) {
   const [headerLoading, setHeaderLoading] = useState(false)
   const [headerTitle, setHeaderTitle] = useState('')
 
-  // const isTopWindow = zIndex === runningAppList.length - 1
-
-  // const handleMoveToFront = useCallback((e) => {
-  //   if (e.target.closest('[prevent-to-front]')) return
-  //   const appIndex = runningAppList.findIndex(a => a.runningId === runningId)
-  //   const list = [...runningAppList]
-  //   const activeApp = list.splice(appIndex, 1)[0]
-  //   list.push(activeApp)
-  //   setRunningAppList(list)
-  // }, [runningAppList, setRunningAppList, runningId])
-
   const isTopWindow = currentIndex === topWindowIndex
 
   const handleMoveToFront = useCallback((e) => {
@@ -55,7 +41,7 @@ export default function Window(props: WindowProps) {
     const newTopIndex = topWindowIndex + 1
     setCurrentIndex(newTopIndex)
     setTopWindowIndex(newTopIndex)
-    document.getElementById(`app-${runningId}`)!.style.zIndex = String(newTopIndex)
+    document.getElementById(`window-${runningId}`)!.style.zIndex = String(newTopIndex)
   }, [runningId, topWindowIndex, setTopWindowIndex])
 
   const handleCloseApp = useCallback(() => {
@@ -65,27 +51,26 @@ export default function Window(props: WindowProps) {
 
   return (
     <>
-      <Draggable
-        handle=".drag-handler"
+      <Rnd
+        id={`window-${runningId}`}
+        dragHandleClassName="drag-handler"
         bounds="#app-container"
-        defaultPosition={{
+        default={{
           x: (window.innerWidth * 3 - width) / 2,
           y: (window.innerHeight - 100 - height) / 2,
+          width,
+          height,
         }}
+        style={{ zIndex: initIndex }}
+        {...resizeRange}
       >
         <div
-          id={`app-${runningId}`}
           className={`
-            absolute bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
+            absolute inset-0 bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
             border border-gray-500 border-opacity-30 bg-clip-padding
             transition-box-shadow duration-200 flex flex-col
             ${isTopWindow ? 'shadow-xl' : 'shadow'}
           `}
-          style={{
-            width,
-            height,
-            zIndex: initIndex,
-          }}
           onMouseDownCapture={handleMoveToFront}
         >
           {/* header */}
@@ -95,7 +80,7 @@ export default function Window(props: WindowProps) {
               ${headerLoading ? 'bg-loading' : ''}
             `}
           >
-            <div className="drag-handler flex items-center flex-grow px-2 h-full cursor-move">
+            <div className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full cursor-move">
               <div
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
@@ -109,7 +94,7 @@ export default function Window(props: WindowProps) {
                 ${isTopWindow ? 'hidden' : ''}
               `}
             />
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               <span
                 title="最小化"
                 prevent-to-front="true"
@@ -144,7 +129,7 @@ export default function Window(props: WindowProps) {
             />
           </div>
         </div>
-      </Draggable>
+      </Rnd>
     </>
   )
 }
