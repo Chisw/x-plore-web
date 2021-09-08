@@ -5,13 +5,14 @@ import {
   DocumentBlank32,
   DocumentPdf32,
   Folder32,
+  FolderDetails32,
   Image32,
   Music32,
   Video32,
   Zip32,
 } from '@carbon/icons-react'
 import { useMemo } from 'react'
-import { IItemIcon } from '../utils/types'
+import { IDirItemIcon } from '../utils/types'
 import dirAndroid from '../img/icons/dir-android.png'
 import dirAlipay from '../img/icons/dir-alipay.png'
 import dirAutonavi from '../img/icons/dir-autonavi.png'
@@ -28,19 +29,25 @@ import dirMi from '../img/icons/dir-mi.png'
 import dirQQBrowser from '../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
 
-const DEFAULT_ITEM_ICON: IItemIcon = {
+const DEFAULT_ITEM_ICON: IDirItemIcon = {
   name: 'unknown',
   icon: <DocumentBlank32 />,
   bg: 'from-gray-300 to-gray-400 border-gray-400',
   match: [],
 }
 
-const ITEM_ICON_LIST: IItemIcon[] = [
+const ITEM_ICON_LIST: IDirItemIcon[] = [
+  {
+    name: 'folder',
+    icon: <FolderDetails32 />,
+    bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
+    match: ['_dir'],
+  },
   {
     name: 'folder',
     icon: <Folder32 />,
     bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
-    match: ['_dir'],
+    match: ['_dir_empty'],
   },
   {
     name: 'image',

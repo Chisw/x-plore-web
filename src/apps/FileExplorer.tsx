@@ -1,4 +1,4 @@
-import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, VmdkDisk16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, VmdkDisk16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16, CropGrowth32 } from '@carbon/icons-react'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
@@ -7,7 +7,7 @@ import { itemSorter } from '../utils'
 import { getDirItems } from '../utils/api'
 import { dirItemConverter } from '../utils/converters'
 import { rootInfoState } from '../utils/state'
-import { AppComponentProps } from '../utils/types'
+import { AppComponentProps, IHistory } from '../utils/types'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -17,39 +17,89 @@ export default function FileExplorer(props: AppComponentProps) {
   const [rootInfo] = useRecoilState(rootInfoState)
   const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
-  const [historyList, setHistoryList] = useState<string[]>([])
+  const [history, setHistory] = useState<IHistory>({ indicator: -1, list: [] })
+
+  const {
+    volumeList,
+    volumeMountList,
+  } = useMemo(() => {
+    const { volumeList } = rootInfo
+    const volumeMountList = volumeList.map(v => v.mount)
+    return {
+      volumeList,
+      volumeMountList,
+    }
+  }, [rootInfo])
 
   useEffect(() => {
-    console.log('historyList', historyList)
-  }, [historyList])
+    const title: string = volumeMountList.includes(currentPath)
+      ? currentPath
+      : currentPath.split('/').pop() as string
+    setHeaderTitle(title)
+  }, [currentPath, setHeaderTitle, volumeMountList])
 
-  const { fetch, loading, data, setData } = useFetch(mount => getDirItems(mount as string))
+  const { fetch, loading, data, setData } = useFetch(path => getDirItems(path as string))
 
-  const updateHistoryList = useCallback((path: string) => {
-    setHistoryList([...historyList, path])
-  }, [historyList, setHistoryList])
+  const fetchPath = useCallback((path) => {
+    setData(null)
+    fetch(path)
+  }, [setData, fetch])
+
+  const updateHistory = useCallback((direction: 1 | -1, path?: string) => {
+    const { indicator: _ind, list: _li } = history
+    const indicator: number = _ind + direction
+    let list = [..._li]
+    if (direction === 1) {
+      if (path) {
+        list = list.filter((i, index) => index < indicator)
+        list.push(path)
+      }
+    }
+    setHistory({ indicator, list })
+  }, [history])
 
   const handleVolumeClick = useCallback((volumeMount: string) => {
-    setData(null)
-    fetch(volumeMount)
-
     setCurrentVolume(volumeMount)
-
     setCurrentPath(volumeMount)
-    updateHistoryList(volumeMount)
-
-  }, [fetch, setData, updateHistoryList])
+    fetchPath(volumeMount)
+    updateHistory(1, volumeMount)
+  }, [fetchPath, updateHistory])
 
   const handleDirClick = useCallback((dirMount: string) => {
     const newPath = `${currentPath}/${dirMount}`
-    setData(null)
-    fetch(newPath)
-
     setCurrentPath(newPath)
-    updateHistoryList(newPath)
+    fetchPath(newPath)
+    updateHistory(1, newPath)
+  }, [fetchPath, currentPath, updateHistory])
 
-    setHeaderTitle(dirMount)
-  }, [fetch, currentPath, setData, setHeaderTitle, updateHistoryList])
+  const handleNavBack = useCallback(() => {
+    const { indicator: _ind, list: _li } = history
+    const targetPath = _li[_ind - 1]
+    setCurrentPath(targetPath)
+    fetchPath(targetPath)
+    updateHistory(-1)
+  }, [history, updateHistory, fetchPath])
+
+  const handleNavForward = useCallback(() => {
+    const { indicator: _ind, list: _li } = history
+    const targetPath = _li[_ind + 1]
+    setCurrentPath(targetPath)
+    fetchPath(targetPath)
+    updateHistory(1)
+  }, [history, updateHistory, fetchPath])
+
+  const handleRefresh = useCallback(() => {
+    fetchPath(currentPath)
+  }, [fetchPath, currentPath])
+
+  const handleBackToTop = useCallback(() => {
+    const list = currentPath.split('/')
+    list.pop()
+    const newPath = list.join('/')
+    setCurrentPath(newPath)
+    fetchPath(newPath)
+    updateHistory(1, newPath)
+  }, [currentPath, fetchPath, setCurrentPath, updateHistory])
 
   const {
     dirItems,
@@ -80,7 +130,7 @@ export default function FileExplorer(props: AppComponentProps) {
         <div className="p-2 w-64 h-full flex-shrink-0 overflow-x-hidden overflow-y-auto border-r select-none">
           <p className="p-1 text-xs text-gray-400">宗卷</p>
           <div>
-            {rootInfo.volumeList.map(({ label, mount }, volumeIndex) => {
+            {volumeList.map(({ label, mount }, volumeIndex) => {
               const title = `${mount} (${label})`
               const isActive = mount === currentVolume
               const canGoVolume = currentPath !== mount
@@ -89,10 +139,10 @@ export default function FileExplorer(props: AppComponentProps) {
                   key={volumeIndex}
                   title={title}
                   className={`
-                    mb-1 p-1 text-xs flex items-center rounded
+                    mb-1 p-1 text-xs flex items-center rounded cursor-pointer
                     ${isActive
                       ? 'bg-gray-300 text-black'
-                      : 'text-gray-500 cursor-pointer hover:bg-gray-200 hover:text-black'
+                      : 'text-gray-500 hover:bg-gray-200 hover:text-black'
                     }
                   `}
                   onClick={() => canGoVolume && handleVolumeClick(mount)}
@@ -112,73 +162,72 @@ export default function FileExplorer(props: AppComponentProps) {
             <div className="flex items-center">
               <Folder16 />
               &nbsp;
-              <span>{dirCount}</span>
+              <span>{loading ? '-' : dirCount}</span>
               &emsp;
               <DocumentBlank16 />
               &nbsp;
-              <span>{fileCount}</span>
+              <span>{loading ? '-' : fileCount}</span>
             </div>
           </div>
           {/* tool bar */}
-          <div className="h-8 bg-gray-100 flex-shrink-0 border-b flex">
+          <div className="h-8 flex-shrink-0 border-b flex">
             <ToolButton
               title="后退"
-              className="border-r"
+              disabled={history.indicator <= 0}
+              onClick={handleNavBack}
             >
               <ChevronLeft16 />
             </ToolButton>
             <ToolButton
               title="前进"
-              className="border-r"
+              disabled={history.list.length === history.indicator + 1}
+              onClick={handleNavForward}
             >
               <ChevronRight16 />
             </ToolButton>
             <ToolButton
               title="刷新"
-              className="border-r"
+              disabled={loading || !currentPath}
+              onClick={handleRefresh}
             >
               <Renew16 />
             </ToolButton>
             <ToolButton
               title="返回上级"
-              className="border-r"
+              disabled={!currentPath || volumeMountList.includes(currentPath)}
+              onClick={handleBackToTop}
             >
               <ArrowUp16 />
             </ToolButton>
 
             <ToolButton
               title="新建文件夹"
-              className="ml-4 border-l border-r"
+              className="border-l"
             >
               <FolderAdd16 />
             </ToolButton>
             <ToolButton
               title="重命名"
-              className="border-r"
             >
               <Edit16 />
             </ToolButton>
             <ToolButton
               title="上传"
-              className="border-r"
             >
               <Export16 />
             </ToolButton>
             <ToolButton
               title="下载"
-              className="border-r"
             >
               <Download16 />
             </ToolButton>
             <ToolButton
               title="收藏"
-              className="border-r"
             >
               <Star16 />
             </ToolButton>
             <ToolButton
               title="删除"
-              className="border-r"
             >
               <TrashCan16 />
             </ToolButton>
@@ -193,31 +242,33 @@ export default function FileExplorer(props: AppComponentProps) {
             </ToolButton>
             <ToolButton
               title="选择"
-              className="border-l"
             >
               <Checkmark16 />
             </ToolButton>
             <ToolButton
               title="显隐"
-              className="border-l"
             >
               <View16 />
             </ToolButton>
             <ToolButton
               title="展示方式"
-              className="border-l"
             >
               <Grid16 />
             </ToolButton>
           </div>
           <div
             className={`
-              p-4 flex-grow overflow-x-hidden overflow-y-auto
+              relative p-2 flex-grow overflow-x-hidden overflow-y-auto
               ${loading ? 'bg-loading' : ''}
             `}
           >
+            {(!loading && dirItems.length === 0) && (
+              <div className="absolute inset-0 p-10 flex justify-end items-end text-gray-200">
+                <CropGrowth32 />
+              </div>
+            )}
             <div className="flex flex-wrap">
-              {dirItems.map(({ name, type, hidden }) => {
+              {dirItems.map(({ name, type, hidden, hasChildren }) => {
                 return (
                   <div
                     key={encodeURIComponent(name)}
@@ -230,7 +281,13 @@ export default function FileExplorer(props: AppComponentProps) {
                   >
                     <div className="text-center">
                       <Icon
-                        itemName={type === 1 ? `${name}._dir` : name}
+                        itemName={
+                          type === 1
+                            ? hasChildren
+                              ? `${name}._dir`
+                              : `${name}._dir_empty`
+                            : name
+                        }
                       />
                     </div>
                     <p className="mt-2 text-xs text-center text-gray-700 truncate">{name}</p>
@@ -249,6 +306,8 @@ interface ToolButtonProps {
   title: string
   children: ReactNode
   className?: string
+  onClick?: () => void
+  disabled?: boolean
 }
 
 function ToolButton(props: ToolButtonProps) {
@@ -257,16 +316,22 @@ function ToolButton(props: ToolButtonProps) {
     title,
     children,
     className = '',
+    onClick = () => {},
+    disabled = false,
   } = props
 
   return (
     <div
       title={title}
       className={`
-        w-8 h-full flex justify-center items-center cursor-pointer
-        bg-white text-gray-500 hover:text-black active:bg-gray-200
+        w-8 h-full flex justify-center items-center
+        ${disabled
+          ? 'cursor-not-allowed text-gray-200'
+          : 'cursor-pointer bg-white text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200'
+        }
         ${className}
       `}
+      onClick={() => !disabled && onClick()}
     >
       {children}
     </div>

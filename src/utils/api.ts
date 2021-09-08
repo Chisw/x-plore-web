@@ -5,7 +5,7 @@ export const getRootInfo = async () => {
   return data
 }
 
-export const getDirItems = async (mount: string) => {
-  const data = await fetch(`${BASE_URL}${mount}?cmd=list`, { method: 'GET' }).then(res => res.json())
+export const getDirItems = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=list`, { method: 'GET' }).then(res => res.json())
   return data
 }

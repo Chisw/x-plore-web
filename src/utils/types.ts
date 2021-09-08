@@ -42,7 +42,7 @@ export interface IRootInfo {
   volumeList: IVolume[]
 }
 
-export interface IDirectoryItem {
+export interface IDirItem {
   name: string
   type: number
   size?: number
@@ -52,9 +52,14 @@ export interface IDirectoryItem {
   hasChildren?: boolean
 }
 
-export interface IItemIcon {
+export interface IDirItemIcon {
   name: string
   icon: ReactNode
   bg: string
   match: string[]
+}
+
+export interface IHistory {
+  indicator: number
+  list: string[]
 }
