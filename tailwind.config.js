@@ -148,8 +148,10 @@ module.exports = {
   },
   variants: {
     display: ['hover', 'active', 'group-hover'],
+    color: ['hover', 'active'],
     backgroundColor: ['hover', 'active'],
-    opacity: ['hover', 'active'],
+    opacity: ['hover', 'active', 'group-hover'],
+    visibility: ['hover', 'active', 'group-hover'],
   },
   plugins: [],
 }

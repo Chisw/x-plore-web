@@ -1,9 +1,9 @@
-import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, VmdkDisk16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16, CropGrowth32 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ChevronLeft16, ChevronRight16, VmdkDisk16, DocumentBlank16, Download16, Edit16, Export16, Filter16, Folder16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16, CropGrowth32, Copy16 } from '@carbon/icons-react'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from '../components/Icon'
 import useFetch from '../hooks/useFetch'
-import { itemSorter } from '../utils'
+import { copy, itemSorter } from '../utils'
 import { getDirItems } from '../utils/api'
 import { dirItemConverter } from '../utils/converters'
 import { rootInfoState } from '../utils/state'
@@ -72,6 +72,12 @@ export default function FileExplorer(props: AppComponentProps) {
     updateHistory(1, newPath)
   }, [fetchPath, currentPath, updateHistory])
 
+  const handleGoFullPath = useCallback((fullPath: string) => {
+    setCurrentPath(fullPath)
+    fetchPath(fullPath)
+    updateHistory(1, fullPath)
+  }, [fetchPath, updateHistory])
+
   const handleNavBack = useCallback(() => {
     const { indicator: _ind, list: _li } = history
     const targetPath = _li[_ind - 1]
@@ -100,6 +106,12 @@ export default function FileExplorer(props: AppComponentProps) {
     fetchPath(newPath)
     updateHistory(1, newPath)
   }, [currentPath, fetchPath, setCurrentPath, updateHistory])
+
+  useEffect(() => {
+    if (!currentPath && volumeList.length) {
+      handleVolumeClick(volumeList[0].mount)
+    }
+  }, [currentPath, volumeList, handleVolumeClick])
 
   const {
     dirItems,
@@ -133,7 +145,7 @@ export default function FileExplorer(props: AppComponentProps) {
             {volumeList.map(({ label, mount }, volumeIndex) => {
               const title = `${mount} (${label})`
               const isActive = mount === currentVolume
-              const canGoVolume = currentPath !== mount
+              const canVolumeClick = currentPath !== mount
               return (
                 <div
                   key={volumeIndex}
@@ -145,7 +157,7 @@ export default function FileExplorer(props: AppComponentProps) {
                       : 'text-gray-500 hover:bg-gray-200 hover:text-black'
                     }
                   `}
-                  onClick={() => canGoVolume && handleVolumeClick(mount)}
+                  onClick={() => canVolumeClick && handleVolumeClick(mount)}
                 >
                   <VmdkDisk16 className="flex-shrink-0" />
                   <span className="ml-1 truncate">{title}</span>
@@ -157,9 +169,23 @@ export default function FileExplorer(props: AppComponentProps) {
         </div>
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
-          <div className="flex-shrink-0 border-b px-2 py-1 text-xs text-gray-500 select-none flex justify-between items-center">
-            <div>{currentPath}</div>
+          <div className="flex-shrink-0 border-b px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center group">
             <div className="flex items-center">
+              <PathLinkList
+                currentPath={currentPath}
+                currentVolume={currentVolume}
+                onDirClick={handleGoFullPath}
+                onVolumeClick={handleVolumeClick}
+              />
+              <span
+                title="复制"
+                className="invisible ml-1 px-1 cursor-pointer group-hover:visible text-xs hover:text-gray-500 active:opacity-50"
+                onClick={() => copy(currentPath)}
+              >
+                <Copy16 />
+              </span>
+            </div>
+            <div className="flex-shrink-0 flex items-center pl-4">
               <Folder16 />
               &nbsp;
               <span>{loading ? '-' : dirCount}</span>
@@ -335,5 +361,66 @@ function ToolButton(props: ToolButtonProps) {
     >
       {children}
     </div>
+  )
+}
+
+
+interface PathLinkListProps {
+  currentPath: string
+  currentVolume: string
+  onDirClick: (mount: string) => void
+  onVolumeClick: (mount: string) => void
+}
+
+function PathLinkList(props: PathLinkListProps) {
+
+  const {
+    currentPath,
+    currentVolume,
+    onDirClick,
+    onVolumeClick,
+  } = props
+
+  const {
+    mountList,
+    isVolumeDisabled,
+  } = useMemo(() => {
+    const mountList = currentPath.replace(currentVolume, '').split('/').filter(Boolean)
+    const isVolumeDisabled = currentPath === currentVolume || !mountList.length
+    return {
+      mountList,
+      isVolumeDisabled,
+    }
+  }, [currentPath, currentVolume])
+
+  if (!currentVolume) return <></>
+
+  return (
+    <span>
+      <span
+        title={currentVolume}
+        className={isVolumeDisabled ? '' : 'cursor-pointer hover:text-black'}
+        onClick={() => !isVolumeDisabled && onVolumeClick(currentVolume)}
+      >
+        {currentVolume}
+      </span>
+      {mountList.map((mount, mountIndex) => {
+        const prefix = mountList.filter((m, mIndex) => mIndex < mountIndex).join('/')
+        const fullPath = `${currentVolume}/${prefix ? `${prefix}/` : ''}${mount}`
+        const isDirDisabled = mountIndex > mountList.length - 2
+        return (
+          <span key={encodeURIComponent(fullPath)}>
+            <span>/</span>
+            <span
+              title={fullPath}
+              className={isDirDisabled ? '' : 'cursor-pointer hover:text-black'}
+              onClick={() => !isDirDisabled && onDirClick(fullPath)}
+            >
+              {mount}
+            </span>
+          </span>
+        )
+      })}
+    </span>
   )
 }
