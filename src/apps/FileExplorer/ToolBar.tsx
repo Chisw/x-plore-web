@@ -8,6 +8,7 @@ export interface IToolBarDisabledMap {
   backToTop: boolean
   newDir: boolean
   rename: boolean
+  delete: boolean
 }
 
 interface ToolBarProps {
@@ -18,6 +19,7 @@ interface ToolBarProps {
   handleBackToTop: () => void
   handleNewDir: () => void
   handleRename: () => void
+  handleDelete: () => void
 }
 
 export default function ToolBar(props: ToolBarProps) {
@@ -30,6 +32,7 @@ export default function ToolBar(props: ToolBarProps) {
     handleBackToTop,
     handleNewDir,
     handleRename,
+    handleDelete,
   } = props
 
   return (
@@ -96,6 +99,8 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="删除"
+          disabled={toolBarDisabledMap.delete}
+          onClick={handleDelete}
         >
           <TrashCan16 />
         </ToolButton>

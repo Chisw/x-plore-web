@@ -24,3 +24,8 @@ export const renameItem = async (path: string, newPath: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=rename&n=${encodeURIComponent(newPath)}`, { method: 'PUT' }).then(res => res.json())
   return data
 }
+
+export const deleteItem = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=delete`, { method: 'DELETE' }).then(res => res.json())
+  return data
+}

@@ -4,7 +4,7 @@ import useFetch from '../../hooks/useFetch'
 import { getIsDirExist, addNewDir, renameItem } from '../../utils/api'
 
 interface NameInputProps {
-  oldName?: string,
+  name?: string,
   currentPath: string
   onSuccess: (name: string) => void
   onFail: (msg: 'cancel' | 'empty' | 'exist' | 'error') => void
@@ -13,14 +13,14 @@ interface NameInputProps {
 export default function NameInput(props: NameInputProps) {
 
   const {
-    oldName = '',
+    name = '',
     currentPath,
     onSuccess,
     onFail,
   } = props
 
   const [isExist, setIsExist] = useState(false)
-  const [inputValue, setInputValue] = useState(oldName)
+  const [inputValue, setInputValue] = useState(name)
 
   const handleInputChange = useCallback((e: any) => {
     setIsExist(false)
@@ -36,14 +36,16 @@ export default function NameInput(props: NameInputProps) {
     if (!newName) {
       onFail('empty')
     } else {
+      if (name && newName === name) onFail('empty')  // no change no request
+
       const path = `${currentPath}/${newName}`
       const { exists } = await fetchExist(path)
       if (exists) {
         onFail('exist')
         setIsExist(true)
       } else {
-        if (oldName) {  // rename
-          const oldPath = `${currentPath}/${oldName}`
+        if (name) {  // rename
+          const oldPath = `${currentPath}/${name}`
           const { ok } = await fetchRename(oldPath, path)
           if (ok) {
             onSuccess(newName)
@@ -60,10 +62,11 @@ export default function NameInput(props: NameInputProps) {
         }
       }
     }
-  }, [oldName, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
+  }, [name, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
 
   return (
     <div
+      id="file-explorer-name-input"
       className={`
         relative mt-2 h-5 bg-white border border-gray-300 rounded
         ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
