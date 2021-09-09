@@ -31,8 +31,8 @@ export default function Window(props: WindowProps) {
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
   const [initIndex] = useState(topWindowIndex)
   const [currentIndex, setCurrentIndex] = useState(initIndex)
-  const [headerLoading, setHeaderLoading] = useState(false)
-  const [headerTitle, setHeaderTitle] = useState('')
+  const [windowLoading, setWindowLoading] = useState(false)
+  const [windowTitle, setWindowTitle] = useState('')
 
   const isTopWindow = currentIndex === topWindowIndex
 
@@ -77,7 +77,7 @@ export default function Window(props: WindowProps) {
           <div
             className={`
               w-full h-8 bg-white flex items-center select-none border-b
-              ${headerLoading ? 'bg-loading' : ''}
+              ${windowLoading ? 'bg-loading' : ''}
             `}
           >
             <div className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full cursor-move">
@@ -85,7 +85,7 @@ export default function Window(props: WindowProps) {
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
               />
-              <span className="ml-2 text-gray-500 text-sm">{headerTitle || title}</span>
+              <span className="ml-2 text-gray-500 text-sm">{windowTitle || title}</span>
             </div>
             {/* Mask: prevent out of focus in iframe */}
             <div
@@ -124,8 +124,8 @@ export default function Window(props: WindowProps) {
             style={{ backgroundImage: bgImg ? `url("${bgImg}")` : undefined }}
           >
             <AppComponent
-              setHeaderLoading={setHeaderLoading}
-              setHeaderTitle={setHeaderTitle}
+              setWindowLoading={setWindowLoading}
+              setWindowTitle={setWindowTitle}
             />
           </div>
         </div>

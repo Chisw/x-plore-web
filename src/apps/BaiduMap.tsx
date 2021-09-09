@@ -3,11 +3,11 @@ import { AppComponentProps } from '../utils/types'
 
 export default function BaiduMap(props: AppComponentProps) {
 
-  const { setHeaderLoading } = props
+  const { setWindowLoading } = props
 
   useEffect(() => {
-    setHeaderLoading(true)
-  }, [setHeaderLoading])
+    setWindowLoading(true)
+  }, [setWindowLoading])
 
   return (
     <>
@@ -16,7 +16,7 @@ export default function BaiduMap(props: AppComponentProps) {
           title="app"
           className="w-full h-full"
           src="https://map.baidu.com"
-          onLoad={() => setHeaderLoading(false)}
+          onLoad={() => setWindowLoading(false)}
         />
       </div>
     </>

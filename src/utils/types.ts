@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 
 export interface AppComponentProps {
-  setHeaderLoading: (loading: boolean) => void
-  setHeaderTitle: (title: string) => void
+  setWindowLoading: (loading: boolean) => void
+  setWindowTitle: (title: string) => void
 }
 
 interface IAppComponent {

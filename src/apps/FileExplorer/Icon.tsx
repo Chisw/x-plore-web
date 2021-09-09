@@ -5,28 +5,29 @@ import {
   DocumentBlank32,
   DocumentPdf32,
   Folder32,
-  FolderDetails32,
+  FolderAdd32,
+  // FolderDetails32,
   Image32,
   Music32,
   Video32,
   Zip32,
 } from '@carbon/icons-react'
 import { useMemo } from 'react'
-import { IDirItemIcon } from '../utils/types'
-import dirAndroid from '../img/icons/dir-android.png'
-import dirAlipay from '../img/icons/dir-alipay.png'
-import dirAutonavi from '../img/icons/dir-autonavi.png'
-import dirBackup from '../img/icons/dir-backup.png'
-import dirBrowser from '../img/icons/dir-browser.png'
-import dirCamera from '../img/icons/dir-camera.png'
-import dirDownload from '../img/icons/dir-download.png'
-import dirDuokan from '../img/icons/dir-duokan.png'
-import dirRetroArch from '../img/icons/dir-retroarch.png'
-import dirSogou from '../img/icons/dir-sogou.png'
-import dirTencent from '../img/icons/dir-tencent.png'
-import dirWeiXin from '../img/icons/dir-weixin.png'
-import dirMi from '../img/icons/dir-mi.png'
-import dirQQBrowser from '../img/icons/dir-qq-browser.png'
+import { IDirItemIcon } from '../../utils/types'
+import dirAndroid from '../../img/icons/dir-android.png'
+import dirAlipay from '../../img/icons/dir-alipay.png'
+import dirAutonavi from '../../img/icons/dir-autonavi.png'
+import dirBackup from '../../img/icons/dir-backup.png'
+import dirBrowser from '../../img/icons/dir-browser.png'
+import dirCamera from '../../img/icons/dir-camera.png'
+import dirDownload from '../../img/icons/dir-download.png'
+import dirDuokan from '../../img/icons/dir-duokan.png'
+import dirRetroArch from '../../img/icons/dir-retroarch.png'
+import dirSogou from '../../img/icons/dir-sogou.png'
+import dirTencent from '../../img/icons/dir-tencent.png'
+import dirWeiXin from '../../img/icons/dir-weixin.png'
+import dirMi from '../../img/icons/dir-mi.png'
+import dirQQBrowser from '../../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
 
 const DEFAULT_ITEM_ICON: IDirItemIcon = {
@@ -39,9 +40,15 @@ const DEFAULT_ITEM_ICON: IDirItemIcon = {
 const ITEM_ICON_LIST: IDirItemIcon[] = [
   {
     name: 'folder',
-    icon: <FolderDetails32 />,
+    icon: <Folder32 />,
     bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
     match: ['_dir'],
+  },
+  {
+    name: 'folder',
+    icon: <FolderAdd32 />,
+    bg: 'from-yellow-200 to-yellow-400 border-yellow-300',
+    match: ['_dir_new'],
   },
   {
     name: 'folder',

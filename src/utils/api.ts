@@ -9,3 +9,13 @@ export const getDirItems = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=list`, { method: 'GET' }).then(res => res.json())
   return data
 }
+
+export const getIsDirExist = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=exists`, { method: 'GET' }).then(res => res.json())
+  return data
+}
+
+export const putNewDir = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=new_dir`, { method: 'PUT' }).then(res => res.json())
+  return data
+}

@@ -3,11 +3,11 @@ import { AppComponentProps } from '../utils/types'
 
 export default function PS(props: AppComponentProps) {
 
-  const { setHeaderLoading } = props
+  const { setWindowLoading } = props
 
   useEffect(() => {
-    setHeaderLoading(true)
-  }, [setHeaderLoading])
+    setWindowLoading(true)
+  }, [setWindowLoading])
 
   return (
     <>
@@ -16,7 +16,7 @@ export default function PS(props: AppComponentProps) {
           title="app"
           className="w-full h-full"
           src="https://ps.gaoding.com"
-          onLoad={() => setHeaderLoading(false)}
+          onLoad={() => setWindowLoading(false)}
         />
       </div>
     </>
