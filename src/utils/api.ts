@@ -15,7 +15,12 @@ export const getIsDirExist = async (path: string) => {
   return data
 }
 
-export const putNewDir = async (path: string) => {
+export const addNewDir = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=new_dir`, { method: 'PUT' }).then(res => res.json())
+  return data
+}
+
+export const renameItem = async (path: string, newPath: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=rename&n=${encodeURIComponent(newPath)}`, { method: 'PUT' }).then(res => res.json())
   return data
 }

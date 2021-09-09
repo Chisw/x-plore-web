@@ -7,6 +7,7 @@ export interface IToolBarDisabledMap {
   refresh: boolean
   backToTop: boolean
   newDir: boolean
+  rename: boolean
 }
 
 interface ToolBarProps {
@@ -16,6 +17,7 @@ interface ToolBarProps {
   handleRefresh: () => void
   handleBackToTop: () => void
   handleNewDir: () => void
+  handleRename: () => void
 }
 
 export default function ToolBar(props: ToolBarProps) {
@@ -27,6 +29,7 @@ export default function ToolBar(props: ToolBarProps) {
     handleRefresh,
     handleBackToTop,
     handleNewDir,
+    handleRename,
   } = props
 
   return (
@@ -71,6 +74,8 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="重命名"
+          disabled={toolBarDisabledMap.rename}
+          onClick={handleRename}
         >
           <Edit16 />
         </ToolButton>

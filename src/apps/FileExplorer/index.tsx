@@ -1,4 +1,4 @@
-import { VmdkDisk16, DocumentBlank16,Folder16, CropGrowth32 } from '@carbon/icons-react'
+import { VmdkDisk16, DocumentBlank16,Folder16, CropGrowth32, Checkmark16 } from '@carbon/icons-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
@@ -22,6 +22,8 @@ export default function FileExplorer(props: AppComponentProps) {
   const [currentPath, setCurrentPath] = useState('')
   const [history, setHistory] = useState<IHistory>({ indicator: -1, list: [] })
   const [newDirShow, setNewDirShow] = useState(false)
+  const [selectedNames, setSelectedNames] = useState<string[]>([])
+  const [renameShow, setRenameShow] = useState(false)
 
   const { volumeList, volumeMountList } = useMemo(() => {
     const { volumeList } = rootInfo
@@ -36,7 +38,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setWindowTitle(title)
   }, [currentPath, setWindowTitle, isCurrentPathVolume])
 
-  const { fetch, loading, data, setData } = useFetch(path => getDirItems(path as string))
+  const { fetch, loading, data, setData } = useFetch((path: string) => getDirItems(path))
 
   const fetchPath = useCallback((path) => {
     setData(null)
@@ -52,8 +54,9 @@ export default function FileExplorer(props: AppComponentProps) {
       refresh: loading || !currentPath,
       backToTop: !currentPath || isCurrentPathVolume,
       newDir: newDirShow,
+      rename: selectedNames.length !== 1,
     }
-  }, [history, loading, currentPath, isCurrentPathVolume, newDirShow])
+  }, [history, loading, currentPath, isCurrentPathVolume, newDirShow, selectedNames])
 
   const updateHistory = useCallback((direction: 1 | -1, path?: string) => {
     const { indicator: ind, list: li } = history
@@ -75,7 +78,7 @@ export default function FileExplorer(props: AppComponentProps) {
     updateHistory(1, volumeMount)
   }, [fetchPath, updateHistory])
 
-  const handleDirClick = useCallback((dirMount: string) => {
+  const handleDirOpen = useCallback((dirMount: string) => {
     const newPath = `${currentPath}/${dirMount}`
     setCurrentPath(newPath)
     fetchPath(newPath)
@@ -105,6 +108,7 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [history, updateHistory, fetchPath])
 
   const handleRefresh = useCallback(() => {
+    setSelectedNames([])
     fetchPath(currentPath)
   }, [fetchPath, currentPath])
 
@@ -121,11 +125,22 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirShow(true)
   }, [])
 
+  const handleItemSelect = useCallback((name: string) => {
+    // const names = [...selectedNames]
+    setSelectedNames([name])
+  }, [])
+
+  const handleRename = useCallback(() => {
+    setRenameShow(true)
+  }, [])
+
   useEffect(() => {
     if (!currentPath && volumeList.length) {
       handleVolumeClick(volumeList[0].mount)
     }
   }, [currentPath, volumeList, handleVolumeClick])
+
+  useEffect(() => setSelectedNames([]), [currentPath])
 
   const { dirItems, dirCount, fileCount } = useMemo(() => {
     const dirItems = data ? dirItemConverter(data).sort(itemSorter) : []
@@ -183,6 +198,12 @@ export default function FileExplorer(props: AppComponentProps) {
               onVolumeClick={handleVolumeClick}
             />
             <div className="flex-shrink-0 flex items-center pl-4">
+              {!!selectedNames.length && (
+                <>
+                  <Checkmark16 />&nbsp;<span>{loading ? '-' : selectedNames.length}</span>
+                  &emsp;
+                </>
+              )}
               <Folder16 />&nbsp;<span>{loading ? '-' : dirCount}</span>
               &emsp;
               <DocumentBlank16 />&nbsp;<span>{loading ? '-' : fileCount}</span>
@@ -195,12 +216,16 @@ export default function FileExplorer(props: AppComponentProps) {
             handleRefresh={handleRefresh}
             handleBackToTop={handleBackToTop}
             handleNewDir={handleNewDir}
+            handleRename={handleRename}
           />
           <div
             className={`
               relative p-2 flex-grow overflow-x-hidden overflow-y-auto
               ${loading ? 'bg-loading' : ''}
             `}
+            onClick={() => {
+              setSelectedNames([])
+            }}
           >
             {(!loading && dirItems.length === 0) && (
               <div className="absolute inset-0 p-10 flex justify-end items-end text-gray-200">
@@ -209,43 +234,74 @@ export default function FileExplorer(props: AppComponentProps) {
             )}
             <div className="flex flex-wrap">
               {newDirShow && (
-                <div className="px-1 py-4 w-32 overflow-hidden hover:bg-gray-100 rounded select-none">
+                <div className="m-2 px-1 py-4 w-28 overflow-hidden hover:bg-gray-100 rounded select-none">
                   <div className="text-center">
                     <Icon itemName="template._dir_new"/>
                   </div>
                   <NameInput
                     currentPath={currentPath}
-                    onSuccess={() => {
+                    onSuccess={name => {
                       setNewDirShow(false)
                       handleRefresh()
+                      setSelectedNames([name])
                     }}
                     onFail={msg => ['cancel', 'empty'].includes(msg) && setNewDirShow(false)}
                   />
                 </div>
               )}
               {dirItems.map(({ name, type, hidden, hasChildren }) => {
+                const isDir = type === 1
+                const isSelected = selectedNames.includes(name)
                 return (
                   <div
                     key={encodeURIComponent(name)}
-                    title={name}
                     className={`
-                      px-1 py-4 w-32 overflow-hidden hover:bg-gray-100 rounded select-none
+                      m-2 px-1 py-4 w-28 overflow-hidden rounded select-none hover:bg-gray-100
                       ${hidden ? 'opacity-50' : ''}
+                      ${isSelected ? 'bg-gray-100' : ''}
                     `}
-                    onDoubleClick={() => type === 1 && handleDirClick(name)}
+                    onClick={e => {
+                      e.stopPropagation()
+                      setRenameShow(false)
+                      handleItemSelect(name)
+                    }}
+                    onDoubleClick={() => isDir && handleDirOpen(name)}
                   >
                     <div className="text-center">
                       <Icon
                         itemName={
-                          type === 1
-                            ? hasChildren
-                              ? `${name}._dir`
-                              : `${name}._dir_empty`
+                          isDir
+                            ? `${name}._dir${hasChildren ? '' : '_empty'}`
                             : name
                         }
                       />
                     </div>
-                    <p className="mt-2 text-xs text-center text-gray-700 truncate">{name}</p>
+                    {(isSelected &&renameShow) ? (
+                      <NameInput
+                        oldName={name}
+                        currentPath={currentPath}
+                        onSuccess={name => {
+                          setRenameShow(false)
+                          handleRefresh()
+                          setSelectedNames([name])
+                        }}
+                        onFail={msg => ['cancel', 'empty'].includes(msg) && setRenameShow(false)}
+                      />
+                    ) : (
+                      <div
+                        title={name}
+                        className="mt-2 text-center"
+                      >
+                        <span
+                          className={`
+                            inline-block px-2 max-w-full rounded truncate text-xs
+                            ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
+                          `}
+                        >
+                          {name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
               })}

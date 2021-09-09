@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react'
 
-export default function useFetch(fn: (mount?: string) => any) {
+export default function useFetch(fn: (...args: any) => any) {
 
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
-  const fetch = useCallback(async (mount?: string) => {
+  const fetch = useCallback(async (...args) => {
     try {
       setLoading(true)
-      const data = await fn(mount)
+      const data = await fn(...args)
       setData(data)
       setLoading(false)
       return data
