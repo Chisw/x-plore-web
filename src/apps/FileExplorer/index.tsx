@@ -1,5 +1,5 @@
 import { VmdkDisk16, CropGrowth32 } from '@carbon/icons-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
@@ -26,6 +26,10 @@ export default function FileExplorer(props: AppComponentProps) {
   const [selectedNames, setSelectedNames] = useState<string[]>([])
   const [renameMode, setRenameMode] = useState(false)
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
+
+  const rectRef = useRef(null)
+  const containerRef = useRef(null)
+  const containerInnerRef = useRef(null)
 
   const { volumeList, volumeMountList } = useMemo(() => {
     const { volumeList } = rootInfo
@@ -133,8 +137,8 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => {
     if (waitScrollToSelected && !loading) {
-      const scroll = document.getElementById('scroll-container')
-      const target: any = document.querySelector('#scroll-container .selected-item')
+      const scroll = document.getElementById('dir-items-container')
+      const target: any = document.querySelector('#dir-items-container .selected-item')
       const top = target ? target.offsetTop : 0
       scroll!.scrollTo({ top, behavior: 'smooth' })
       setWaitScrollToSelected(false)
@@ -253,6 +257,131 @@ export default function FileExplorer(props: AppComponentProps) {
     return () => document.removeEventListener('keydown', keyboardListener)
   }, [isTopWindow, handleSelectAll, newDirMode, renameMode])
 
+  const handleRectSelect = useCallback((rectArea: { startX: number, startY: number, endX: number, endY: number }) => {
+    const items = document.querySelectorAll('.dir-item')
+    if (!items.length) return
+    const { startX, startY, endX, endY } = rectArea
+    const indexList: number[] = []
+    items.forEach((item: any, itemIndex) => {
+      const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = item
+      if (
+        offsetTop >= startY &&
+        offsetLeft >= startX &&
+        (offsetTop + offsetHeight) <= endY &&
+        (offsetLeft + offsetWidth) <= endX
+      ) {
+        indexList.push(itemIndex)
+      }
+    })
+    const names = dirItemNames.filter((n, nIndex) => indexList.includes(nIndex))
+    setSelectedNames(names)
+  }, [setSelectedNames, dirItemNames])
+
+  useEffect(() => {
+    const rect: any = rectRef.current
+    const container: any = containerRef.current
+    const containerInner: any = containerInnerRef.current
+    if (!rect || !container || !containerInner) return
+
+    let isRectShow = false
+    let isMouseDown = false
+    let startX = 0
+    let startY = 0
+    let endX = 0
+    let endY = 0
+    let rectTop = 0
+    let rectLeft = 0
+    let rectWidth = 0
+    let rectHeight = 0
+    let containerTop = 0
+    let containerLeft = 0
+    let containerInnerWidth = 0
+    let containerInnerHeight = 0
+
+    const mousedownListener = (e: any) => {
+      if (e.target.getAttribute('id') !== 'dir-items-container-inner') return
+
+      isRectShow = true
+      isMouseDown = true
+
+      const event = window.event || e
+      const { top, left } = container.getBoundingClientRect()
+      const { width, height } = containerInner.getBoundingClientRect()
+
+      containerTop = top
+      containerLeft = left
+      containerInnerWidth = width
+      containerInnerHeight = height
+
+      startX = (event.x || event.clientX) - containerLeft
+      startY = (event.y || event.clientY) - containerTop + container.scrollTop
+      rect.style.left = `${startX}px`
+      rect.style.top = `${startY}px`
+    }
+
+    const mousemoveListener = (e: any) => {
+      if (!isRectShow) return
+      const event: any = window.event || e
+      if (isMouseDown) {
+        endX = (event.x || event.clientX) - containerLeft
+        endY = (event.y || event.clientY) - containerTop + container.scrollTop
+
+        const paddingAndBorderOffset = +16 -2
+        const maxWidth = endX > startX
+          ? containerInnerWidth - startX + paddingAndBorderOffset
+          : startX
+        const maxHeight = endY > startY
+          ? containerInnerHeight - startY + paddingAndBorderOffset
+          : startY
+
+        const moveTop = Math.min(endY, startY)
+        const moveLeft = Math.min(endX, startX)
+        const moveWidth = Math.abs(endX - startX)
+        const moveHeight = Math.abs(endY - startY)
+
+        rectTop = Math.max(moveTop, 0)
+        rectLeft = Math.max(moveLeft, 0)
+        rectWidth = Math.min(moveWidth, maxWidth)
+        rectHeight = Math.min(moveHeight, maxHeight)
+
+        rect.style.top = `${rectTop}px`
+        rect.style.left = `${rectLeft}px`
+        rect.style.width = `${rectWidth}px`
+        rect.style.height = `${rectHeight}px`
+        rect.style.display = 'block'
+      }
+    }
+
+    const mouseupListener = () => {
+      if (!isRectShow) return
+      isRectShow = false
+      isMouseDown = false
+      handleRectSelect({
+        startX: rectLeft,
+        startY: rectTop,
+        endX: rectLeft + rectWidth,
+        endY: rectTop + rectHeight,
+      })
+      rect.style.display = 'none'
+    }
+
+    const bind = () => {
+      container.addEventListener('mousedown', mousedownListener)
+      document.addEventListener('mousemove', mousemoveListener)
+      document.addEventListener('mouseup', mouseupListener)
+    }
+
+    const unbind = () => {
+      container.removeEventListener('mousedown', mousedownListener)
+      document.removeEventListener('mousemove', mousemoveListener)
+      document.removeEventListener('mouseup', mouseupListener)
+    }
+
+    // editUse === 'drag' ? bind() : unbind()
+    bind()
+    return unbind
+  }, [handleRectSelect])
+
   return (
     <>
       <div className="absolute inset-0 flex">
@@ -310,20 +439,29 @@ export default function FileExplorer(props: AppComponentProps) {
             handleSelectAll={handleSelectAll}
           />
           <div
-            id="scroll-container"
+            id="dir-items-container"
+            ref={containerRef}
             className={line(`
               relative p-2 flex-grow overflow-x-hidden overflow-y-auto
               ${loading ? 'bg-loading' : ''}
             `)}
             onClick={handleScrollContainerClick}
           >
+            <div
+              ref={rectRef}
+              className="hidden absolute z-10 border box-content border-gray-400 bg-black-100"
+            />
             {/* empty tip */}
             {(!loading && dirItems.length === 0) && (
               <div className="absolute inset-0 p-10 flex justify-end items-end text-gray-200">
                 <CropGrowth32 />
               </div>
             )}
-            <div className="flex flex-wrap">
+            <div
+              id="dir-items-container-inner"
+              ref={containerInnerRef}
+              className="relative min-h-full flex flex-wrap content-start"
+            >
               {/* new dir */}
               {newDirMode && (
                 <div className="m-2 px-1 py-4 w-28 overflow-hidden hover:bg-gray-100 rounded select-none">
@@ -346,6 +484,7 @@ export default function FileExplorer(props: AppComponentProps) {
                   <div
                     key={encodeURIComponent(name)}
                     className={line(`
+                      dir-item
                       m-2 px-1 py-4 w-28 overflow-hidden rounded select-none hover:bg-gray-100
                       ${hidden ? 'opacity-50' : ''}
                       ${isSelected ? 'selected-item bg-gray-100' : ''}
