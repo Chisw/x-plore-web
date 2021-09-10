@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import { ArrowUp16, Checkmark16, ArrowLeft16, ArrowRight16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { line } from '../../utils'
 
 export interface IToolBarDisabledMap {
   navBack: boolean
@@ -9,6 +10,7 @@ export interface IToolBarDisabledMap {
   newDir: boolean
   rename: boolean
   delete: boolean
+  selectAll: boolean
 }
 
 interface ToolBarProps {
@@ -20,6 +22,7 @@ interface ToolBarProps {
   handleNewDir: () => void
   handleRename: () => void
   handleDelete: () => void
+  handleSelectAll: () => void
 }
 
 export default function ToolBar(props: ToolBarProps) {
@@ -33,6 +36,7 @@ export default function ToolBar(props: ToolBarProps) {
     handleNewDir,
     handleRename,
     handleDelete,
+    handleSelectAll,
   } = props
 
   return (
@@ -115,6 +119,8 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="选择"
+          disabled={toolBarDisabledMap.selectAll}
+          onClick={handleSelectAll}
         >
           <Checkmark16 />
         </ToolButton>
@@ -155,14 +161,14 @@ function ToolButton(props: ToolButtonProps) {
   return (
     <div
       title={title}
-      className={`
+      className={line(`
         w-8 h-full flex justify-center items-center
         ${disabled
           ? 'cursor-not-allowed text-gray-200'
           : 'cursor-pointer bg-white text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200'
         }
         ${className}
-      `}
+      `)}
       onClick={() => !disabled && onClick()}
     >
       {children}

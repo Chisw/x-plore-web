@@ -14,3 +14,22 @@ export const copy = (str: string) => {
   document.execCommand('Copy')
   document.body.removeChild(input)
 }
+
+export const line = (str: string) => str
+  .replace(/\n/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim()
+
+export const convertItemName = (item: IDirItem) => {
+  const { type, name, hasChildren } = item
+  return type === 1
+    ? `${name}._dir${hasChildren ? '' : '_empty'}`
+    : name
+}
+
+export const isEventKey = (e: any, key: string) => {
+  const map: { [KEY: string]: number } = {
+    'A': 65,
+  }
+  return e.keyCode === map[key]
+}

@@ -1,9 +1,10 @@
 import { IApp } from '../utils/types'
 import { Rnd } from 'react-rnd'
 import { Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { runningAppListState } from '../utils/state'
+import { line } from '../utils'
 
 interface WindowProps {
   app: IApp
@@ -34,7 +35,7 @@ export default function Window(props: WindowProps) {
   const [windowLoading, setWindowLoading] = useState(false)
   const [windowTitle, setWindowTitle] = useState('')
 
-  const isTopWindow = currentIndex === topWindowIndex
+  const isTopWindow = useMemo(() => currentIndex === topWindowIndex, [currentIndex, topWindowIndex])
 
   const handleMoveToFront = useCallback((e) => {
     if (e.target.closest('[prevent-to-front]')) return
@@ -65,22 +66,22 @@ export default function Window(props: WindowProps) {
         {...resizeRange}
       >
         <div
-          className={`
+          className={line(`
             absolute inset-0 bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
             border border-gray-500 border-opacity-30 bg-clip-padding
             transition-box-shadow duration-200 flex flex-col
             ${isTopWindow ? 'shadow-xl' : 'shadow'}
-          `}
+          `)}
           onMouseDownCapture={handleMoveToFront}
         >
           {/* header */}
           <div
-            className={`
+            className={line(`
               w-full h-8 bg-white flex items-center select-none border-b
               ${windowLoading ? 'bg-loading' : ''}
-            `}
+            `)}
           >
-            <div className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full cursor-move">
+            <div className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full">
               <div
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
@@ -89,10 +90,10 @@ export default function Window(props: WindowProps) {
             </div>
             {/* Mask: prevent out of focus in iframe */}
             <div
-              className={`
+              className={line(`
                 drag-handler-hover-mask absolute z-10 inset-0 mt-8
                 ${isTopWindow ? 'hidden' : ''}
-              `}
+              `)}
             />
             <div className="flex items-center flex-shrink-0">
               <span
@@ -124,6 +125,7 @@ export default function Window(props: WindowProps) {
             style={{ backgroundImage: bgImg ? `url("${bgImg}")` : undefined }}
           >
             <AppComponent
+              isTopWindow={isTopWindow}
               setWindowLoading={setWindowLoading}
               setWindowTitle={setWindowTitle}
             />

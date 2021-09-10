@@ -1,13 +1,16 @@
 import { WarningAltFilled16 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
+import { line } from '../../utils'
 import { getIsDirExist, addNewDir, renameItem } from '../../utils/api'
+
+export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
 interface NameInputProps {
   name?: string,
   currentPath: string
   onSuccess: (name: string) => void
-  onFail: (msg: 'cancel' | 'empty' | 'exist' | 'error') => void
+  onFail: (failType: NameFailType) => void
 }
 
 export default function NameInput(props: NameInputProps) {
@@ -36,7 +39,7 @@ export default function NameInput(props: NameInputProps) {
     if (!newName) {
       onFail('empty')
     } else {
-      if (name && newName === name) onFail('empty')  // no change no request
+      if (name && newName === name) onFail('no_change')  // no change no request
 
       const path = `${currentPath}/${newName}`
       const { exists } = await fetchExist(path)
@@ -50,14 +53,14 @@ export default function NameInput(props: NameInputProps) {
           if (ok) {
             onSuccess(newName)
           } else {
-            onFail('error')
+            onFail('net_error')
           }
         } else {  // new dir
           const { ok } = await fetchNewDir(path)
           if (ok) {
             onSuccess(newName)
           } else {
-            onFail('error')
+            onFail('net_error')
           }
         }
       }
@@ -66,11 +69,10 @@ export default function NameInput(props: NameInputProps) {
 
   return (
     <div
-      id="file-explorer-name-input"
-      className={`
+      className={line(`
         relative mt-2 h-5 bg-white border border-gray-300 rounded
         ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
-      `}
+      `)}
     >
       {isExist && (
         <span
@@ -81,6 +83,7 @@ export default function NameInput(props: NameInputProps) {
         </span>
       )}
       <input
+        id="file-explorer-name-input"
         autoFocus
         placeholder="文件夹名称"
         className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"

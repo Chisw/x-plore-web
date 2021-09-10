@@ -29,6 +29,7 @@ import dirWeiXin from '../../img/icons/dir-weixin.png'
 import dirMi from '../../img/icons/dir-mi.png'
 import dirQQBrowser from '../../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
+import { line } from '../../utils'
 
 const DEFAULT_ITEM_ICON: IDirItemIcon = {
   name: 'unknown',
@@ -159,12 +160,12 @@ export default function Icon(props: IconProps) {
 
   return (
     <div
-      className={`
+      className={line(`
         relative inline-flex justify-center items-center rounded-lg
         w-12 h-12 text-white bg-gradient-to-b border
         ${bg}
         ${className}
-      `}
+      `)}
     >
       {icon}
       {dirSubIcon && (

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 export interface AppComponentProps {
+  isTopWindow: boolean
   setWindowLoading: (loading: boolean) => void
   setWindowTitle: (title: string) => void
 }
@@ -26,10 +27,13 @@ export interface IApp {
   AppComponent: IAppComponent
 }
 
+// 0: volume  1: directory 2: file
+export type ItemType = 0 | 1 | 2
+
 export interface IVolume {
   label: string
   name: string
-  type: number  // 0: volume  1: directory 2: file
+  type: ItemType
   mount: string
   hasChildren: boolean
   fileSystem: string
@@ -44,7 +48,7 @@ export interface IRootInfo {
 
 export interface IDirItem {
   name: string
-  type: number
+  type: ItemType
   size?: number
   mime?: string
   hidden?: boolean
