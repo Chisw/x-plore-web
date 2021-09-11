@@ -13,6 +13,7 @@ import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameInput, { NameFailType } from './NameInput'
 import Counter from './Counter'
 
+let isRectSelectMode = false
 
 export default function FileExplorer(props: AppComponentProps) {
 
@@ -22,8 +23,8 @@ export default function FileExplorer(props: AppComponentProps) {
   const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
   const [history, setHistory] = useState<IHistory>({ indicator: -1, list: [] })
-  const [newDirMode, setNewDirMode] = useState(false)
   const [selectedNames, setSelectedNames] = useState<string[]>([])
+  const [newDirMode, setNewDirMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
 
@@ -122,7 +123,11 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(true)
   }, [])
 
-  const handleScrollContainerClick = useCallback(() => {
+  const handleDirItemsContainerClick = useCallback((e: any) => {
+    if (isRectSelectMode) {
+      isRectSelectMode = false
+      return
+    }
     const isInputExist = document.getElementById('file-explorer-name-input')
     !isInputExist && setSelectedNames([])
   }, [])
@@ -283,7 +288,6 @@ export default function FileExplorer(props: AppComponentProps) {
     const containerInner: any = containerInnerRef.current
     if (!rect || !container || !containerInner) return
 
-    let isRectShow = false
     let isMouseDown = false
     let startX = 0
     let startY = 0
@@ -301,7 +305,6 @@ export default function FileExplorer(props: AppComponentProps) {
     const mousedownListener = (e: any) => {
       if (e.target.getAttribute('id') !== 'dir-items-container-inner') return
 
-      isRectShow = true
       isMouseDown = true
 
       const event = window.event || e
@@ -320,9 +323,8 @@ export default function FileExplorer(props: AppComponentProps) {
     }
 
     const mousemoveListener = (e: any) => {
-      if (!isRectShow) return
-      const event: any = window.event || e
       if (isMouseDown) {
+        const event: any = window.event || e
         endX = (event.x || event.clientX) - containerLeft
         endY = (event.y || event.clientY) - containerTop + container.scrollTop
 
@@ -334,34 +336,30 @@ export default function FileExplorer(props: AppComponentProps) {
           ? containerInnerHeight - startY + paddingAndBorderOffset
           : startY
 
-        const moveTop = Math.min(endY, startY)
-        const moveLeft = Math.min(endX, startX)
-        const moveWidth = Math.abs(endX - startX)
-        const moveHeight = Math.abs(endY - startY)
-
-        rectTop = Math.max(moveTop, 0)
-        rectLeft = Math.max(moveLeft, 0)
-        rectWidth = Math.min(moveWidth, maxWidth)
-        rectHeight = Math.min(moveHeight, maxHeight)
+        rectTop = Math.max(Math.min(endY, startY), 0)
+        rectLeft = Math.max(Math.min(endX, startX), 0)
+        rectWidth = Math.min(Math.abs(endX - startX), maxWidth)
+        rectHeight = Math.min(Math.abs(endY - startY), maxHeight)
 
         rect.style.top = `${rectTop}px`
         rect.style.left = `${rectLeft}px`
         rect.style.width = `${rectWidth}px`
         rect.style.height = `${rectHeight}px`
         rect.style.display = 'block'
+
+        handleRectSelect({
+          startX: rectLeft,
+          startY: rectTop,
+          endX: rectLeft + rectWidth,
+          endY: rectTop + rectHeight,
+        })
       }
     }
 
-    const mouseupListener = () => {
-      if (!isRectShow) return
-      isRectShow = false
+    const mouseupListener = (e: any) => {
+      if (!isMouseDown) return
       isMouseDown = false
-      handleRectSelect({
-        startX: rectLeft,
-        startY: rectTop,
-        endX: rectLeft + rectWidth,
-        endY: rectTop + rectHeight,
-      })
+      isRectSelectMode = true
       rect.style.display = 'none'
     }
 
@@ -377,7 +375,6 @@ export default function FileExplorer(props: AppComponentProps) {
       document.removeEventListener('mouseup', mouseupListener)
     }
 
-    // editUse === 'drag' ? bind() : unbind()
     bind()
     return unbind
   }, [handleRectSelect])
@@ -445,7 +442,7 @@ export default function FileExplorer(props: AppComponentProps) {
               relative p-2 flex-grow overflow-x-hidden overflow-y-auto
               ${loading ? 'bg-loading' : ''}
             `)}
-            onClick={handleScrollContainerClick}
+            onClick={handleDirItemsContainerClick}
           >
             <div
               ref={rectRef}
@@ -464,7 +461,7 @@ export default function FileExplorer(props: AppComponentProps) {
             >
               {/* new dir */}
               {newDirMode && (
-                <div className="m-2 px-1 py-4 w-28 overflow-hidden hover:bg-gray-100 rounded select-none">
+                <div className="m-2 px-1 py-3 w-28 overflow-hidden hover:bg-gray-100 rounded select-none">
                   <div className="text-center">
                     <Icon itemName="fake._dir_new" />
                   </div>
@@ -485,7 +482,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     key={encodeURIComponent(name)}
                     className={line(`
                       dir-item
-                      m-2 px-1 py-4 w-28 overflow-hidden rounded select-none hover:bg-gray-100
+                      m-2 px-1 py-3 w-28 overflow-hidden rounded select-none hover:bg-gray-100
                       ${hidden ? 'opacity-50' : ''}
                       ${isSelected ? 'selected-item bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
