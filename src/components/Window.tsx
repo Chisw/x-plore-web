@@ -3,13 +3,11 @@ import { Rnd } from 'react-rnd'
 import { Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { runningAppListState } from '../utils/state'
+import { runningAppListState, topWindowIndexState } from '../utils/state'
 import { line } from '../utils'
 
 interface WindowProps {
   app: IApp
-  topWindowIndex: number
-  setTopWindowIndex: (i: number) => void
 }
 
 export default function Window(props: WindowProps) {
@@ -25,10 +23,9 @@ export default function Window(props: WindowProps) {
       resizeRange,
       AppComponent,
     },
-    topWindowIndex,
-    setTopWindowIndex,
   } = props
 
+  const [topWindowIndex, setTopWindowIndex] = useRecoilState(topWindowIndexState)
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
   const [initIndex] = useState(topWindowIndex)
   const [currentIndex, setCurrentIndex] = useState(initIndex)

@@ -96,6 +96,7 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="下载"
+          disabled={toolBarDisabledMap.download}
           onClick={onDownload}
         >
           <Download16 />

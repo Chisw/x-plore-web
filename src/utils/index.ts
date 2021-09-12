@@ -27,13 +27,6 @@ export const convertItemName = (item: IDirItem) => {
     : name
 }
 
-export const isEventKey = (e: any, key: string) => {
-  const map: { [KEY: string]: number } = {
-    'A': 65,
-  }
-  return e.keyCode === map[key]
-}
-
 export const isSameItem = (a: IDirItem, b: IDirItem) => {
   return a.name === b.name && a.type === b.type
 }

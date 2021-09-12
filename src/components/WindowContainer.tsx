@@ -1,13 +1,11 @@
 import { runningAppListState } from '../utils/state'
 import { useRecoilState } from 'recoil'
 import Window from '../components/Window'
-import { useState } from 'react'
 
 
 export default function WindowContainer() {
 
   const [runningAppList] = useRecoilState(runningAppListState)
-  const [topWindowIndex, setTopWindowIndex] = useState(0)
 
   return (
     <>
@@ -27,8 +25,6 @@ export default function WindowContainer() {
           <Window
             key={app.runningId}
             app={app}
-            topWindowIndex={topWindowIndex}
-            setTopWindowIndex={setTopWindowIndex}
           />
         ))}
       </div>

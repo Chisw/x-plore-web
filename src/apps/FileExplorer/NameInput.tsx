@@ -36,35 +36,37 @@ export default function NameInput(props: NameInputProps) {
   const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameItem(path, newPath))
 
   const handleDirNameBlur = useCallback(async (e: any) => {
-    const { value: newName } = e.target
-    if (!newName) {
-      onFail('empty')
-    } else {
-      if (item?.name && newName === item?.name) onFail('no_change')  // no change no request
+    const newName = e.target.value as string
+    const oldName = item?.name
 
-      const path = `${currentPath}/${newName}`
-      const { exists } = await fetchExist(path)
+    if (newName) {
+      if (oldName && newName === oldName) onFail('no_change')  // no change no request
+
+      const newPath = `${currentPath}/${newName}`
+      const { exists } = await fetchExist(newPath)
       if (exists) {
         onFail('exist')
         setIsExist(true)
       } else {
-        if (item?.name) {  // rename
-          const oldPath = `${currentPath}/${item.name}`
-          const { ok } = await fetchRename(oldPath, path)
+        if (oldName) {  // rename
+          const oldPath = `${currentPath}/${oldName}`
+          const { ok } = await fetchRename(oldPath, newPath)
           if (ok) {
-            onSuccess(newName)
+            onSuccess({ ...item!, name: newName })
           } else {
             onFail('net_error')
           }
         } else {  // new dir
-          const { ok } = await fetchNewDir(path)
+          const { ok } = await fetchNewDir(newPath)
           if (ok) {
-            onSuccess(newName)
+            onSuccess({ type: 1, name: newName })
           } else {
             onFail('net_error')
           }
         }
       }
+    } else {
+      onFail('empty')
     }
   }, [item, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
 
@@ -90,7 +92,10 @@ export default function NameInput(props: NameInputProps) {
         className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"
         value={inputValue}
         onChange={handleInputChange}
-        onFocus={() => setIsExist(false)}
+        onFocus={() => {
+          setIsExist(false)
+          ;(document.getElementById('file-explorer-name-input') as any)?.select()
+        }}
         onBlur={handleDirNameBlur}
         onKeyUp={e => {
           if (e.key === 'Enter') {

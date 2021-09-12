@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertItemName, isEventKey, isSameItem, itemSorter, line } from '../../utils'
+import { convertItemName, isSameItem, itemSorter, line } from '../../utils'
 import { deleteItem, downloadItems, getDirItems } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
 import { rootInfoState } from '../../utils/state'
@@ -145,7 +145,7 @@ export default function FileExplorer(props: AppComponentProps) {
     if (waitScrollToSelected && !loading) {
       const scroll = document.getElementById('dir-items-container')
       const target: any = document.querySelector('#dir-items-container .selected-item')
-      const top = target ? target.offsetTop : 0
+      const top = target ? target.offsetTop - 10 : 0
       scroll!.scrollTo({ top, behavior: 'smooth' })
       setWaitScrollToSelected(false)
     }
@@ -159,11 +159,11 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [])
 
   const handleDelete = useCallback(async () => {
-    const msg = selectedItemList.length === 1 ? `[${selectedItemList[0]}]` : `${selectedItemList.length} 个项目`
-    if (window.confirm(`删除 ${msg} ?`)) {
+    const msg = selectedItemList.length === 1 ? selectedItemList[0].name : `${selectedItemList.length} 个项目`
+    if (window.confirm(`删除 ${msg} ？`)) {
       const okList: boolean[] = []
-      for (const name of selectedItemList) {
-        const { ok } = await fetchDelete(`${currentPath}/${name}`)
+      for (const item of selectedItemList) {
+        const { ok } = await fetchDelete(`${currentPath}/${item.name}`)
         okList.push(ok)
       }
       if (okList.every(Boolean)) handleRefresh()
@@ -204,7 +204,7 @@ export default function FileExplorer(props: AppComponentProps) {
       backToTop: !currentPath || isCurrentPathVolume,
       newDir: newDirMode,
       rename: selectedItemList.length !== 1,
-      download: false,
+      download: isItemListEmpty,
       delete: !selectedItemList.length,
       selectAll: isItemListEmpty,
     }
@@ -248,17 +248,17 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [setSelectedItemList, dirItemList, selectedItemList])
 
   useEffect(() => {
-    const keyboardListener = (e: any) => {
-      if ((e.metaKey || e.ctrlKey) && isEventKey(e, 'A')) {
+    const listener = (e: any) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
         handleSelectAll(true)
       }
     }
     if (isTopWindow && !newDirMode && !renameMode) {
-      document.addEventListener('keydown', keyboardListener)
+      document.addEventListener('keydown', listener)
     } else {
-      document.removeEventListener('keydown', keyboardListener)
+      document.removeEventListener('keydown', listener)
     }
-    return () => document.removeEventListener('keydown', keyboardListener)
+    return () => document.removeEventListener('keydown', listener)
   }, [isTopWindow, handleSelectAll, newDirMode, renameMode])
 
   const handleRectSelect = useCallback((rectArea: { startX: number, startY: number, endX: number, endY: number }) => {
@@ -306,7 +306,8 @@ export default function FileExplorer(props: AppComponentProps) {
     const mousedownListener = (e: any) => {
 
       const isLeftClick = e.which === 1
-      const isInInner = e.target.getAttribute('id') === 'dir-items-container-inner'
+      const isInInner = e.target.getAttribute('id') === 'dir-items-container-inner'  // prevent start moving on items
+
       if (!isLeftClick || !isInInner) return
 
       isMouseDown = true
@@ -332,12 +333,12 @@ export default function FileExplorer(props: AppComponentProps) {
         endX = (event.x || event.clientX) - containerLeft
         endY = (event.y || event.clientY) - containerTop + container.scrollTop
 
-        const paddingAndBorderOffset = +16 -2
+        const borderOffset = -2
         const maxWidth = endX > startX
-          ? containerInnerWidth - startX + paddingAndBorderOffset
+          ? containerInnerWidth - startX + borderOffset
           : startX
         const maxHeight = endY > startY
-          ? containerInnerHeight - startY + paddingAndBorderOffset
+          ? containerInnerHeight - startY + borderOffset
           : startY
 
         rectTop = Math.max(Math.min(endY, startY), 0)

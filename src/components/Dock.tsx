@@ -1,18 +1,20 @@
 import { useCallback } from 'react'
 import { useRecoilState } from 'recoil'
-import { runningAppListState } from '../utils/state'
+import { runningAppListState, topWindowIndexState } from '../utils/state'
 import { APP_LIST } from '../utils/constant'
 import { IApp } from '../utils/types'
 
 
 export default function Dock() {
 
+  const [topWindowIndex, setTopWindowIndex] = useRecoilState(topWindowIndexState)
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
 
   const handleOpenApp = useCallback((app: IApp) => {
+    setTopWindowIndex(topWindowIndex + 1)
     const list = [...runningAppList, { ...app, runningId: Date.now() }]
     setRunningAppList(list)
-  }, [runningAppList, setRunningAppList])
+  }, [topWindowIndex, setTopWindowIndex, runningAppList, setRunningAppList])
 
   return (
     <>
