@@ -140,6 +140,7 @@ const getDirSubIcon: (name: string) => string | undefined = itemName => {
 }
 
 interface IconProps {
+  small?: boolean
   itemName: string
   className?: string
 }
@@ -148,6 +149,7 @@ interface IconProps {
 export default function Icon(props: IconProps) {
 
   const {
+    small = false,
     itemName,
     className = '',
   } = props
@@ -161,8 +163,9 @@ export default function Icon(props: IconProps) {
   return (
     <div
       className={line(`
-        relative inline-flex justify-center items-center rounded-lg
-        w-12 h-12 text-white bg-gradient-to-b border
+        relative inline-flex justify-center items-center
+        text-white bg-gradient-to-b border
+        ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
         ${bg}
         ${className}
       `)}
@@ -170,7 +173,10 @@ export default function Icon(props: IconProps) {
       {icon}
       {dirSubIcon && (
         <div
-          className="absolute right-0 bottom-0 -mr-1 -mb-1 w-5 h-5 bg-center bg-no-repeat bg-contain"
+          className={line(`
+            absolute right-0 bottom-0  bg-center bg-no-repeat bg-contain
+            ${small ? 'w-3 h-3' : '-mr-1 -mb-1 w-5 h-5'}
+          `)}
           style={{ backgroundImage: `url("${dirSubIcon}")` }}
         />
       )}

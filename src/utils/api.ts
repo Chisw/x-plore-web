@@ -69,3 +69,14 @@ export const downloadItems = (path: string, items: IDirItem[]) => {
     window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`)
   }
 }
+
+export const uploadFile = async (path: string, file: File) => {
+  const data = await fetch(`${BASE_URL}${path}/${file.name}?cmd=file&size=${file.size}&file_date=${file.lastModified}`, {
+    method: 'POST',
+    body: file,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    },
+  }).then(res => res.json())
+  return data
+}

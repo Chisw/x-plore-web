@@ -30,3 +30,21 @@ export const convertItemName = (item: IDirItem) => {
 export const isSameItem = (a: IDirItem, b: IDirItem) => {
   return a.name === b.name && a.type === b.type
 }
+
+export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => {
+  if (!unit) {
+    if (0 <= bytes && bytes < 1024) {
+      unit = 'B'
+    } else if (1024 <= bytes && bytes < 1048576) {
+      unit = 'KB'
+    } else if (1048576 <= bytes && bytes < 1073741824) {
+      unit = 'MB'
+    } else {
+      unit = 'GB'
+    }
+  }
+  const level = ['B', 'KB', 'MB', 'GB'].indexOf(unit)
+  const divisor = [1, 1024, 1048576, 1073741824][level]
+  const result = `${(bytes / divisor).toFixed(unit === 'B' ? 0 : 2)} ${unit}`
+  return result
+}

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { ArrowUp16, Checkmark16, ArrowLeft16, ArrowRight16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16 } from '@carbon/icons-react'
+import { ArrowUp16, Checkmark16, ArrowLeft16, ArrowRight16, Download16, Edit16, Export16, Filter16, FolderAdd16, Grid16, Renew16, Star16, TrashCan16, View16, List16 } from '@carbon/icons-react'
 import { line } from '../../utils'
 
 export interface IToolBarDisabledMap {
@@ -16,12 +16,15 @@ export interface IToolBarDisabledMap {
 
 interface ToolBarProps {
   toolBarDisabledMap: IToolBarDisabledMap
+  gridViewMode: boolean
+  setGridMode: (mode: boolean) => void
   onNavBack: () => void
   onNavForward: () => void
   onRefresh: () => void
   onBackToTop: () => void
   onNewDir: () => void
   onRename: () => void
+  onUpload: () => void
   onDownload: () => void
   onDelete: () => void
   onSelectAll: () => void
@@ -31,12 +34,15 @@ export default function ToolBar(props: ToolBarProps) {
 
   const {
     toolBarDisabledMap,
+    gridViewMode,
+    setGridMode,
     onNavBack,
     onNavForward,
     onRefresh,
     onBackToTop,
     onNewDir,
     onRename,
+    onUpload,
     onDownload,
     onDelete,
     onSelectAll,
@@ -91,6 +97,7 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="上传"
+          onClick={onUpload}
         >
           <Export16 />
         </ToolButton>
@@ -136,8 +143,9 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="展示方式"
+          onClick={() => setGridMode(!gridViewMode)}
         >
-          <Grid16 />
+          {gridViewMode ? <List16 /> : <Grid16 />}
         </ToolButton>
       </div>
     </>

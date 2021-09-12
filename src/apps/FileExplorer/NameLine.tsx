@@ -7,24 +7,31 @@ import { IDirItem } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
-interface NameInputProps {
+interface NameLineProps {
+  showInput?: boolean
   item?: IDirItem,
+  isSelected?: boolean
+  gridViewMode: boolean
   currentPath: string
   onSuccess: (item: IDirItem) => void
   onFail: (failType: NameFailType) => void
 }
 
-export default function NameInput(props: NameInputProps) {
+export default function NameLine(props: NameLineProps) {
 
   const {
+    showInput = false,
     item = undefined,
+    isSelected = false,
+    gridViewMode,
     currentPath,
     onSuccess,
     onFail,
   } = props
 
+  const itemName = item?.name
   const [isExist, setIsExist] = useState(false)
-  const [inputValue, setInputValue] = useState(item?.name)
+  const [inputValue, setInputValue] = useState(itemName)
 
   const handleInputChange = useCallback((e: any) => {
     setIsExist(false)
@@ -36,8 +43,8 @@ export default function NameInput(props: NameInputProps) {
   const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameItem(path, newPath))
 
   const handleDirNameBlur = useCallback(async (e: any) => {
-    const newName = e.target.value as string
     const oldName = item?.name
+    const newName = e.target.value as string
 
     if (newName) {
       if (oldName && newName === oldName) onFail('no_change')  // no change no request
@@ -70,10 +77,10 @@ export default function NameInput(props: NameInputProps) {
     }
   }, [item, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
 
-  return (
+  return showInput ? (
     <div
       className={line(`
-        relative mt-2 h-5 bg-white border border-gray-300 rounded
+        relative h-5 bg-white border border-gray-300 rounded
         ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
       `)}
     >
@@ -106,5 +113,16 @@ export default function NameInput(props: NameInputProps) {
         }}
       />
     </div>
+  ) : (
+    <span
+      title={itemName}
+      className={line(`
+        inline-block px-2 rounded truncate text-xs
+        ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
+        ${gridViewMode ? 'max-w-full' : 'w-72'}
+      `)}
+    >
+      {itemName}
+    </span>
   )
 }

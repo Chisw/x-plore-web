@@ -3,17 +3,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertItemName, isSameItem, itemSorter, line } from '../../utils'
-import { deleteItem, downloadItems, getDirItems } from '../../utils/api'
+import { convertItemName, getBytesSize, isSameItem, itemSorter, line } from '../../utils'
+import { deleteItem, downloadItems, getDirItems, uploadFile } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
 import { rootInfoState } from '../../utils/state'
 import { AppComponentProps, IDirItem, IHistory } from '../../utils/types'
 import PathLinkList from './PathLinkList'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
-import NameInput, { NameFailType } from './NameInput'
+import NameLine, { NameFailType } from './NameLine'
 import Counter from './Counter'
 import { throttle } from 'lodash'
+import { DateTime } from 'luxon'
 
+export type ViewShapeType = 'grid' | 'list'
 
 export default function FileExplorer(props: AppComponentProps) {
 
@@ -22,6 +24,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [rootInfo] = useRecoilState(rootInfoState)
   const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
+  const [gridViewMode, setGridMode] = useState(true)
   const [history, setHistory] = useState<IHistory>({ indicator: -1, list: [] })
   const [selectedItemList, setSelectedItemList] = useState<IDirItem[]>([])
   const [newDirMode, setNewDirMode] = useState(false)
@@ -31,6 +34,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const rectRef = useRef(null)
   const containerRef = useRef(null)
   const containerInnerRef = useRef(null)
+  const uploadInputRef = useRef(null)
 
   const { volumeList, volumeMountList } = useMemo(() => {
     const { volumeList } = rootInfo
@@ -47,6 +51,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { fetch, loading, data, setData } = useFetch((path: string) => getDirItems(path))
   const { fetch: fetchDelete, loading: deleting } = useFetch((path: string) => deleteItem(path))
+  const { fetch: fetchUpload, loading: uploading } = useFetch((path: string, file: File) => uploadFile(path, file))
 
   const fetchPath = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
@@ -122,6 +127,15 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList([])
     setNewDirMode(true)
   }, [])
+
+  const handleUploadChange = useCallback(async (e) => {
+    const data = await fetchUpload(currentPath, e.target.files[0])
+    if (data && data.hasDon) {
+      handleRefresh()
+    } else {
+      alert(JSON.stringify(data))
+    }
+  }, [currentPath, fetchUpload, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
     if (
@@ -430,12 +444,15 @@ export default function FileExplorer(props: AppComponentProps) {
           </div>
           <ToolBar
             toolBarDisabledMap={toolBarDisabledMap}
+            gridViewMode={gridViewMode}
+            setGridMode={setGridMode}
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
             onBackToTop={handleBackToTop}
             onNewDir={handleNewDir}
             onRename={() => setRenameMode(true)}
+            onUpload={() => (uploadInputRef.current as any)?.click()}
             onDownload={() => downloadItems(currentPath, selectedItemList)}
             onDelete={handleDelete}
             onSelectAll={handleSelectAll}
@@ -445,7 +462,7 @@ export default function FileExplorer(props: AppComponentProps) {
             ref={containerRef}
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
-              ${loading ? 'bg-loading' : ''}
+              ${(loading || uploading) ? 'bg-loading' : ''}
             `)}
             onMouseDownCapture={handleCancelSelect}
           >
@@ -462,63 +479,76 @@ export default function FileExplorer(props: AppComponentProps) {
             <div
               id="dir-items-container-inner"
               ref={containerInnerRef}
-              className="relative p-2 min-h-full flex flex-wrap content-start"
+              className={line(`
+                relative min-h-full flex flex-wrap content-start
+                ${gridViewMode ? 'p-2' : 'p-4'}
+              `)}
             >
               {/* new dir */}
               {newDirMode && (
-                <div className="m-2 px-1 py-3 w-28 overflow-hidden hover:bg-gray-100 rounded select-none">
-                  <div className="text-center">
-                    <Icon itemName="fake._dir_new" />
+                <div
+                  className={line(`
+                    overflow-hidden rounded select-none hover:bg-gray-100
+                    ${gridViewMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                  `)}
+                >
+                  <div className="flex justify-center items-center">
+                    <Icon small={!gridViewMode} itemName="fake._dir_new" />
                   </div>
-                  <NameInput
-                    currentPath={currentPath}
-                    onSuccess={handleNameSuccess}
-                    onFail={handleNameFail}
-                  />
+                  <div className={`${gridViewMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+                    <NameLine
+                      showInput
+                      gridViewMode={gridViewMode}
+                      currentPath={currentPath}
+                      onSuccess={handleNameSuccess}
+                      onFail={handleNameFail}
+                    />
+                  </div>
                 </div>
               )}
               {/* items */}
               {dirItemList.map(item => {
-                const { name, type, hidden } = item
+                const { name, type, hidden, size, timestamp } = item
                 const isDir = type === 1
-                const isSelected = selectedItemList.find(o => isSameItem(o, item))
+                const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
                 return (
                   <div
                     key={encodeURIComponent(name)}
                     className={line(`
                       dir-item
-                      m-2 px-1 py-3 w-28 overflow-hidden rounded select-none hover:bg-gray-100
-                      ${hidden ? 'opacity-50' : ''}
+                      overflow-hidden rounded select-none
+                      ${gridViewMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                      ${!gridViewMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
                       ${isSelected ? 'selected-item bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
+                      ${hidden ? 'opacity-50' : ''}
                     `)}
                     onClick={e => handleDirItemClick(e, item)}
                     onDoubleClick={() => isDir && handleDirOpen(name)}
                   >
-                    <div className="text-center">
-                      <Icon itemName={convertItemName(item)} />
+                    <div className="flex justify-center items-center">
+                      <Icon small={!gridViewMode} itemName={convertItemName(item)} />
                     </div>
-                    {(renameMode && isSelected) ? (
-                      <NameInput
+                    <div className={`${gridViewMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+                      <NameLine
+                        showInput={renameMode && isSelected}
                         item={item}
+                        isSelected={isSelected}
+                        gridViewMode={gridViewMode}
                         currentPath={currentPath}
                         onSuccess={handleNameSuccess}
                         onFail={handleNameFail}
                       />
-                    ) : (
-                      <div
-                        title={name}
-                        className="mt-2 text-center"
-                      >
-                        <span
-                          className={line(`
-                            inline-block px-2 max-w-full rounded truncate text-xs
-                            ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
-                          `)}
-                        >
-                          {name}
-                        </span>
-                      </div>
+                    </div>
+                    {!gridViewMode && (
+                      <>
+                        <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
+                          {size ? getBytesSize(size) : '--'}
+                        </div>
+                        <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
+                          {timestamp ? DateTime.fromMillis(timestamp).toFormat('yyyy-MM-dd HH:mm:ss') : '--'}
+                        </div>
+                      </>
                     )}
                   </div>
                 )
@@ -527,6 +557,13 @@ export default function FileExplorer(props: AppComponentProps) {
           </div>
         </div>
       </div>
+      <input
+        multiple
+        ref={uploadInputRef}
+        type="file"
+        className="hidden"
+        onChange={handleUploadChange}
+      />
     </>
   )
 }
