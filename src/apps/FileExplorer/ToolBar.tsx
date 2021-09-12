@@ -9,34 +9,37 @@ export interface IToolBarDisabledMap {
   backToTop: boolean
   newDir: boolean
   rename: boolean
+  download: boolean
   delete: boolean
   selectAll: boolean
 }
 
 interface ToolBarProps {
   toolBarDisabledMap: IToolBarDisabledMap
-  handleNavBack: () => void
-  handleNavForward: () => void
-  handleRefresh: () => void
-  handleBackToTop: () => void
-  handleNewDir: () => void
-  handleRename: () => void
-  handleDelete: () => void
-  handleSelectAll: () => void
+  onNavBack: () => void
+  onNavForward: () => void
+  onRefresh: () => void
+  onBackToTop: () => void
+  onNewDir: () => void
+  onRename: () => void
+  onDownload: () => void
+  onDelete: () => void
+  onSelectAll: () => void
 }
 
 export default function ToolBar(props: ToolBarProps) {
 
   const {
     toolBarDisabledMap,
-    handleNavBack,
-    handleNavForward,
-    handleRefresh,
-    handleBackToTop,
-    handleNewDir,
-    handleRename,
-    handleDelete,
-    handleSelectAll,
+    onNavBack,
+    onNavForward,
+    onRefresh,
+    onBackToTop,
+    onNewDir,
+    onRename,
+    onDownload,
+    onDelete,
+    onSelectAll,
   } = props
 
   return (
@@ -45,28 +48,28 @@ export default function ToolBar(props: ToolBarProps) {
         <ToolButton
           title="后退"
           disabled={toolBarDisabledMap.navBack}
-          onClick={handleNavBack}
+          onClick={onNavBack}
         >
           <ArrowLeft16 />
         </ToolButton>
         <ToolButton
           title="前进"
           disabled={toolBarDisabledMap.navForward}
-          onClick={handleNavForward}
+          onClick={onNavForward}
         >
           <ArrowRight16 />
         </ToolButton>
         <ToolButton
           title="刷新"
           disabled={toolBarDisabledMap.refresh}
-          onClick={handleRefresh}
+          onClick={onRefresh}
         >
           <Renew16 />
         </ToolButton>
         <ToolButton
           title="返回上级"
           disabled={toolBarDisabledMap.backToTop}
-          onClick={handleBackToTop}
+          onClick={onBackToTop}
         >
           <ArrowUp16 />
         </ToolButton>
@@ -75,14 +78,14 @@ export default function ToolBar(props: ToolBarProps) {
           title="新建文件夹"
           className="border-l"
           disabled={toolBarDisabledMap.newDir}
-          onClick={handleNewDir}
+          onClick={onNewDir}
         >
           <FolderAdd16 />
         </ToolButton>
         <ToolButton
           title="重命名"
           disabled={toolBarDisabledMap.rename}
-          onClick={handleRename}
+          onClick={onRename}
         >
           <Edit16 />
         </ToolButton>
@@ -93,6 +96,7 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="下载"
+          onClick={onDownload}
         >
           <Download16 />
         </ToolButton>
@@ -104,7 +108,7 @@ export default function ToolBar(props: ToolBarProps) {
         <ToolButton
           title="删除"
           disabled={toolBarDisabledMap.delete}
-          onClick={handleDelete}
+          onClick={onDelete}
         >
           <TrashCan16 />
         </ToolButton>
@@ -120,7 +124,7 @@ export default function ToolBar(props: ToolBarProps) {
         <ToolButton
           title="选择"
           disabled={toolBarDisabledMap.selectAll}
-          onClick={handleSelectAll}
+          onClick={onSelectAll}
         >
           <Checkmark16 />
         </ToolButton>

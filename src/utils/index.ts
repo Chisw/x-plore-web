@@ -33,3 +33,7 @@ export const isEventKey = (e: any, key: string) => {
   }
   return e.keyCode === map[key]
 }
+
+export const isSameItem = (a: IDirItem, b: IDirItem) => {
+  return a.name === b.name && a.type === b.type
+}

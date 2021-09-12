@@ -1,3 +1,5 @@
+import { IDirItem } from './types'
+
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
 
 export const getRootInfo = async () => {
@@ -28,4 +30,42 @@ export const renameItem = async (path: string, newPath: string) => {
 export const deleteItem = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=delete`, { method: 'DELETE' }).then(res => res.json())
   return data
+}
+
+export const downloadItems = (path: string, items: IDirItem[]) => {
+  const pathName = path.split('/').reverse()[0]
+  const len = items.length
+  const firstItem: IDirItem | undefined = items[0]
+  const isDownloadAll = !len
+  const isDownloadSingle = len === 1
+  const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1
+  const singleItemName = firstItem?.name
+
+  const downloadName = isDownloadAll
+    ? `${pathName}.zip`
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? `${singleItemName}/${singleItemName}.zip`
+        : `${singleItemName}`
+      : `${pathName}.zip`
+
+  const msg = isDownloadAll
+    ? `下载当前整个目录为 ${downloadName}`
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? `下载 ${singleItemName} 为 ${singleItemName}.zip`
+        : `下载 ${downloadName}`
+      : `下载 ${items.length} 个项目为 ${downloadName}`
+
+  const cmd = isDownloadAll
+    ? 'cmd=zip'
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? 'cmd=zip'
+        : 'cmd=file&mime=application%2Foctet-stream'
+      : `cmd=zip${items.map(o => `&f=${o.name}`).join('')}`
+
+  if (window.confirm(`${msg} ？`)) {
+    window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`)
+  }
 }

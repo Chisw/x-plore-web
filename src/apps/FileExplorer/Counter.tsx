@@ -17,7 +17,7 @@ export default function Counter(props: CounterProps) {
   } = props
 
   return (
-    <div className="flex-shrink-0 flex items-center pl-4">
+    <div className="flex-shrink-0 flex items-center pl-4 font-din">
       {!!selectedNameLen && (
         <>
           <Checkmark16 />&nbsp;<span>{loading ? '-' : selectedNameLen}</span>

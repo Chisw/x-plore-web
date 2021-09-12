@@ -1,10 +1,20 @@
-html, body {
+@font-face {
+  font-family: 'din';
+  src: url('./../fonts/din.woff2');
+}
+
+.font-din {
+  font-family: 'din';
+}
+
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
 }
 
-.drag-handler:hover + .drag-handler-hover-mask {
+.drag-handler:hover+.drag-handler-hover-mask {
   display: block;
 }
 

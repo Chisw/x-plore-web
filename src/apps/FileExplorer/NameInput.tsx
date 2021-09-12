@@ -3,27 +3,28 @@ import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
 import { getIsDirExist, addNewDir, renameItem } from '../../utils/api'
+import { IDirItem } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
 interface NameInputProps {
-  name?: string,
+  item?: IDirItem,
   currentPath: string
-  onSuccess: (name: string) => void
+  onSuccess: (item: IDirItem) => void
   onFail: (failType: NameFailType) => void
 }
 
 export default function NameInput(props: NameInputProps) {
 
   const {
-    name = '',
+    item = undefined,
     currentPath,
     onSuccess,
     onFail,
   } = props
 
   const [isExist, setIsExist] = useState(false)
-  const [inputValue, setInputValue] = useState(name)
+  const [inputValue, setInputValue] = useState(item?.name)
 
   const handleInputChange = useCallback((e: any) => {
     setIsExist(false)
@@ -39,7 +40,7 @@ export default function NameInput(props: NameInputProps) {
     if (!newName) {
       onFail('empty')
     } else {
-      if (name && newName === name) onFail('no_change')  // no change no request
+      if (item?.name && newName === item?.name) onFail('no_change')  // no change no request
 
       const path = `${currentPath}/${newName}`
       const { exists } = await fetchExist(path)
@@ -47,8 +48,8 @@ export default function NameInput(props: NameInputProps) {
         onFail('exist')
         setIsExist(true)
       } else {
-        if (name) {  // rename
-          const oldPath = `${currentPath}/${name}`
+        if (item?.name) {  // rename
+          const oldPath = `${currentPath}/${item.name}`
           const { ok } = await fetchRename(oldPath, path)
           if (ok) {
             onSuccess(newName)
@@ -65,7 +66,7 @@ export default function NameInput(props: NameInputProps) {
         }
       }
     }
-  }, [name, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
+  }, [item, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
 
   return (
     <div
