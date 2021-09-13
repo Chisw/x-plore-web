@@ -64,6 +64,6 @@ export interface IDirItemIcon {
 }
 
 export interface IHistory {
-  indicator: number
+  position: number
   list: string[]
 }

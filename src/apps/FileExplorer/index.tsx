@@ -25,7 +25,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
   const [gridViewMode, setGridMode] = useState(true)
-  const [history, setHistory] = useState<IHistory>({ indicator: -1, list: [] })
+  const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
   const [selectedItemList, setSelectedItemList] = useState<IDirItem[]>([])
   const [newDirMode, setNewDirMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
@@ -60,16 +60,16 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [setData, fetch])
 
   const updateHistory = useCallback((direction: 1 | -1, path?: string) => {
-    const { indicator: ind, list: li } = history
-    const indicator: number = ind + direction
+    const { position: pos, list: li } = history
+    const position: number = pos + direction
     let list = [...li]
     if (direction === 1) {
       if (path) {
-        list = list.filter((i, index) => index < indicator)
+        list = list.filter((i, index) => index < position)
         list.push(path)
       }
     }
-    setHistory({ indicator, list })
+    setHistory({ position, list })
   }, [history])
 
   const handleVolumeClick = useCallback((volumeMount: string) => {
@@ -93,16 +93,16 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [fetchPath, updateHistory])
 
   const handleNavBack = useCallback(() => {
-    const { indicator, list } = history
-    const targetPath = list[indicator - 1]
+    const { position, list } = history
+    const targetPath = list[position - 1]
     setCurrentPath(targetPath)
     fetchPath(targetPath)
     updateHistory(-1)
   }, [history, updateHistory, fetchPath])
 
   const handleNavForward = useCallback(() => {
-    const { indicator, list } = history
-    const targetPath = list[indicator + 1]
+    const { position, list } = history
+    const targetPath = list[position + 1]
     setCurrentPath(targetPath)
     fetchPath(targetPath)
     updateHistory(1)
@@ -210,10 +210,10 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [data])
 
   const toolBarDisabledMap: IToolBarDisabledMap = useMemo(() => {
-    const { indicator, list } = history
+    const { position, list } = history
     return {
-      navBack: indicator <= 0,
-      navForward: list.length === indicator + 1,
+      navBack: position <= 0,
+      navForward: list.length === position + 1,
       refresh: loading || !currentPath,
       backToTop: !currentPath || isCurrentPathVolume,
       newDir: newDirMode,
