@@ -10,7 +10,7 @@ export default function Desktop(props: DesktopProps) {
   return (
     <>
       <div
-        className="fixed inset-0 bg-cover bg-center overflow-hidden"
+        className="fixed z-0 inset-0 bg-cover bg-center overflow-hidden"
         style={{ backgroundImage: `url("${bg}")` }}
       >
         {props.children}

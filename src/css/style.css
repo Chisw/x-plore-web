@@ -14,7 +14,7 @@ body {
   overflow: hidden;
 }
 
-.drag-handler:hover+.drag-handler-hover-mask {
+.drag-handler:hover + .drag-handler-hover-mask {
   display: block;
 }
 

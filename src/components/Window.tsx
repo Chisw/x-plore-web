@@ -35,7 +35,7 @@ export default function Window(props: WindowProps) {
   const isTopWindow = useMemo(() => currentIndex === topWindowIndex, [currentIndex, topWindowIndex])
 
   const handleMoveToFront = useCallback((e) => {
-    if (e.target.closest('[prevent-to-front]')) return
+    if (e.target.closest('[prevent-move-to-front]')) return
     const newTopIndex = topWindowIndex + 1
     setCurrentIndex(newTopIndex)
     setTopWindowIndex(newTopIndex)
@@ -64,12 +64,13 @@ export default function Window(props: WindowProps) {
       >
         <div
           className={line(`
+            move-to-front-trigger
             absolute inset-0 bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
             border border-gray-500 border-opacity-30 bg-clip-padding
             transition-box-shadow duration-200 flex flex-col
             ${isTopWindow ? 'shadow-xl' : 'shadow'}
           `)}
-          onMouseDownCapture={handleMoveToFront}
+          onMouseDownCapture={handleMoveToFront}  // click is too late
         >
           {/* header */}
           <div
@@ -88,14 +89,15 @@ export default function Window(props: WindowProps) {
             {/* Mask: prevent out of focus in iframe */}
             <div
               className={line(`
-                drag-handler-hover-mask absolute z-10 inset-0 mt-8
+                drag-handler-hover-mask
+                absolute z-10 inset-0 mt-8
                 ${isTopWindow ? 'hidden' : ''}
               `)}
             />
             <div className="flex items-center flex-shrink-0">
               <span
                 title="最小化"
-                prevent-to-front="true"
+                prevent-move-to-front="true"
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
               >
                 <Subtract16 />
@@ -108,7 +110,7 @@ export default function Window(props: WindowProps) {
               </span>
               <span
                 title="关闭"
-                prevent-to-front="true"
+                prevent-move-to-front="true"
                 className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-red-500 hover:bg-red-500 hover:text-white active:bg-red-700"
                 onClick={handleCloseApp}
               >

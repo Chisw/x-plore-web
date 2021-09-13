@@ -15,10 +15,10 @@ export default function Dock() {
     const sameRunningAppList = runningAppList.filter(a => a.id === app.id)
     const isRunning = !!sameRunningAppList.length
     if (isRunning) {
-      sameRunningAppList.forEach((app, appIndex) => {
-        const newTopIndex = topWindowIndex + appIndex + 1
-        document.getElementById(`window-${app.runningId}`)!.style.zIndex = String(newTopIndex)
-        setTopWindowIndex(newTopIndex)
+      sameRunningAppList.forEach(app => {
+        const trigger = document.querySelector(`#window-${app.runningId} .move-to-front-trigger`) as Element
+        const mouseDownEvent = new MouseEvent('mousedown')
+        trigger.dispatchEvent(mouseDownEvent)
       })
     } else {
       setTopWindowIndex(topWindowIndex + 1)
