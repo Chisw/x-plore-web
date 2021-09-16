@@ -1,5 +1,6 @@
 import { IDirItem } from './types'
 
+const { fetch } = window
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
 
 export const getRootInfo = async () => {
@@ -66,7 +67,7 @@ export const downloadItems = (path: string, items: IDirItem[]) => {
       : `cmd=zip${items.map(o => `&f=${o.name}`).join('')}`
 
   if (window.confirm(`${msg} ？`)) {
-    window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`)
+    window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`, '_self')
   }
 }
 

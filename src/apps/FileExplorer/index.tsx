@@ -1,4 +1,4 @@
-import { VmdkDisk16, CropGrowth32 } from '@carbon/icons-react'
+import { CropGrowth32 } from '@carbon/icons-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
@@ -15,8 +15,8 @@ import Counter from './Counter'
 import { throttle } from 'lodash'
 import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
+import VolumeList from './VolumeList'
 
-export type ViewShapeType = 'grid' | 'list'
 
 export default function FileExplorer(props: AppComponentProps) {
 
@@ -129,13 +129,18 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(true)
   }, [])
 
-  const handleUploadChange = useCallback(async (e) => {
-    const data = await fetchUpload(currentPath, e.target.files[0])
-    if (data && data.hasDon) {
-      handleRefresh()
-    } else {
-      alert(JSON.stringify(data))
+  const handleUploadChange = useCallback(async e => {
+    const files: File[] = e.target.files
+    const okList: boolean[] = []
+    for (const file of files) {
+      const data = await fetchUpload(currentPath, file)
+      okList.push(data?.hasDon)
     }
+    if (okList.every(Boolean)) {
+      handleRefresh()
+      Toast.toast('上传成功', 2000)
+    }
+    (uploadInputRef.current as any).value = ''
   }, [currentPath, fetchUpload, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
@@ -174,18 +179,22 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [])
 
   const handleDelete = useCallback(async () => {
-    const msg = selectedItemList.length === 1
+    const len = selectedItemList.length
+    if (!len) return
+    const msg = len === 1
       ? selectedItemList[0].name
-      : `${selectedItemList.length} 个项目`
+      : `${len} 个项目`
     if (window.confirm(`删除 ${msg} ？`)) {
       const okList: boolean[] = []
       for (const item of selectedItemList) {
-        const { ok } = await fetchDelete(`${currentPath}/${item.name}`)
+        const { name } = item
+        const { ok } = await fetchDelete(`${currentPath}/${name}`)
+        document.querySelector(`.dir-item[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
         okList.push(ok)
       }
       if (okList.every(Boolean)) {
         handleRefresh()
-        Toast.toast('删除成功')
+        Toast.toast('删除成功', 2000)
       }
     }
   }, [fetchDelete, currentPath, selectedItemList, handleRefresh])
@@ -269,8 +278,11 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => {
     const listener = (e: any) => {
+      // console.log('e.key', e.key)
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
         handleSelectAll(true)
+      } else if (e.key === 'Delete') {
+        handleDelete()
       }
     }
     if (isTopWindow && !newDirMode && !renameMode) {
@@ -279,7 +291,7 @@ export default function FileExplorer(props: AppComponentProps) {
       document.removeEventListener('keydown', listener)
     }
     return () => document.removeEventListener('keydown', listener)
-  }, [isTopWindow, handleSelectAll, newDirMode, renameMode])
+  }, [isTopWindow, newDirMode, renameMode, handleSelectAll, handleDelete])
 
   const handleRectSelect = useCallback((rectArea: { startX: number, startY: number, endX: number, endY: number }) => {
     const items = document.querySelectorAll('.dir-item')
@@ -409,30 +421,10 @@ export default function FileExplorer(props: AppComponentProps) {
         {/* side */}
         <div className="p-2 w-64 h-full flex-shrink-0 overflow-x-hidden overflow-y-auto border-r select-none">
           <p className="p-1 text-xs text-gray-400">宗卷</p>
-          <div>
-            {volumeList.map(({ label, mount }, volumeIndex) => {
-              const title = `${mount} (${label})`
-              const isActive = mount === currentVolume
-              const canVolumeClick = currentPath !== mount
-              return (
-                <div
-                  key={volumeIndex}
-                  title={title}
-                  className={line(`
-                    mb-1 p-1 text-xs flex items-center rounded cursor-pointer
-                    ${isActive
-                      ? 'bg-gray-300 text-black'
-                      : 'text-gray-500 hover:bg-gray-200 hover:text-black'
-                    }
-                  `)}
-                  onClick={() => canVolumeClick && handleVolumeClick(mount)}
-                >
-                  <VmdkDisk16 className="flex-shrink-0" />
-                  <span className="ml-1 truncate">{title}</span>
-                </div>
-              )
-            })}
-          </div>
+          <VolumeList
+            {...{ currentPath, currentVolume, volumeList }}
+            onVolumeClick={handleVolumeClick}
+          />
           <p className="mt-3 p-1 text-xs text-gray-400">收藏</p>
         </div>
         {/* main */}
@@ -520,14 +512,15 @@ export default function FileExplorer(props: AppComponentProps) {
                 return (
                   <div
                     key={encodeURIComponent(name)}
+                    data-name={name}
                     className={line(`
                       dir-item
-                      overflow-hidden rounded select-none
+                      overflow-hidden rounded select-none transition-opacity duration-300
                       ${gridViewMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                       ${!gridViewMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
                       ${isSelected ? 'selected-item bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
-                      ${hidden ? 'opacity-50' : ''}
+                      ${hidden ? 'opacity-50' : 'opacity-100'}
                     `)}
                     onClick={e => handleDirItemClick(e, item)}
                     onDoubleClick={() => isDir && handleDirOpen(name)}

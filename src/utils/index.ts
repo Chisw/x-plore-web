@@ -45,6 +45,6 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   }
   const level = ['B', 'KB', 'MB', 'GB'].indexOf(unit)
   const divisor = [1, 1024, 1048576, 1073741824][level]
-  const result = `${(bytes / divisor).toFixed(unit === 'B' ? 0 : 2)} ${unit}`
+  const result = `${(bytes / divisor).toFixed(unit === 'B' ? 0 : 1).replace('.0', '')} ${unit}`
   return result
 }
