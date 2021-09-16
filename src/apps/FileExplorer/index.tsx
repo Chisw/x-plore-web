@@ -14,6 +14,7 @@ import NameLine, { NameFailType } from './NameLine'
 import Counter from './Counter'
 import { throttle } from 'lodash'
 import { DateTime } from 'luxon'
+import Toast from '../../components/EasyToast'
 
 export type ViewShapeType = 'grid' | 'list'
 
@@ -173,14 +174,19 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [])
 
   const handleDelete = useCallback(async () => {
-    const msg = selectedItemList.length === 1 ? selectedItemList[0].name : `${selectedItemList.length} 个项目`
+    const msg = selectedItemList.length === 1
+      ? selectedItemList[0].name
+      : `${selectedItemList.length} 个项目`
     if (window.confirm(`删除 ${msg} ？`)) {
       const okList: boolean[] = []
       for (const item of selectedItemList) {
         const { ok } = await fetchDelete(`${currentPath}/${item.name}`)
         okList.push(ok)
       }
-      if (okList.every(Boolean)) handleRefresh()
+      if (okList.every(Boolean)) {
+        handleRefresh()
+        Toast.toast('删除成功')
+      }
     }
   }, [fetchDelete, currentPath, selectedItemList, handleRefresh])
 
@@ -439,7 +445,7 @@ export default function FileExplorer(props: AppComponentProps) {
             />
             <Counter
               {...{ loading, dirCount, fileCount }}
-              selectedNameLen={selectedItemList.length}
+              selectedLen={selectedItemList.length}
             />
           </div>
           <ToolBar

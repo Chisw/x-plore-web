@@ -26,12 +26,14 @@ export default function TopBar() {
   }, [data, setRootInfo])
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const tick = () => {
       const now = DateTime.local()
       const str = now.toFormat('M 月 d 日 周几 HH:mm')
       const day = '一二三四五六日'[+now.toFormat('c') - 1]
       setTimerStr(str.replace('周几', `周${day}`))
-    }, 1000)
+    }
+    tick()
+    const timer = setInterval(tick, 1000)
     return () => clearInterval(timer)
   }, [])
  

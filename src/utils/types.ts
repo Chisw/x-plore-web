@@ -1,13 +1,5 @@
 import { ReactNode } from 'react'
 
-export interface INotification {
-  id: number
-  icon: string
-  title: string
-  content?: string
-  isShow?: boolean
-}
-
 export interface AppComponentProps {
   isTopWindow: boolean
   setWindowLoading: (loading: boolean) => void

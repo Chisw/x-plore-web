@@ -2,7 +2,7 @@ import { Checkmark16, DocumentBlank16, Folder16 } from '@carbon/icons-react'
 
 interface CounterProps {
   loading: boolean
-  selectedNameLen: number
+  selectedLen: number
   dirCount: number
   fileCount: number
 }
@@ -11,16 +11,16 @@ export default function Counter(props: CounterProps) {
 
   const {
     loading,
-    selectedNameLen,
+    selectedLen,
     dirCount,
     fileCount,
   } = props
 
   return (
     <div className="flex-shrink-0 flex items-center pl-4 pr-1 font-din">
-      {!!selectedNameLen && (
+      {!!selectedLen && (
         <>
-          <Checkmark16 />&nbsp;<span>{loading ? '-' : selectedNameLen}</span>
+          <Checkmark16 />&nbsp;<span>{loading ? '-' : selectedLen}</span>
           &emsp;
         </>
       )}
