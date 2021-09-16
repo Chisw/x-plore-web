@@ -175,7 +175,7 @@ function ToolButton(props: ToolButtonProps) {
     <div
       title={title}
       className={line(`
-        w-8 h-full flex justify-center items-center
+        w-8 h-full flex justify-center items-center transition-all duration-50
         ${disabled
           ? 'cursor-not-allowed text-gray-200'
           : 'cursor-pointer bg-white text-gray-500 hover:text-black hover:bg-gray-100 active:bg-gray-200'

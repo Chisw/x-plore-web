@@ -16,6 +16,7 @@ import { throttle } from 'lodash'
 import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
 import VolumeList from './VolumeList'
+import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -31,6 +32,8 @@ export default function FileExplorer(props: AppComponentProps) {
   const [newDirMode, setNewDirMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
+  const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
+  const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)
@@ -178,25 +181,91 @@ export default function FileExplorer(props: AppComponentProps) {
     }
   }, [])
 
-  const handleDelete = useCallback(async () => {
+  const handleDownloadClick = useCallback(() => {
+
+    const pathName = currentPath.split('/').reverse()[0]
+    const len = selectedItemList.length
+    const firstItem: IDirItem | undefined = selectedItemList[0]
+    const isDownloadAll = !len
+    const isDownloadSingle = len === 1
+    const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1
+    const singleItemName = firstItem?.name
+
+    const downloadName = isDownloadAll
+      ? `${pathName}.zip`
+      : isDownloadSingle
+        ? isDownloadSingleDir
+          ? `${singleItemName}/${singleItemName}.zip`
+          : `${singleItemName}`
+        : `${pathName}.zip`
+
+    const msg = isDownloadAll
+      ? `下载当前整个目录为 ${downloadName}`
+      : isDownloadSingle
+        ? isDownloadSingleDir
+          ? `下载 ${singleItemName} 为 ${singleItemName}.zip`
+          : `下载 ${downloadName}`
+        : `下载 ${len} 个项目为 ${downloadName}`
+
+    const cmd = isDownloadAll
+      ? 'cmd=zip'
+      : isDownloadSingle
+        ? isDownloadSingleDir
+          ? 'cmd=zip'
+          : 'cmd=file&mime=application%2Foctet-stream'
+        : `cmd=zip${selectedItemList.map(o => `&f=${o.name}`).join('')}`
+
+
+    const close = () => setDownloadConfirmorProps({ isOpen: false })
+
+    setDownloadConfirmorProps({
+      isOpen: true,
+      content: (
+        <div className="text-base break-all">
+          {msg} ？
+        </div>
+      ),
+      onCancel: close,
+      onConfirm: () => {
+        close()
+        downloadItems(currentPath, downloadName, cmd)
+      },
+    })
+
+  }, [currentPath, selectedItemList])
+
+  const handleDeleteClick = useCallback(async () => {
     const len = selectedItemList.length
     if (!len) return
     const msg = len === 1
       ? selectedItemList[0].name
       : `${len} 个项目`
-    if (window.confirm(`删除 ${msg} ？`)) {
-      const okList: boolean[] = []
-      for (const item of selectedItemList) {
-        const { name } = item
-        const { ok } = await fetchDelete(`${currentPath}/${name}`)
-        document.querySelector(`.dir-item[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
-        okList.push(ok)
-      }
-      if (okList.every(Boolean)) {
-        handleRefresh()
-        Toast.toast('删除成功', 2000)
-      }
-    }
+
+    const close = () => setDeleteConfirmorProps({ isOpen: false })
+
+    setDeleteConfirmorProps({
+      isOpen: true,
+      content: (
+        <div className="text-base break-all">
+          删除 {msg} ？
+        </div>
+      ),
+      onCancel: close,
+      onConfirm: async () => {
+        close()
+        const okList: boolean[] = []
+        for (const item of selectedItemList) {
+          const { name } = item
+          const { ok } = await fetchDelete(`${currentPath}/${name}`)
+          document.querySelector(`.dir-item[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
+          okList.push(ok)
+        }
+        if (okList.every(Boolean)) {
+          handleRefresh()
+          Toast.toast('删除成功', 2000)
+        }
+      },
+    })
   }, [fetchDelete, currentPath, selectedItemList, handleRefresh])
 
   useEffect(() => {
@@ -280,9 +349,10 @@ export default function FileExplorer(props: AppComponentProps) {
     const listener = (e: any) => {
       // console.log('e.key', e.key)
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        e.preventDefault()
         handleSelectAll(true)
       } else if (e.key === 'Delete') {
-        handleDelete()
+        handleDeleteClick()
       }
     }
     if (isTopWindow && !newDirMode && !renameMode) {
@@ -291,7 +361,7 @@ export default function FileExplorer(props: AppComponentProps) {
       document.removeEventListener('keydown', listener)
     }
     return () => document.removeEventListener('keydown', listener)
-  }, [isTopWindow, newDirMode, renameMode, handleSelectAll, handleDelete])
+  }, [isTopWindow, newDirMode, renameMode, handleSelectAll, handleDeleteClick])
 
   const handleRectSelect = useCallback((rectArea: { startX: number, startY: number, endX: number, endY: number }) => {
     const items = document.querySelectorAll('.dir-item')
@@ -417,7 +487,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   return (
     <>
-      <div className="absolute inset-0 flex">
+      <div className="file-explorer absolute inset-0 flex">
         {/* side */}
         <div className="p-2 w-64 h-full flex-shrink-0 overflow-x-hidden overflow-y-auto border-r select-none">
           <p className="p-1 text-xs text-gray-400">宗卷</p>
@@ -451,8 +521,8 @@ export default function FileExplorer(props: AppComponentProps) {
             onNewDir={handleNewDir}
             onRename={() => setRenameMode(true)}
             onUpload={() => (uploadInputRef.current as any)?.click()}
-            onDownload={() => downloadItems(currentPath, selectedItemList)}
-            onDelete={handleDelete}
+            onDownload={handleDownloadClick}
+            onDelete={handleDeleteClick}
             onSelectAll={handleSelectAll}
           />
           <div
@@ -556,6 +626,7 @@ export default function FileExplorer(props: AppComponentProps) {
           </div>
         </div>
       </div>
+
       <input
         multiple
         ref={uploadInputRef}
@@ -563,6 +634,10 @@ export default function FileExplorer(props: AppComponentProps) {
         className="hidden"
         onChange={handleUploadChange}
       />
+
+      <Confirmor {...downloadConfirmorProps} />
+      <Confirmor {...deleteConfirmorProps} />
+      
     </>
   )
 }
