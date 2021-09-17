@@ -105,7 +105,9 @@ module.exports = {
       inset: Object.assign({
 
       }, percent),
+      // margin padding
       spacing: Object.assign({
+        '2px': '2px',
       }, base, extra),
       width: Object.assign({
 

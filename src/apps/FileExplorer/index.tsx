@@ -18,6 +18,8 @@ import Toast from '../../components/EasyToast'
 import VolumeList from './VolumeList'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
 import VirtualUploadItems from './VirtualUploadItems'
+import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
+import Thumbnail from './Thumbnail'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -633,6 +635,9 @@ export default function FileExplorer(props: AppComponentProps) {
                 const { name, type, hidden, size, timestamp } = item
                 const isDir = type === 1
                 const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
+                const small = !gridViewMode
+                const itemName = convertItemName(item)
+                const useThumbnail = THUMBNAIL_MATCH_LIST.some(ext => name.toLowerCase().endsWith(ext))
                 return (
                   <div
                     key={encodeURIComponent(name)}
@@ -652,7 +657,11 @@ export default function FileExplorer(props: AppComponentProps) {
                     onDoubleClick={() => isDir && handleDirOpen(name)}
                   >
                     <div className="flex justify-center items-center">
-                      <Icon small={!gridViewMode} itemName={convertItemName(item)} />
+                      {useThumbnail ? (
+                        <Thumbnail {...{ small, itemName, currentPath }} />
+                      ) : (
+                        <Icon {...{ small, itemName }} />
+                      )}
                     </div>
                     <div className={`${gridViewMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
                       <NameLine

@@ -141,3 +141,13 @@ export const APP_LIST: IApp[] = [
     AppComponent: PS,
   },
 ]
+
+export const THUMBNAIL_MATCH_LIST = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.pbm',
+  '.bmp',
+  '.mp4',
+]

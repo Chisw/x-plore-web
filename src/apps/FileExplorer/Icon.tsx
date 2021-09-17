@@ -116,8 +116,8 @@ const getIcon = (itemName: string) => {
   }
 }
 
-const getDirSubIcon: (name: string) => string | undefined = itemName => {
-  const dirName = itemName.replace('._dir', '')
+const getDirSubIcon: (name: string) => string | undefined = name => {
+  const dirName = name.replace('._dir', '')
   const map = {
     'alipay': dirAlipay,
     'Android': dirAndroid,
@@ -142,7 +142,6 @@ const getDirSubIcon: (name: string) => string | undefined = itemName => {
 interface IconProps {
   small?: boolean
   itemName: string
-  className?: string
 }
 
 
@@ -151,7 +150,6 @@ export default function Icon(props: IconProps) {
   const {
     small = false,
     itemName,
-    className = '',
   } = props
 
   const { bg, icon, dirSubIcon } = useMemo(() => {
@@ -167,7 +165,6 @@ export default function Icon(props: IconProps) {
         text-white bg-gradient-to-b border
         ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
         ${bg}
-        ${className}
       `)}
     >
       {icon}

@@ -6,6 +6,8 @@ import { useRecoilState } from 'recoil'
 import { runningAppListState, topWindowIndexState } from '../utils/state'
 import { line } from '../utils'
 
+const SAME_CLASS_NAME = `w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300`
+
 interface WindowProps {
   app: IApp
 }
@@ -25,15 +27,27 @@ export default function Window(props: WindowProps) {
     },
   } = props
 
+  const defaultInfo = useMemo(() => {
+    const x = Math.max((window.innerWidth * 3 - width) / 2, 10)
+    const y = Math.max((window.innerHeight - 100 - height) / 2, 10)
+    return { x, y, width, height }
+  }, [width, height])
+
   const [topWindowIndex, setTopWindowIndex] = useRecoilState(topWindowIndexState)
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
   const [initIndex] = useState(topWindowIndex)
   const [currentIndex, setCurrentIndex] = useState(initIndex)
   const [windowLoading, setWindowLoading] = useState(false)
   const [windowTitle, setWindowTitle] = useState('')
+  const [hidden, setHidden] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const [memoInfo, setMemoInfo] = useState(defaultInfo)
+  const [rndInstance, setRndInstance] = useState<any>(null)
+
+  console.log("memoInfo", memoInfo)
 
   const isTopWindow = useMemo(() => currentIndex === topWindowIndex, [currentIndex, topWindowIndex])
-
+  
   const handleMoveToFront = useCallback((e) => {
     if (e.target.closest('[prevent-move-to-front]')) return
     const newTopIndex = topWindowIndex + 1
@@ -42,7 +56,20 @@ export default function Window(props: WindowProps) {
     document.getElementById(`window-${runningId}`)!.style.zIndex = String(newTopIndex)
   }, [runningId, topWindowIndex, setTopWindowIndex])
 
-  const handleCloseApp = useCallback(() => {
+  const handleZoom = useCallback(() => {
+    if (isFullScreen) {
+      const { x, y, width, height } = memoInfo
+      rndInstance.updatePosition({ x, y})
+      rndInstance.updateSize({ width, height })
+      setIsFullScreen(false)
+    } else {
+      rndInstance.updatePosition({ x: window.innerWidth, y: 0 })
+      rndInstance.updateSize({ width: window.innerWidth, height: window.innerHeight - 94 })
+      setIsFullScreen(true)
+    }
+  }, [memoInfo, isFullScreen, rndInstance])
+
+  const handleClose = useCallback(() => {
     const list = runningAppList.filter(a => a.runningId !== runningId)
     setRunningAppList(list)
   }, [runningAppList, setRunningAppList, runningId])
@@ -50,17 +77,23 @@ export default function Window(props: WindowProps) {
   return (
     <>
       <Rnd
+        ref={setRndInstance}
         id={`window-${runningId}`}
         dragHandleClassName="drag-handler"
         bounds="#app-container"
-        default={{
-          x: (window.innerWidth * 3 - width) / 2,
-          y: (window.innerHeight - 100 - height) / 2,
-          width,
-          height,
-        }}
+        data-hidden={hidden}
+        className="app-window"
+        default={defaultInfo}
         style={{ zIndex: initIndex }}
         {...resizeRange}
+        onResizeStop={(e, d, el, del) => {
+          setMemoInfo({
+            ...memoInfo,
+            width: memoInfo.width + del.width,
+            height: memoInfo.height + del.height,
+          })
+        }}
+        onDragStop={(e, { x, y }) => setMemoInfo({ ...memoInfo, x, y })}
       >
         <div
           className={line(`
@@ -79,7 +112,10 @@ export default function Window(props: WindowProps) {
               ${windowLoading ? 'bg-loading' : ''}
             `)}
           >
-            <div className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full">
+            <div
+              className="drag-handler flex items-center flex-shrink-0 flex-grow px-2 h-full"
+              onDoubleClick={handleZoom}
+            >
               <div
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
@@ -98,21 +134,33 @@ export default function Window(props: WindowProps) {
               <span
                 title="最小化"
                 prevent-move-to-front="true"
-                className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
+                className={line(`
+                  hidden-switch-trigger
+                  text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400
+                  ${SAME_CLASS_NAME}
+                `)}
+                onClick={() => setHidden(!hidden)}
               >
                 <Subtract16 />
               </span>
               <span
                 title="缩放"
-                className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400"
+                className={line(`
+                  text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400
+                  ${SAME_CLASS_NAME}
+                `)}
+                onClick={handleZoom}
               >
                 <FitToScreen16 />
               </span>
               <span
                 title="关闭"
                 prevent-move-to-front="true"
-                className="w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300 text-red-500 hover:bg-red-500 hover:text-white active:bg-red-700"
-                onClick={handleCloseApp}
+                className={line(`
+                  text-red-500 hover:bg-red-500 hover:text-white active:bg-red-700
+                  ${SAME_CLASS_NAME}
+                `)}
+                onClick={handleClose}
               >
                 <Close16 />
               </span>

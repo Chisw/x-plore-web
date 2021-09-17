@@ -16,9 +16,14 @@ export default function Dock() {
     const isRunning = !!sameRunningAppList.length
     if (isRunning) {
       sameRunningAppList.forEach(app => {
-        const trigger = document.querySelector(`#window-${app.runningId} .move-to-front-trigger`) as Element
+        const windowId = `window-${app.runningId}`
+        if (document.getElementById(windowId)!.getAttribute('data-hidden') === 'true') {
+          const hiddenSwitchTrigger = document.querySelector(`#${windowId} .hidden-switch-trigger`) as any
+          hiddenSwitchTrigger.click()
+        }
+        const moveToFrontTrigger = document.querySelector(`#${windowId} .move-to-front-trigger`) as Element
         const mouseDownEvent = new MouseEvent('mousedown')
-        trigger.dispatchEvent(mouseDownEvent)
+        moveToFrontTrigger.dispatchEvent(mouseDownEvent)
       })
     } else {
       setTopWindowIndex(topWindowIndex + 1)
@@ -29,7 +34,7 @@ export default function Dock() {
 
   return (
     <>
-      <div className="fixed z-20 bottom-0 left-1/2 transform -translate-x-1/2 mb-2 p-3 pb-4 bg-white-500 rounded-lg shadow-lg flex bg-hazy-100 border border-gray-500 border-opacity-20 bg-clip-padding">
+      <div className="fixed z-20 bottom-0 left-1/2 transform -translate-x-1/2 mb-2 p-2 pb-3 bg-white-500 rounded-lg shadow-lg flex bg-hazy-100 border border-gray-500 border-opacity-20 bg-clip-padding">
         {APP_LIST.map(app => {
           const isRunning = !!runningAppList.find(a => a.id === app.id)
           return (

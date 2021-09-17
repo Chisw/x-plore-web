@@ -28,7 +28,7 @@ export default function TopBar() {
   useEffect(() => {
     const tick = () => {
       const now = DateTime.local()
-      const str = now.toFormat('M 月 d 日 周几 HH:mm')
+      const str = now.toFormat('yyyy 年 M 月 d 日 周几 HH:mm')
       const day = '一二三四五六日'[+now.toFormat('c') - 1]
       setTimerStr(str.replace('周几', `周${day}`))
     }
@@ -53,7 +53,7 @@ export default function TopBar() {
             </a>
           </div>
         </div>
-        <div className="px-2">
+        <div className="px-2 font-din">
           <span>{timeStr}</span>
         </div>
       </div>
