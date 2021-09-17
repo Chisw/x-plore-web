@@ -114,6 +114,26 @@ export default function NameLine(props: NameLineProps) {
       />
     </div>
   ) : (
+    <NameText {...{ itemName, gridViewMode, isSelected }} />
+  )
+}
+
+
+interface NameTextProps {
+  itemName?: string
+  isSelected?: boolean
+  gridViewMode: boolean
+}
+
+export function NameText(props: NameTextProps) {
+
+  const {
+    itemName,
+    gridViewMode,
+    isSelected,
+  } = props
+
+  return (
     <span
       title={itemName}
       className={line(`

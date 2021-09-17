@@ -147,14 +147,20 @@ module.exports = {
         'all': 'all',
         'box-shadow': 'box-shadow',
       },
+      outline: {
+        'wait-drop': ['4px solid #BAE6FD', '-4px'],
+      },
     },
   },
   variants: {
-    display: ['hover', 'active', 'group-hover'],
-    color: ['hover', 'active'],
-    backgroundColor: ['hover', 'active'],
-    opacity: ['hover', 'active', 'group-hover'],
-    visibility: ['hover', 'active', 'group-hover'],
+    extend: {
+      display: ['active', 'group-hover'],
+      color: ['active'],
+      backgroundColor: ['active'],
+      opacity: ['active', 'group-hover'],
+      visibility: ['active', 'group-hover'],
+      brightness: ['hover', 'active'],
+    }
   },
   plugins: [],
 }

@@ -38,11 +38,7 @@ export default function Dock() {
               className="relative mx-2 w-10 h-10"
             >
               <div
-                className={line(`
-                  w-full h-full bg-no-repeat bg-center bg-contain cursor-pointer
-                  transform transition-all duration-200
-                  ${isRunning ? '' : 'hover:-translate-y-1'}
-                `)}
+                className="filter hover:brightness-110 active:brightness-75 transition-all duration-50 w-full h-full bg-no-repeat bg-center bg-contain cursor-pointer"
                 title={app.title}
                 style={{ backgroundImage: `url("${app.icon}")` }}
                 onClick={() => handleOpenApp(app)}

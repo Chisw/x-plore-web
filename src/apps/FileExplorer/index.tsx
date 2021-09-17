@@ -1,4 +1,4 @@
-import { CropGrowth32 } from '@carbon/icons-react'
+import { CropGrowth32, Delete32, Download32 } from '@carbon/icons-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
@@ -17,6 +17,7 @@ import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
 import VolumeList from './VolumeList'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
+import VirtualUploadItems from './VirtualUploadItems'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -32,8 +33,10 @@ export default function FileExplorer(props: AppComponentProps) {
   const [newDirMode, setNewDirMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
+  const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
   const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
+  const [virtualFiles, setVirtualFiles] = useState<File[]>([])
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)
@@ -55,7 +58,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { fetch, loading, data, setData } = useFetch((path: string) => getDirItems(path))
   const { fetch: fetchDelete, loading: deleting } = useFetch((path: string) => deleteItem(path))
-  const { fetch: fetchUpload, loading: uploading } = useFetch((path: string, file: File) => uploadFile(path, file))
+  const { fetch: fetchUpload } = useFetch((path: string, file: File) => uploadFile(path, file))
 
   const fetchPath = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
@@ -115,7 +118,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const handleRefresh = useCallback(async (cb?: () => void) => {
     setSelectedItemList([])
     await fetchPath(currentPath, true)
-   cb && cb()
+    cb && cb()
   }, [fetchPath, currentPath])
 
   const handleBackToTop = useCallback(() => {
@@ -132,16 +135,21 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(true)
   }, [])
 
-  const handleUploadChange = useCallback(async e => {
-    const files: File[] = e.target.files
+  const handleUploadStart = useCallback(async (files: File[]) => {
+    setVirtualFiles(files)
     const okList: boolean[] = []
     for (const file of files) {
       const data = await fetchUpload(currentPath, file)
-      okList.push(data?.hasDon)
+      const isUploaded = !!data?.hasDon
+      if (isUploaded) {
+        document.querySelector(`[data-name="${file.name}"]`)!.setAttribute('style', 'opacity:1;')
+      }
+      okList.push(isUploaded)
     }
     if (okList.every(Boolean)) {
       handleRefresh()
       Toast.toast('上传成功', 2000)
+      setVirtualFiles([])
     }
     (uploadInputRef.current as any).value = ''
   }, [currentPath, fetchUpload, handleRefresh])
@@ -221,8 +229,11 @@ export default function FileExplorer(props: AppComponentProps) {
     setDownloadConfirmorProps({
       isOpen: true,
       content: (
-        <div className="text-base break-all">
-          {msg} ？
+        <div className="p-4 text-center">
+          <div className="p-4 flex justify-center">
+            <Download32 />
+          </div>
+          <p className="mt-2 text-base break-all">{msg} ？</p>
         </div>
       ),
       onCancel: close,
@@ -246,8 +257,11 @@ export default function FileExplorer(props: AppComponentProps) {
     setDeleteConfirmorProps({
       isOpen: true,
       content: (
-        <div className="text-base break-all">
-          删除 {msg} ？
+        <div className="p-4 text-center">
+          <div className="p-4 flex justify-center">
+            <Delete32 />
+          </div>
+          <p className="mt-2 text-base break-all">删除 <span className="font-bold">{msg}</span> ？</p>
         </div>
       ),
       onCancel: close,
@@ -485,6 +499,45 @@ export default function FileExplorer(props: AppComponentProps) {
     return unbind
   }, [handleRectSelect])
 
+  useEffect(() => {
+    const containerInner: any = containerInnerRef.current
+    if (!containerInner) return
+
+    const listener = (e: any) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const { type, dataTransfer } = e
+      if (type === 'dragenter') {
+        setWaitDropToCurrentPath(true)
+      } else if (type === 'dragleave') {
+        setWaitDropToCurrentPath(false)
+      } else if (type === 'drop') {
+        setWaitDropToCurrentPath(false)
+        handleUploadStart(dataTransfer.files)
+      }
+    }
+
+    const bind = () => {
+      containerInner.addEventListener('dragenter', listener)
+      containerInner.addEventListener('dragover', listener)
+      containerInner.addEventListener('dragleave', listener)
+      containerInner.addEventListener('dragend', listener)
+      containerInner.addEventListener('drop', listener)
+
+    }
+
+    const unbind = () => {
+      containerInner.removeEventListener('dragenter', listener)
+      containerInner.removeEventListener('dragover', listener)
+      containerInner.removeEventListener('dragleave', listener)
+      containerInner.removeEventListener('dragend', listener)
+      containerInner.removeEventListener('drop', listener)
+    }
+
+    bind()
+    return unbind
+  }, [handleUploadStart])
+
   return (
     <>
       <div className="file-explorer absolute inset-0 flex">
@@ -530,7 +583,8 @@ export default function FileExplorer(props: AppComponentProps) {
             ref={containerRef}
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
-              ${(loading || uploading) ? 'bg-loading' : ''}
+              ${loading ? 'bg-loading' : ''}
+              ${waitDropToCurrentPath ? 'outline-wait-drop' : ''}
             `)}
             onMouseDownCapture={handleCancelSelect}
           >
@@ -583,6 +637,8 @@ export default function FileExplorer(props: AppComponentProps) {
                   <div
                     key={encodeURIComponent(name)}
                     data-name={name}
+                    data-type={type}
+                    draggable
                     className={line(`
                       dir-item
                       overflow-hidden rounded select-none transition-opacity duration-300
@@ -622,6 +678,8 @@ export default function FileExplorer(props: AppComponentProps) {
                   </div>
                 )
               })}
+
+              <VirtualUploadItems {...{ virtualFiles, gridViewMode }} />
             </div>
           </div>
         </div>
@@ -632,7 +690,7 @@ export default function FileExplorer(props: AppComponentProps) {
         ref={uploadInputRef}
         type="file"
         className="hidden"
-        onChange={handleUploadChange}
+        onChange={(e: any) => handleUploadStart(e.target.files)}
       />
 
       <Confirmor {...downloadConfirmorProps} />
