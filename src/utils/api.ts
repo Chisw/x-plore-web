@@ -45,6 +45,5 @@ export const uploadFile = async (path: string, file: File) => {
 }
 
 export const getThumbnailUrl = (path: string, name: string) => {
-  const url = `${BASE_URL}${path}/${name}?cmd=thumbnail`
-  return url
+  return `${BASE_URL}${path}/${name}?cmd=thumbnail`
 }

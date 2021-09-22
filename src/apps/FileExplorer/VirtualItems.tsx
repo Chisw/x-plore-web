@@ -2,12 +2,12 @@ import { line } from "../../utils"
 import Icon from "./Icon"
 import { NameText } from "./NameLine"
 
-interface VirtualUploadItemsProps {
+interface VirtualItemsProps {
   virtualFiles: File[]
   gridMode: boolean
 }
 
-export default function VirtualUploadItems(props: VirtualUploadItemsProps) {
+export default function VirtualItems(props: VirtualItemsProps) {
 
  const {
    virtualFiles,

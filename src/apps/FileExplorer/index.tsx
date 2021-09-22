@@ -3,23 +3,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertItemName, getBytesSize, isSameItem, itemSorter, line } from '../../utils'
+import { convertItemName, getBytesSize, getDownloadInfo, isSameItem, itemSorter, line } from '../../utils'
 import { deleteItem, downloadItems, getDirItems, uploadFile } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
 import { rootInfoState } from '../../utils/state'
 import { AppComponentProps, IDirItem, IHistory } from '../../utils/types'
-import PathLinkList from './PathLinkList'
+import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
 import Counter from './Counter'
-import { throttle } from 'lodash'
 import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
-import VirtualUploadItems from './VirtualUploadItems'
+import VirtualItems from './VirtualItems'
 import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
 import Thumbnail from './Thumbnail'
 import Side from './Side'
+import useDragSelect from '../../hooks/useDragSelect'
+import useDragOperations from '../../hooks/useDragOperations'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -64,6 +65,38 @@ export default function FileExplorer(props: AppComponentProps) {
   const { fetch: fetchDelete, loading: deleting } = useFetch((path: string) => deleteItem(path))
   const { fetch: fetchUpload } = useFetch((path: string, file: File) => uploadFile(path, file))
 
+  const { dirItemList, isItemListEmpty, dirCount, fileCount } = useMemo(() => {
+    const list = data ? dirItemConverter(data).sort(itemSorter) : []
+    const dirItemList = list.filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
+    let dirCount = 0
+    let fileCount = 0
+    dirItemList.forEach(({ type, name }) => {
+      if (type === 1) {
+        dirCount++
+      } else {
+        fileCount++
+      }
+    })
+    return { dirItemList, isItemListEmpty: dirItemList.length === 0, dirCount, fileCount }
+  }, [data, filterText])
+
+  const disabledMap: IToolBarDisabledMap = useMemo(() => {
+    const { position, list } = history
+    return {
+      navBack: position <= 0,
+      navForward: list.length === position + 1,
+      refresh: loading || !currentPath,
+      backToTop: !currentPath || isInVolumeRoot,
+      newDir: newDirMode,
+      rename: selectedItemList.length !== 1,
+      upload: false,
+      download: isItemListEmpty,
+      delete: !selectedItemList.length,
+      filter: false,
+      selectAll: isItemListEmpty,
+    }
+  }, [history, loading, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
+
   const fetchPath = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
     fetch(path)
@@ -74,11 +107,9 @@ export default function FileExplorer(props: AppComponentProps) {
     const { position: pos, list: li } = history
     const position: number = pos + direction
     let list = [...li]
-    if (direction === 1) {
-      if (path) {
-        list = list.filter((i, index) => index < position)
-        list.push(path)
-      }
+    if (direction === 1 && path) {
+      list = list.filter((i, index) => index < position)
+      list.push(path)
     }
     setHistory({ position, list })
   }, [history])
@@ -139,9 +170,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(true)
   }, [])
 
-  const handleRename = useCallback(() => {
-    setRenameMode(true)
-  }, [])
+  const handleRename = useCallback(() => setRenameMode(true), [])
 
   const handleUploadStart = useCallback(async (files: File[]) => {
     setVirtualFiles(files)
@@ -180,16 +209,6 @@ export default function FileExplorer(props: AppComponentProps) {
     setWaitScrollToSelected(true)
   }, [handleRefresh])
 
-  useEffect(() => {
-    if (waitScrollToSelected && !loading) {
-      const scroll = document.getElementById('dir-items-container')
-      const target: any = document.querySelector('#dir-items-container .selected-item')
-      const top = target ? target.offsetTop - 10 : 0
-      scroll!.scrollTo({ top, behavior: 'smooth' })
-      setWaitScrollToSelected(false)
-    }
-  }, [waitScrollToSelected, loading])
-
   const handleNameFail = useCallback((failType: NameFailType) => {
     if (['cancel', 'empty', 'no_change'].includes(failType)) {
       setNewDirMode(false)
@@ -203,38 +222,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleDownloadClick = useCallback(() => {
 
-    const pathName = currentPath.split('/').reverse()[0]
-    const len = selectedItemList.length
-    const firstItem: IDirItem | undefined = selectedItemList[0]
-    const isDownloadAll = !len
-    const isDownloadSingle = len === 1
-    const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1
-    const singleItemName = firstItem?.name
-
-    const downloadName = isDownloadAll
-      ? `${pathName}.zip`
-      : isDownloadSingle
-        ? isDownloadSingleDir
-          ? `${singleItemName}/${singleItemName}.zip`
-          : `${singleItemName}`
-        : `${pathName}.zip`
-
-    const msg = isDownloadAll
-      ? `下载当前整个目录为 ${downloadName}`
-      : isDownloadSingle
-        ? isDownloadSingleDir
-          ? `下载 ${singleItemName} 为 ${singleItemName}.zip`
-          : `下载 ${downloadName}`
-        : `下载 ${len} 个项目为 ${downloadName}`
-
-    const cmd = isDownloadAll
-      ? 'cmd=zip'
-      : isDownloadSingle
-        ? isDownloadSingleDir
-          ? 'cmd=zip'
-          : 'cmd=file&mime=application%2Foctet-stream'
-        : `cmd=zip${selectedItemList.map(o => `&f=${o.name}`).join('')}`
-
+    const { msg, downloadName, cmd } = getDownloadInfo(currentPath, selectedItemList)
     const close = () => setDownloadConfirmorProps({ isOpen: false })
 
     setDownloadConfirmorProps({
@@ -300,6 +288,16 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [currentPath, volumeList, handleVolumeClick])
 
   useEffect(() => {
+    const container: any = containerRef.current
+    if (container && waitScrollToSelected && !loading) {
+      const target: any = document.querySelector('.dir-item[data-selected="true"]')
+      const top = target ? target.offsetTop - 10 : 0
+      container!.scrollTo({ top, behavior: 'smooth' })
+      setWaitScrollToSelected(false)
+    }
+  }, [waitScrollToSelected, loading])
+
+  useEffect(() => {
     setRenameMode(false)
     setSelectedItemList([])
     setFilterOpen(false)
@@ -310,47 +308,16 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList([])
   }, [filterText])
 
-  const { dirItemList, isItemListEmpty, dirCount, fileCount } = useMemo(() => {
-    const list = data ? dirItemConverter(data).sort(itemSorter) : []
-    const dirItemList = list.filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
-    let dirCount = 0
-    let fileCount = 0
-    dirItemList.forEach(({ type, name }) => {
-      if (type === 1) {
-        dirCount++
-      } else {
-        fileCount++
-      }
-    })
-    return { dirItemList, isItemListEmpty: dirItemList.length === 0, dirCount, fileCount }
-  }, [data, filterText])
-
-  const disabledMap: IToolBarDisabledMap = useMemo(() => {
-    const { position, list } = history
-    return {
-      navBack: position <= 0,
-      navForward: list.length === position + 1,
-      refresh: loading || !currentPath,
-      backToTop: !currentPath || isInVolumeRoot,
-      newDir: newDirMode,
-      rename: selectedItemList.length !== 1,
-      upload: false,
-      download: isItemListEmpty,
-      delete: !selectedItemList.length,
-      filter: false,
-      selectAll: isItemListEmpty,
-    }
-  }, [history, loading, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
-
-  const handleDirItemClick = useCallback((e: any, item: IDirItem) => {
+  const handleItemClick = useCallback((e: any, item: IDirItem) => {
     if (newDirMode || renameMode) return
     let list = [...selectedItemList]
+    const { metaKey, ctrlKey, shiftKey } = e
     const selectedLen = selectedItemList.length
-    if (e.metaKey || e.ctrlKey) {
+    if (metaKey || ctrlKey) {
       list = list.find(o => isSameItem(o, item))
         ? list.filter(o => !isSameItem(o, item))
         : list.concat(item)
-    } else if (e.shiftKey) {
+    } else if (shiftKey) {
       if (selectedLen) {
         const lastSelectedItem = selectedItemList[selectedLen - 1]
         const range: number[] = []
@@ -372,11 +339,8 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [newDirMode, renameMode, selectedItemList, dirItemList])
 
   const handleSelectAll = useCallback((force?: boolean) => {
-    if (!force && selectedItemList.length) {
-      setSelectedItemList([])
-    } else {
-      setSelectedItemList(dirItemList)
-    }
+    const isSelectAll = force || !selectedItemList.length
+    setSelectedItemList(isSelectAll ? dirItemList : [])
   }, [setSelectedItemList, dirItemList, selectedItemList])
 
   const { shortcutFnMap, shortcutKeys } = useMemo(() => {
@@ -384,7 +348,7 @@ export default function FileExplorer(props: AppComponentProps) {
     const shortcutKeys = [
       'S+A', 'S+D', 'S+E', 'S+F', 'S+H', 'S+N', 'S+R', 'S+S', 'S+U', 'S+V',
       'S+ArrowUp', 'S+ArrowRight', 'S+ArrowLeft',
-      'Escape', 'Delete',
+      'Delete', 'Escape',
     ]
     const shortcutFnMap: { [KEY: string]: () => void } = {
       'S+A': disabledMap.selectAll ? none : () => handleSelectAll(true),
@@ -400,11 +364,23 @@ export default function FileExplorer(props: AppComponentProps) {
       'S+ArrowUp': disabledMap.backToTop ? none : handleBackToTop,
       'S+ArrowRight': disabledMap.navForward ? none : handleNavForward,
       'S+ArrowLeft': disabledMap.navBack ? none : handleNavBack,
-      'Escape': () => setSelectedItemList([]),
       'Delete': disabledMap.delete ? none : handleDeleteClick,
+      'Escape': () => setSelectedItemList([]),
     }
     return { shortcutFnMap, shortcutKeys }
-  }, [disabledMap, gridMode, handleSelectAll, handleDownloadClick, handleUploadClick, handleRename, handleNewDir, handleRefresh, handleBackToTop, handleNavForward, handleNavBack, handleDeleteClick])
+  }, [
+    disabledMap, gridMode,
+    handleSelectAll,
+    handleDownloadClick,
+    handleUploadClick,
+    handleRename,
+    handleNewDir,
+    handleRefresh,
+    handleBackToTop,
+    handleNavForward,
+    handleNavBack,
+    handleDeleteClick,
+  ])
 
   useEffect(() => {
     const listener = (e: any) => {
@@ -422,10 +398,10 @@ export default function FileExplorer(props: AppComponentProps) {
     return unbind
   }, [isTopWindow, newDirMode, renameMode, shortcutFnMap, shortcutKeys])
 
-  const handleRectSelect = useCallback((rectArea: { startX: number, startY: number, endX: number, endY: number }) => {
+  const handleRectSelect = useCallback((info: { startX: number, startY: number, endX: number, endY: number }) => {
     const items = document.querySelectorAll('.dir-item')
     if (!items.length) return
-    const { startX, startY, endX, endY } = rectArea
+    const { startX, startY, endX, endY } = info
     const indexList: number[] = []
     items.forEach((item: any, itemIndex) => {
       const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = item
@@ -442,146 +418,26 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList(names)
   }, [setSelectedItemList, dirItemList])
 
-  useEffect(() => {
-    const rect: any = rectRef.current
-    const container: any = containerRef.current
-    const containerInner: any = containerInnerRef.current
-    if (!rect || !container || !containerInner) return
+  useDragSelect({
+    rectRef,
+    containerRef,
+    containerInnerRef,
+    onDragging: handleRectSelect,
+  })
 
-    const throttleHandleRectSelect = throttle(handleRectSelect, 100)
-
-    let isMouseDown = false
-    let startX = 0
-    let startY = 0
-    let endX = 0
-    let endY = 0
-    let rectTop = 0
-    let rectLeft = 0
-    let rectWidth = 0
-    let rectHeight = 0
-    let containerTop = 0
-    let containerLeft = 0
-    let containerInnerWidth = 0
-    let containerInnerHeight = 0
-
-    const mousedownListener = (e: any) => {
-
-      const isLeftClick = e.which === 1
-      const isInInner = e.target.getAttribute('id') === 'dir-items-container-inner'  // prevent start moving on items
-
-      if (!isLeftClick || !isInInner) return
-
-      isMouseDown = true
-
-      const event = window.event || e
-      const { top, left } = container.getBoundingClientRect()
-      const { width, height } = containerInner.getBoundingClientRect()
-
-      containerTop = top
-      containerLeft = left
-      containerInnerWidth = width
-      containerInnerHeight = height
-
-      startX = (event.x || event.clientX) - containerLeft
-      startY = (event.y || event.clientY) - containerTop + container.scrollTop
-      rect.style.left = `${startX}px`
-      rect.style.top = `${startY}px`
-    }
-
-    const mousemoveListener = (e: any) => {
-      if (isMouseDown) {
-        const event: any = window.event || e
-        endX = (event.x || event.clientX) - containerLeft
-        endY = (event.y || event.clientY) - containerTop + container.scrollTop
-
-        const borderOffset = -2
-        const maxWidth = endX > startX
-          ? containerInnerWidth - startX + borderOffset
-          : startX
-        const maxHeight = endY > startY
-          ? containerInnerHeight - startY + borderOffset
-          : startY
-
-        rectTop = Math.max(Math.min(endY, startY), 0)
-        rectLeft = Math.max(Math.min(endX, startX), 0)
-        rectWidth = Math.min(Math.abs(endX - startX), maxWidth)
-        rectHeight = Math.min(Math.abs(endY - startY), maxHeight)
-
-        rect.style.top = `${rectTop}px`
-        rect.style.left = `${rectLeft}px`
-        rect.style.width = `${rectWidth}px`
-        rect.style.height = `${rectHeight}px`
-        rect.style.display = 'block'
-
-        throttleHandleRectSelect({
-          startX: rectLeft,
-          startY: rectTop,
-          endX: rectLeft + rectWidth,
-          endY: rectTop + rectHeight,
-        })
-      }
-    }
-
-    const mouseupListener = (e: any) => {
-      if (!isMouseDown) return
-      isMouseDown = false
-      rect.style.display = 'none'
-    }
-
-    const bind = () => {
-      container.addEventListener('mousedown', mousedownListener)
-      document.addEventListener('mousemove', mousemoveListener)
-      document.addEventListener('mouseup', mouseupListener)
-    }
-
-    const unbind = () => {
-      container.removeEventListener('mousedown', mousedownListener)
-      document.removeEventListener('mousemove', mousemoveListener)
-      document.removeEventListener('mouseup', mouseupListener)
-    }
-
-    bind()
-    return unbind
-  }, [handleRectSelect])
-
-  useEffect(() => {
-    const containerInner: any = containerInnerRef.current
-    if (!containerInner) return
-
-    const listener = (e: any) => {
-      e.preventDefault()
-      e.stopPropagation()
-      const { type, dataTransfer } = e
-      if (type === 'dragenter') {
-        setWaitDropToCurrentPath(true)
-      } else if (type === 'dragleave') {
-        setWaitDropToCurrentPath(false)
-      } else if (type === 'drop') {
-        setWaitDropToCurrentPath(false)
-        handleUploadStart(dataTransfer.files)
-      }
-    }
-
-    const bind = () => {
-      containerInner.addEventListener('dragenter', listener)
-      containerInner.addEventListener('dragover', listener)
-      containerInner.addEventListener('dragleave', listener)
-      containerInner.addEventListener('dragend', listener)
-      containerInner.addEventListener('drop', listener)
-
-    }
-
-    const unbind = () => {
-      containerInner.removeEventListener('dragenter', listener)
-      containerInner.removeEventListener('dragover', listener)
-      containerInner.removeEventListener('dragleave', listener)
-      containerInner.removeEventListener('dragend', listener)
-      containerInner.removeEventListener('drop', listener)
-    }
-
-    bind()
-    return unbind
-  }, [handleUploadStart])
+  useDragOperations({
+    containerInnerRef,
+    onEnterContainer: () => {
+      setWaitDropToCurrentPath(true)
+    },
+    onLeaveContainer: () => {
+      setWaitDropToCurrentPath(false)
+    },
+    onUpload: files => {
+      setWaitDropToCurrentPath(false)
+      handleUploadStart(files)
+    },
+  })
 
   return (
     <>
@@ -595,9 +451,7 @@ export default function FileExplorer(props: AppComponentProps) {
         <div className="relative flex-grow h-full bg-white flex flex-col">
           <ToolBar
             {...{ disabledMap, gridMode, filterOpen, filterText }}
-            setGridMode={setGridMode}
-            setFilterOpen={setFilterOpen}
-            setFilterText={setFilterText}
+            {...{ setGridMode, setFilterOpen, setFilterText }}
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
@@ -610,7 +464,7 @@ export default function FileExplorer(props: AppComponentProps) {
             onSelectAll={handleSelectAll}
           />
           <div className="flex-shrink-0 px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center bg-gray-100 border-b border-white">
-            <PathLinkList
+            <PathLink
               {...{ currentPath, currentVolume }}
               onDirClick={handleGoFullPath}
               onVolumeClick={handleVolumeClick}
@@ -621,7 +475,6 @@ export default function FileExplorer(props: AppComponentProps) {
             />
           </div>
           <div
-            id="dir-items-container"
             ref={containerRef}
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
@@ -641,7 +494,6 @@ export default function FileExplorer(props: AppComponentProps) {
               </div>
             )}
             <div
-              id="dir-items-container-inner"
               ref={containerInnerRef}
               className={line(`
                 relative min-h-full flex flex-wrap content-start
@@ -682,18 +534,18 @@ export default function FileExplorer(props: AppComponentProps) {
                   <div
                     key={encodeURIComponent(name)}
                     data-name={name}
-                    data-type={type}
+                    data-selected={isSelected}
                     draggable
                     className={line(`
                       dir-item
                       overflow-hidden rounded select-none transition-opacity duration-300
                       ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                       ${!gridMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
-                      ${isSelected ? 'selected-item bg-gray-100' : ''}
+                      ${isSelected ? 'bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
                       ${hidden ? 'opacity-50' : 'opacity-100'}
                     `)}
-                    onClick={e => handleDirItemClick(e, item)}
+                    onClick={e => handleItemClick(e, item)}
                     onDoubleClick={() => isDir && handleDirOpen(name)}
                   >
                     <div className="flex justify-center items-center">
@@ -728,7 +580,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 )
               })}
 
-              <VirtualUploadItems {...{ virtualFiles, gridMode }} />
+              <VirtualItems {...{ virtualFiles, gridMode }} />
 
             </div>
           </div>

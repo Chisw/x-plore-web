@@ -48,3 +48,39 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   const result = `${(bytes / divisor).toFixed(unit === 'B' ? 0 : 1).replace('.0', '')} ${unit}`
   return result
 }
+
+export const getDownloadInfo = (currentPath: string, selectedItemList: IDirItem[]) => {
+  const pathName = currentPath.split('/').reverse()[0]
+  const len = selectedItemList.length
+  const firstItem: IDirItem | undefined = selectedItemList[0]
+  const isDownloadAll = !len
+  const isDownloadSingle = len === 1
+  const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1
+  const singleItemName = firstItem?.name
+
+  const downloadName = isDownloadAll
+    ? `${pathName}.zip`
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? `${singleItemName}/${singleItemName}.zip`
+        : `${singleItemName}`
+      : `${pathName}.zip`
+
+  const msg = isDownloadAll
+    ? `下载当前整个目录为 ${downloadName}`
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? `下载 ${singleItemName} 为 ${singleItemName}.zip`
+        : `下载 ${downloadName}`
+      : `下载 ${len} 个项目为 ${downloadName}`
+
+  const cmd = isDownloadAll
+    ? 'cmd=zip'
+    : isDownloadSingle
+      ? isDownloadSingleDir
+        ? 'cmd=zip'
+        : 'cmd=file&mime=application%2Foctet-stream'
+      : `cmd=zip${selectedItemList.map(o => `&f=${o.name}`).join('')}`
+  
+  return { downloadName, msg, cmd }
+}

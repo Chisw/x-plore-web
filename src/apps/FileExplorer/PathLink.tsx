@@ -3,14 +3,14 @@ import { useMemo } from 'react'
 import Toast from '../../components/EasyToast'
 import { copy } from '../../utils'
 
-interface PathLinkListProps {
+interface PathLinkProps {
   currentPath: string
   currentVolume: string
   onDirClick: (mount: string) => void
   onVolumeClick: (mount: string) => void
 }
 
-export default function PathLinkList(props: PathLinkListProps) {
+export default function PathLink(props: PathLinkProps) {
 
   const {
     currentPath,
@@ -31,7 +31,7 @@ export default function PathLinkList(props: PathLinkListProps) {
     }
   }, [currentPath, currentVolume])
 
-  if (!currentVolume) return <></>
+  if (!currentVolume) return <div />
 
   return (
     <div className="group flex-shrink-0">
