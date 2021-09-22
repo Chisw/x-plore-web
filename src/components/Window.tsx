@@ -44,8 +44,6 @@ export default function Window(props: WindowProps) {
   const [memoInfo, setMemoInfo] = useState(defaultInfo)
   const [rndInstance, setRndInstance] = useState<any>(null)
 
-  console.log("memoInfo", memoInfo)
-
   const isTopWindow = useMemo(() => currentIndex === topWindowIndex, [currentIndex, topWindowIndex])
   
   const handleMoveToFront = useCallback((e) => {
@@ -112,6 +110,7 @@ export default function Window(props: WindowProps) {
             className={line(`
               w-full h-8 bg-white flex items-center select-none border-b
               ${windowLoading ? 'bg-loading' : ''}
+              ${isTopWindow ? '' : 'filter grayscale opacity-60'}
             `)}
           >
             <div
@@ -122,7 +121,9 @@ export default function Window(props: WindowProps) {
                 className="w-4 h-4 bg-center bg-no-repeat bg-contain"
                 style={{ backgroundImage: `url("${icon}")` }}
               />
-              <span className="ml-2 text-gray-500 text-sm">{windowTitle || title}</span>
+              <span className="ml-2 text-gray-500 text-sm">
+                {windowTitle || title}
+              </span>
             </div>
             {/* Mask: prevent out of focus in iframe */}
             <div

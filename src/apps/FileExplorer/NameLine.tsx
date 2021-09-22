@@ -105,9 +105,10 @@ export default function NameLine(props: NameLineProps) {
         }}
         onBlur={handleDirNameBlur}
         onKeyUp={e => {
-          if (e.key === 'Enter') {
+          const { key } = e
+          if (key === 'Enter') {
             handleDirNameBlur(e)
-          } else if (e.key === 'Escape') {
+          } else if (key === 'Escape') {
             onFail('cancel')
           }
         }}
