@@ -21,7 +21,7 @@ export default function VirtualItems(props: VirtualItemsProps) {
           key={encodeURIComponent(name)}
           data-name={name}
           className={line(`
-            opacity-70 bg-loading
+            opacity-60 bg-loading
             overflow-hidden rounded select-none hover:bg-gray-100
             ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
           `)}

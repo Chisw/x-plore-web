@@ -11,7 +11,6 @@ import { AppComponentProps, IDirItem, IHistory } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
-import Counter from './Counter'
 import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
@@ -21,6 +20,7 @@ import Thumbnail from './Thumbnail'
 import Side from './Side'
 import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
+import useShortcuts from '../../hooks/useShortcuts'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -42,6 +42,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [virtualFiles, setVirtualFiles] = useState<File[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterText, setFilterText] = useState('')
+  const [hiddenShow, setHiddenShow] = useState(false)
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)
@@ -67,18 +68,15 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { dirItemList, isItemListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? dirItemConverter(data).sort(itemSorter) : []
-    const dirItemList = list.filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
+    const dirItemList = list
+      .filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
+      .filter(o => hiddenShow ? true : !o.hidden)
     let dirCount = 0
     let fileCount = 0
-    dirItemList.forEach(({ type, name }) => {
-      if (type === 1) {
-        dirCount++
-      } else {
-        fileCount++
-      }
-    })
-    return { dirItemList, isItemListEmpty: dirItemList.length === 0, dirCount, fileCount }
-  }, [data, filterText])
+    dirItemList.forEach(({ type }) => type === 1 ? dirCount++ : fileCount++)
+    const isItemListEmpty = dirItemList.length === 0
+    return { dirItemList, isItemListEmpty, dirCount, fileCount }
+  }, [data, filterText, hiddenShow])
 
   const disabledMap: IToolBarDisabledMap = useMemo(() => {
     const { position, list } = history
@@ -91,9 +89,12 @@ export default function FileExplorer(props: AppComponentProps) {
       rename: selectedItemList.length !== 1,
       upload: false,
       download: isItemListEmpty,
+      store: false,
       delete: !selectedItemList.length,
       filter: false,
       selectAll: isItemListEmpty,
+      showHidden: false,
+      gridMode: false,
     }
   }, [history, loading, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
 
@@ -247,10 +248,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const handleDeleteClick = useCallback(async () => {
     const len = selectedItemList.length
     if (!len) return
-    const msg = len === 1
-      ? selectedItemList[0].name
-      : `${len} 个项目`
-
+    const msg = len === 1 ? selectedItemList[0].name : `${len} 个项目`
     const close = () => setDeleteConfirmorProps({ isOpen: false })
 
     setDeleteConfirmorProps({
@@ -343,61 +341,6 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList(isSelectAll ? dirItemList : [])
   }, [setSelectedItemList, dirItemList, selectedItemList])
 
-  const { shortcutFnMap, shortcutKeys } = useMemo(() => {
-    const none = () => {}
-    const shortcutKeys = [
-      'S+A', 'S+D', 'S+E', 'S+F', 'S+H', 'S+N', 'S+R', 'S+S', 'S+U', 'S+V',
-      'S+ArrowUp', 'S+ArrowRight', 'S+ArrowLeft',
-      'Delete', 'Escape',
-    ]
-    const shortcutFnMap: { [KEY: string]: () => void } = {
-      'S+A': disabledMap.selectAll ? none : () => handleSelectAll(true),
-      'S+D': disabledMap.download ? none : handleDownloadClick,
-      'S+E': disabledMap.rename ? none : handleRename,
-      'S+F': disabledMap.filter ? none : () => setFilterOpen(true),
-      'S+H': none,
-      'S+N': disabledMap.newDir ? none : handleNewDir,
-      'S+R': disabledMap.refresh ? none : handleRefresh,
-      'S+S': none,
-      'S+U': disabledMap.upload ? none : handleUploadClick,
-      'S+V': () => setGridMode(!gridMode),
-      'S+ArrowUp': disabledMap.backToTop ? none : handleBackToTop,
-      'S+ArrowRight': disabledMap.navForward ? none : handleNavForward,
-      'S+ArrowLeft': disabledMap.navBack ? none : handleNavBack,
-      'Delete': disabledMap.delete ? none : handleDeleteClick,
-      'Escape': () => setSelectedItemList([]),
-    }
-    return { shortcutFnMap, shortcutKeys }
-  }, [
-    disabledMap, gridMode,
-    handleSelectAll,
-    handleDownloadClick,
-    handleUploadClick,
-    handleRename,
-    handleNewDir,
-    handleRefresh,
-    handleBackToTop,
-    handleNavForward,
-    handleNavBack,
-    handleDeleteClick,
-  ])
-
-  useEffect(() => {
-    const listener = (e: any) => {
-      const { key, shiftKey } = e
-      const shortcut = `${shiftKey ? 'S+' : ''}${key}`
-      // console.log('shortcut:', shortcut)
-      if (shortcutKeys.includes(shortcut)) {
-        shortcutFnMap[shortcut]()
-      }
-    }
-    const bind = () => document.addEventListener('keyup', listener)
-    const unbind = () => document.removeEventListener('keyup', listener)
-    const needBind = isTopWindow && !newDirMode && !renameMode
-    needBind ? bind() : unbind()
-    return unbind
-  }, [isTopWindow, newDirMode, renameMode, shortcutFnMap, shortcutKeys])
-
   const handleRectSelect = useCallback((info: { startX: number, startY: number, endX: number, endY: number }) => {
     const items = document.querySelectorAll('.dir-item')
     if (!items.length) return
@@ -405,14 +348,11 @@ export default function FileExplorer(props: AppComponentProps) {
     const indexList: number[] = []
     items.forEach((item: any, itemIndex) => {
       const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = item
-      if (
-        offsetLeft + offsetWidth > startX &&
+      const isContained = offsetLeft + offsetWidth > startX &&
         offsetTop + offsetHeight > startY &&
         offsetLeft < endX &&
         offsetTop < endY
-      ) {
-        indexList.push(itemIndex)
-      }
+      isContained && indexList.push(itemIndex)
     })
     const names = dirItemList.filter((n, nIndex) => indexList.includes(nIndex))
     setSelectedItemList(names)
@@ -439,9 +379,31 @@ export default function FileExplorer(props: AppComponentProps) {
     },
   })
 
+  useShortcuts({
+    type: 'keyup',
+    bindCondition: isTopWindow && !newDirMode && !renameMode,
+    shortcutFnMap: {
+      'Delete': disabledMap.delete ? null : handleDeleteClick,
+      'Escape': () => setSelectedItemList([]),
+      'Shift+A': disabledMap.selectAll ? null : () => handleSelectAll(true),
+      'Shift+D': disabledMap.download ? null : handleDownloadClick,
+      'Shift+E': disabledMap.rename ? null : handleRename,
+      'Shift+F': disabledMap.filter ? null : () => setFilterOpen(true),
+      'Shift+H': disabledMap.showHidden ? null : () => setHiddenShow(!hiddenShow),
+      'Shift+N': disabledMap.newDir ? null : handleNewDir,
+      'Shift+R': disabledMap.refresh ? null : handleRefresh,
+      'Shift+S': disabledMap.store ? null : null,
+      'Shift+U': disabledMap.upload ? null : handleUploadClick,
+      'Shift+V': disabledMap.showHidden ? null : () => setGridMode(!gridMode),
+      'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
+      'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
+      'Shift+ArrowLeft': disabledMap.navBack ? null : handleNavBack,
+    },
+  })
+
   return (
     <>
-      <div className="file-explorer absolute inset-0 flex">
+      <div className="absolute inset-0 flex">
         {/* side */}
         <Side
           {...{ currentPath, currentVolume, volumeList }}
@@ -450,8 +412,8 @@ export default function FileExplorer(props: AppComponentProps) {
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
           <ToolBar
-            {...{ disabledMap, gridMode, filterOpen, filterText }}
-            {...{ setGridMode, setFilterOpen, setFilterText }}
+            {...{ disabledMap, gridMode, filterOpen, filterText, hiddenShow }}
+            {...{ setGridMode, setFilterOpen, setFilterText, setHiddenShow }}
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
@@ -463,17 +425,12 @@ export default function FileExplorer(props: AppComponentProps) {
             onDelete={handleDeleteClick}
             onSelectAll={handleSelectAll}
           />
-          <div className="flex-shrink-0 px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center bg-gray-100 border-b border-white">
-            <PathLink
-              {...{ currentPath, currentVolume }}
-              onDirClick={handleGoFullPath}
-              onVolumeClick={handleVolumeClick}
-            />
-            <Counter
-              {...{ loading, dirCount, fileCount }}
-              selectedLen={selectedItemList.length}
-            />
-          </div>
+          <PathLink
+            {...{ loading, dirCount, fileCount, currentPath, currentVolume }}
+            selectedLen={selectedItemList.length}
+            onDirClick={handleGoFullPath}
+            onVolumeClick={handleVolumeClick}
+          />
           <div
             ref={containerRef}
             className={line(`
@@ -601,4 +558,3 @@ export default function FileExplorer(props: AppComponentProps) {
     </>
   )
 }
-

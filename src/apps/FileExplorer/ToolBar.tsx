@@ -15,6 +15,7 @@ import {
   TrashCan16,
   View16,
   List16,
+  ViewOff16,
 } from '@carbon/icons-react'
 import { line } from '../../utils'
 import { Button, InputGroup } from '@blueprintjs/core'
@@ -28,9 +29,12 @@ export interface IToolBarDisabledMap {
   rename: boolean
   upload: boolean
   download: boolean
+  store: boolean
   delete: boolean
   filter: boolean
   selectAll: boolean
+  showHidden: boolean
+  gridMode: boolean
 }
 
 interface ToolBarProps {
@@ -38,9 +42,11 @@ interface ToolBarProps {
   gridMode: boolean
   filterOpen: boolean
   filterText: string
+  hiddenShow: boolean
   setGridMode: (mode: boolean) => void
   setFilterOpen: (open: boolean) => void
   setFilterText: (text: string) => void
+  setHiddenShow: (show: boolean) => void
   onNavBack: () => void
   onNavForward: () => void
   onRefresh: () => void
@@ -60,9 +66,11 @@ export default function ToolBar(props: ToolBarProps) {
     gridMode,
     filterOpen,
     filterText,
+    hiddenShow,
     setGridMode,
     setFilterOpen,
     setFilterText,
+    setHiddenShow,
     onNavBack,
     onNavForward,
     onRefresh,
@@ -199,9 +207,10 @@ export default function ToolBar(props: ToolBarProps) {
           <Checkmark16 />
         </ToolButton>
         <ToolButton
-          title="显示隐藏项 [Shift + H]"
+          title={`${hiddenShow ? '不' : ''}显示隐藏项 [Shift + H]`}
+          onClick={() => setHiddenShow(!hiddenShow)}
         >
-          <View16 />
+          {hiddenShow ? <ViewOff16 /> : <View16 />}
         </ToolButton>
         <ToolButton
           title="展示方式 [Shift + V]"
