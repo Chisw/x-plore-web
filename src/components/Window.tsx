@@ -1,12 +1,12 @@
 import { IApp } from '../utils/types'
 import { Rnd } from 'react-rnd'
-import { Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
+import { CenterToFit16, Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { runningAppListState, topWindowIndexState } from '../utils/state'
 import { line } from '../utils'
 
-const SAME_CLASS_NAME = `w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-300`
+const SAME_CLASS_NAME = `w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-200`
 
 interface WindowProps {
   app: IApp
@@ -86,14 +86,16 @@ export default function Window(props: WindowProps) {
         default={defaultInfo}
         style={{ zIndex: initIndex }}
         {...resizeRange}
-        onResizeStop={(e, d, el, del) => {
+        onResizeStop={(e, d, el, delta) => {
           setMemoInfo({
             ...memoInfo,
-            width: memoInfo.width + del.width,
-            height: memoInfo.height + del.height,
+            width: memoInfo.width + delta.width,
+            height: memoInfo.height + delta.height,
           })
         }}
-        onDragStop={(e, { x, y }) => setMemoInfo({ ...memoInfo, x, y })}
+        onDragStop={(e, { x, y }) => {
+          setMemoInfo({ ...memoInfo, x, y })
+        }}
       >
         <div
           className={line(`
@@ -144,14 +146,14 @@ export default function Window(props: WindowProps) {
                 <Subtract16 />
               </span>
               <span
-                title="缩放"
+                title={isFullScreen ? '窗口' : '全屏'}
                 className={line(`
                   text-gray-400 hover:bg-gray-200 hover:text-black active:bg-gray-400
                   ${SAME_CLASS_NAME}
                 `)}
                 onClick={handleZoom}
               >
-                <FitToScreen16 />
+                {isFullScreen ? <CenterToFit16 /> : <FitToScreen16 />}
               </span>
               <span
                 title="关闭"

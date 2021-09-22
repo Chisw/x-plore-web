@@ -30,10 +30,10 @@ export default function VolumeList(props: VolumeListProps) {
               key={volumeIndex}
               title={title}
               className={line(`
-                mb-2 p-2 text-xs rounded cursor-pointer border border-transparent
+                mb-2 p-2 text-xs rounded cursor-pointer
                 ${isActive
-                  ? 'bg-gray-200 text-black border-gray-200'
-                  : 'text-gray-500 hover:border-gray-200 hover:text-black'
+                  ? 'bg-gray-200 text-black'
+                  : 'text-gray-500 hover:text-black'
                 }
               `)}
               onClick={() => canVolumeClick && onVolumeClick(mount)}

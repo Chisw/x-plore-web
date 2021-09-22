@@ -15,11 +15,11 @@ import Counter from './Counter'
 import { throttle } from 'lodash'
 import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
-import VolumeList from './VolumeList'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
 import VirtualUploadItems from './VirtualUploadItems'
 import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
 import Thumbnail from './Thumbnail'
+import Side from './Side'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -29,7 +29,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [rootInfo] = useRecoilState(rootInfoState)
   const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
-  const [gridViewMode, setGridMode] = useState(true)
+  const [gridMode, setGridMode] = useState(true)
   const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
   const [selectedItemList, setSelectedItemList] = useState<IDirItem[]>([])
   const [newDirMode, setNewDirMode] = useState(false)
@@ -544,14 +544,10 @@ export default function FileExplorer(props: AppComponentProps) {
     <>
       <div className="file-explorer absolute inset-0 flex">
         {/* side */}
-        <div className="p-2 w-64 h-full flex-shrink-0 overflow-x-hidden overflow-y-auto border-r select-none">
-          <p className="p-1 text-xs text-gray-400">宗卷</p>
-          <VolumeList
-            {...{ currentPath, currentVolume, volumeList }}
-            onVolumeClick={handleVolumeClick}
-          />
-          <p className="mt-3 p-1 text-xs text-gray-400">收藏</p>
-        </div>
+        <Side
+          {...{ currentPath, currentVolume, volumeList }}
+          onVolumeClick={handleVolumeClick}
+        />
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
           <div className="flex-shrink-0 border-b px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center">
@@ -567,7 +563,7 @@ export default function FileExplorer(props: AppComponentProps) {
           </div>
           <ToolBar
             toolBarDisabledMap={toolBarDisabledMap}
-            gridViewMode={gridViewMode}
+            gridMode={gridMode}
             setGridMode={setGridMode}
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
@@ -605,7 +601,7 @@ export default function FileExplorer(props: AppComponentProps) {
               ref={containerInnerRef}
               className={line(`
                 relative min-h-full flex flex-wrap content-start
-                ${gridViewMode ? 'p-2' : 'p-4'}
+                ${gridMode ? 'p-2' : 'p-4'}
               `)}
             >
               {/* new dir */}
@@ -613,16 +609,16 @@ export default function FileExplorer(props: AppComponentProps) {
                 <div
                   className={line(`
                     overflow-hidden rounded select-none hover:bg-gray-100
-                    ${gridViewMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                    ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                   `)}
                 >
                   <div className="flex justify-center items-center">
-                    <Icon small={!gridViewMode} itemName="fake._dir_new" />
+                    <Icon small={!gridMode} itemName="fake._dir_new" />
                   </div>
-                  <div className={`${gridViewMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+                  <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
                     <NameLine
                       showInput
-                      gridViewMode={gridViewMode}
+                      gridMode={gridMode}
                       currentPath={currentPath}
                       onSuccess={handleNameSuccess}
                       onFail={handleNameFail}
@@ -635,7 +631,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 const { name, type, hidden, size, timestamp } = item
                 const isDir = type === 1
                 const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
-                const small = !gridViewMode
+                const small = !gridMode
                 const itemName = convertItemName(item)
                 const useThumbnail = THUMBNAIL_MATCH_LIST.some(ext => name.toLowerCase().endsWith(ext))
                 return (
@@ -647,8 +643,8 @@ export default function FileExplorer(props: AppComponentProps) {
                     className={line(`
                       dir-item
                       overflow-hidden rounded select-none transition-opacity duration-300
-                      ${gridViewMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
-                      ${!gridViewMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
+                      ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                      ${!gridMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
                       ${isSelected ? 'selected-item bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
                       ${hidden ? 'opacity-50' : 'opacity-100'}
@@ -663,18 +659,18 @@ export default function FileExplorer(props: AppComponentProps) {
                         <Icon {...{ small, itemName }} />
                       )}
                     </div>
-                    <div className={`${gridViewMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+                    <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
                       <NameLine
                         showInput={renameMode && isSelected}
                         item={item}
                         isSelected={isSelected}
-                        gridViewMode={gridViewMode}
+                        gridMode={gridMode}
                         currentPath={currentPath}
                         onSuccess={handleNameSuccess}
                         onFail={handleNameFail}
                       />
                     </div>
-                    {!gridViewMode && (
+                    {!gridMode && (
                       <>
                         <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
                           {size ? getBytesSize(size) : '--'}
@@ -688,7 +684,8 @@ export default function FileExplorer(props: AppComponentProps) {
                 )
               })}
 
-              <VirtualUploadItems {...{ virtualFiles, gridViewMode }} />
+              <VirtualUploadItems {...{ virtualFiles, gridMode }} />
+
             </div>
           </div>
         </div>

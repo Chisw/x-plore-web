@@ -11,7 +11,7 @@ interface NameLineProps {
   showInput?: boolean
   item?: IDirItem,
   isSelected?: boolean
-  gridViewMode: boolean
+  gridMode: boolean
   currentPath: string
   onSuccess: (item: IDirItem) => void
   onFail: (failType: NameFailType) => void
@@ -23,7 +23,7 @@ export default function NameLine(props: NameLineProps) {
     showInput = false,
     item = undefined,
     isSelected = false,
-    gridViewMode,
+    gridMode,
     currentPath,
     onSuccess,
     onFail,
@@ -114,7 +114,7 @@ export default function NameLine(props: NameLineProps) {
       />
     </div>
   ) : (
-    <NameText {...{ itemName, gridViewMode, isSelected }} />
+    <NameText {...{ itemName, gridMode, isSelected }} />
   )
 }
 
@@ -122,14 +122,14 @@ export default function NameLine(props: NameLineProps) {
 interface NameTextProps {
   itemName?: string
   isSelected?: boolean
-  gridViewMode: boolean
+  gridMode: boolean
 }
 
 export function NameText(props: NameTextProps) {
 
   const {
     itemName,
-    gridViewMode,
+    gridMode,
     isSelected,
   } = props
 
@@ -139,7 +139,7 @@ export function NameText(props: NameTextProps) {
       className={line(`
         inline-block px-2 rounded truncate text-xs
         ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
-        ${gridViewMode ? 'max-w-full' : 'w-72'}
+        ${gridMode ? 'max-w-full' : 'w-72'}
       `)}
     >
       {itemName}

@@ -16,7 +16,7 @@ export interface IToolBarDisabledMap {
 
 interface ToolBarProps {
   toolBarDisabledMap: IToolBarDisabledMap
-  gridViewMode: boolean
+  gridMode: boolean
   setGridMode: (mode: boolean) => void
   onNavBack: () => void
   onNavForward: () => void
@@ -34,7 +34,7 @@ export default function ToolBar(props: ToolBarProps) {
 
   const {
     toolBarDisabledMap,
-    gridViewMode,
+    gridMode,
     setGridMode,
     onNavBack,
     onNavForward,
@@ -143,9 +143,9 @@ export default function ToolBar(props: ToolBarProps) {
         </ToolButton>
         <ToolButton
           title="展示方式"
-          onClick={() => setGridMode(!gridViewMode)}
+          onClick={() => setGridMode(!gridMode)}
         >
-          {gridViewMode ? <List16 /> : <Grid16 />}
+          {gridMode ? <List16 /> : <Grid16 />}
         </ToolButton>
       </div>
     </>
