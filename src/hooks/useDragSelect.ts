@@ -41,7 +41,8 @@ export default function useDragSelect(props: useDragSelectProps) {
     const mousedownListener = (e: any) => {
 
       const isLeftClick = e.which === 1
-      if (!isLeftClick) return
+      const isStartAtContainerInner = e.target === containerInner
+      if (!isLeftClick || !isStartAtContainerInner) return
 
       isMouseDown = true
 

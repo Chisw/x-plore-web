@@ -4,8 +4,10 @@ interface useDragOperationsProps {
   containerInnerRef: any
   onEnterContainer: () => void
   onLeaveContainer: () => void
-  onUpload: (files: File[]) => void
+  onUpload: (files: File[], dir?: string) => void
 }
+
+const clear = () => document.querySelectorAll('.dir-item').forEach(el => el.removeAttribute('data-drag-hover'))
 
 export default function useDragOperations(props: useDragOperationsProps) {
 
@@ -23,13 +25,24 @@ export default function useDragOperations(props: useDragOperationsProps) {
     const listener = (e: any) => {
       e.preventDefault()
       e.stopPropagation()
-      const { type, dataTransfer } = e
-      if (type === 'dragenter') {
+      const { type, dataTransfer, target } = e
+      const closestDir = target.closest('[data-dir="true"]')
+      if (closestDir) {
+        clear()
+        closestDir.setAttribute('data-drag-hover', 'true')
+      } else {
+        clear()
+      }
+      const dir = closestDir ? closestDir.getAttribute('data-name') : undefined
+      if (type === 'dragenter' || target === containerInner) {
         onEnterContainer()
-      } else if (type === 'dragleave') {
+      }
+      if (type === 'dragleave') {
         onLeaveContainer()
-      } else if (type === 'drop') {
-        onUpload(dataTransfer.files)
+      }
+      if (type === 'drop') {
+        onUpload(dataTransfer.files, dir)
+        clear()
       }
     }
 

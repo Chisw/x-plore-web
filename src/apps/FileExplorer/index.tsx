@@ -136,8 +136,8 @@ export default function FileExplorer(props: AppComponentProps) {
     handlePathChange({ path, direction: 1, needPushPath: true, needUpdateVolume: true })
   }, [handlePathChange])
 
-  const handleDirOpen = useCallback((dirMount: string) => {
-    const path = `${currentPath}/${dirMount}`
+  const handleDirOpen = useCallback((dirName: string) => {
+    const path = `${currentPath}/${dirName}`
     handlePathChange({ path, direction: 1, needPushPath: true })
   }, [handlePathChange, currentPath])
 
@@ -176,11 +176,11 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
-  const handleUploadStart = useCallback(async (files: File[]) => {
-    setVirtualFiles(files)
+  const handleUploadStart = useCallback(async (files: File[], dir?: string) => {
+    !dir && setVirtualFiles(files)
     const okList: boolean[] = []
     for (const file of files) {
-      const data = await uploadFileToPath(currentPath, file)
+      const data = await uploadFileToPath(`${currentPath}${dir ? `/${dir}` : ''}`, file)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         document.querySelector(`[data-name="${file.name}"]`)!.setAttribute('style', 'opacity:1;')
@@ -336,6 +336,16 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList(list)
   }, [newDirMode, renameMode, selectedItemList, dirItemList])
 
+  const handleItemDoubleClick = useCallback((item: IDirItem) => {
+    const { type, name } = item
+    const isDir = type === 1
+    if (isDir) {
+      handleDirOpen(name)
+    } else {
+      handleDownloadClick()
+    }
+  }, [handleDirOpen, handleDownloadClick])
+
   const handleSelectAll = useCallback((force?: boolean) => {
     const isSelectAll = force || !selectedItemList.length
     setSelectedItemList(isSelectAll ? dirItemList : [])
@@ -371,9 +381,9 @@ export default function FileExplorer(props: AppComponentProps) {
     onLeaveContainer: () => {
       setWaitDropToCurrentPath(false)
     },
-    onUpload: files => {
+    onUpload: (files, dir) => {
       setWaitDropToCurrentPath(false)
-      handleUploadStart(files)
+      handleUploadStart(files, dir)
     },
   })
 
@@ -436,7 +446,7 @@ export default function FileExplorer(props: AppComponentProps) {
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
               ${fetching ? 'bg-loading' : ''}
-              ${waitDropToCurrentPath ? 'outline-wait-drop' : ''}
+              ${waitDropToCurrentPath ? 'outline-wait-drop animate-pulse duration-75' : ''}
             `)}
             onMouseDownCapture={handleCancelSelect}
           >
@@ -482,7 +492,6 @@ export default function FileExplorer(props: AppComponentProps) {
               {/* items */}
               {dirItemList.map(item => {
                 const { name, type, hidden, size, timestamp } = item
-                const isDir = type === 1
                 const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
                 const small = !gridMode
                 const itemName = convertItemName(item)
@@ -492,6 +501,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     key={encodeURIComponent(name)}
                     data-name={name}
                     data-selected={isSelected}
+                    data-dir={type === 1}
                     draggable
                     className={line(`
                       dir-item
@@ -503,7 +513,7 @@ export default function FileExplorer(props: AppComponentProps) {
                       ${hidden ? 'opacity-50' : 'opacity-100'}
                     `)}
                     onClick={e => handleItemClick(e, item)}
-                    onDoubleClick={() => isDir && handleDirOpen(name)}
+                    onDoubleClick={() => handleItemDoubleClick(item)}
                   >
                     <div className="flex justify-center items-center">
                       {useThumbnail ? (

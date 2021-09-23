@@ -150,7 +150,7 @@ module.exports = {
         'box-shadow': 'box-shadow',
       },
       outline: {
-        'wait-drop': ['4px solid #BAE6FD', '-4px'],
+        'wait-drop': ['4px solid #34D399', '-4px'],
       },
     },
   },
