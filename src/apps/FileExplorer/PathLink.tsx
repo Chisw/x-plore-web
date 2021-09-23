@@ -9,7 +9,7 @@ interface PathLinkProps {
   dirCount: number
   fileCount: number
   currentPath: string
-  currentVolume: string
+  activeVolume: string
   onDirClick: (mount: string) => void
   onVolumeClick: (mount: string) => void
 }
@@ -22,7 +22,7 @@ export default function PathLink(props: PathLinkProps) {
     dirCount,
     fileCount,
     currentPath,
-    currentVolume,
+    activeVolume,
     onDirClick,
     onVolumeClick,
   } = props
@@ -31,29 +31,29 @@ export default function PathLink(props: PathLinkProps) {
     mountList,
     isVolumeDisabled,
   } = useMemo(() => {
-    const mountList = currentPath.replace(currentVolume, '').split('/').filter(Boolean)
-    const isVolumeDisabled = currentPath === currentVolume || !mountList.length
+    const mountList = currentPath.replace(activeVolume, '').split('/').filter(Boolean)
+    const isVolumeDisabled = currentPath === activeVolume || !mountList.length
     return {
       mountList,
       isVolumeDisabled,
     }
-  }, [currentPath, currentVolume])
+  }, [currentPath, activeVolume])
 
-  if (!currentVolume) return <div />
+  if (!activeVolume) return <div />
 
   return (
     <div className="flex-shrink-0 px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center bg-gray-100">
       <div className="group flex-shrink-0">
         <span
-          title={currentVolume}
+          title={activeVolume}
           className={isVolumeDisabled ? '' : 'cursor-pointer hover:text-black'}
-          onClick={() => !isVolumeDisabled && onVolumeClick(currentVolume)}
+          onClick={() => !isVolumeDisabled && onVolumeClick(activeVolume)}
         >
-          {currentVolume}
+          {activeVolume}
         </span>
         {mountList.map((mount, mountIndex) => {
           const prefix = mountList.filter((m, mIndex) => mIndex < mountIndex).join('/')
-          const fullPath = `${currentVolume}/${prefix ? `${prefix}/` : ''}${mount}`
+          const fullPath = `${activeVolume}/${prefix ? `${prefix}/` : ''}${mount}`
           const isDirDisabled = mountIndex > mountList.length - 2
           return (
             <span key={encodeURIComponent(fullPath)}>

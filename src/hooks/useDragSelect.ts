@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
+import { IRectInfo } from '../utils/types'
 
 interface useDragSelectProps {
   rectRef: any
   containerRef: any
   containerInnerRef: any
-  onDragging: (info: { startX: number, startY: number, endX: number, endY: number }) => void
+  onDragging: (info: IRectInfo) => void
 }
 
 export default function useDragSelect(props: useDragSelectProps) {

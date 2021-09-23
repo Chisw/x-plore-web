@@ -4,7 +4,7 @@ import { IVolume } from '../../utils/types'
 
 interface VolumeListProps {
   currentPath: string
-  currentVolume: string
+  activeVolume: string
   volumeList: IVolume[]
   onVolumeClick: (mount: string) => void
 }
@@ -13,7 +13,7 @@ export default function VolumeList(props: VolumeListProps) {
 
   const {
     currentPath,
-    currentVolume,
+    activeVolume,
     volumeList,
     onVolumeClick,
   } = props
@@ -23,7 +23,7 @@ export default function VolumeList(props: VolumeListProps) {
       <div>
         {volumeList.map(({ label, name, mount, spaceFree, spaceTotal }, volumeIndex) => {
           const title = `${name || mount} (${label})`
-          const isActive = mount === currentVolume
+          const isActive = mount === activeVolume
           const canVolumeClick = currentPath !== mount
           return (
             <div

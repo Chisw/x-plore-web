@@ -1,5 +1,9 @@
 import { ReactNode } from 'react'
 
+// 0: volume  1: directory 2: file
+export type ItemType = 0 | 1 | 2
+export type DirectionType = 1 | -1
+
 export interface AppComponentProps {
   isTopWindow: boolean
   setWindowLoading: (loading: boolean) => void
@@ -26,9 +30,6 @@ export interface IApp {
   }
   AppComponent: IAppComponent
 }
-
-// 0: volume  1: directory 2: file
-export type ItemType = 0 | 1 | 2
 
 export interface IVolume {
   label: string
@@ -66,4 +67,18 @@ export interface IDirItemIcon {
 export interface IHistory {
   position: number
   list: string[]
+}
+
+export interface IRectInfo {
+  startX: number
+  startY: number
+  endX: number
+  endY: number
+}
+
+export interface IOffsetInfo {
+  offsetTop: number
+  offsetLeft: number
+  offsetWidth: number
+  offsetHeight: number
 }

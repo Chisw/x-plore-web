@@ -3,11 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertItemName, getBytesSize, getDownloadInfo, isSameItem, itemSorter, line } from '../../utils'
+import { convertItemName, getBytesSize, getDownloadInfo, getIsContained, isSameItem, itemSorter, line } from '../../utils'
 import { deleteItem, downloadItems, getDirItems, uploadFile } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
 import { rootInfoState } from '../../utils/state'
-import { AppComponentProps, IDirItem, IHistory } from '../../utils/types'
+import { AppComponentProps, DirectionType, IDirItem, IHistory, IRectInfo } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -21,6 +21,7 @@ import Side from './Side'
 import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
 import useShortcuts from '../../hooks/useShortcuts'
+import { pick } from 'lodash'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -28,8 +29,8 @@ export default function FileExplorer(props: AppComponentProps) {
   const { isTopWindow, setWindowTitle } = props
 
   const [rootInfo] = useRecoilState(rootInfoState)
-  const [currentVolume, setCurrentVolume] = useState('')
   const [currentPath, setCurrentPath] = useState('')
+  const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
   const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
   const [selectedItemList, setSelectedItemList] = useState<IDirItem[]>([])
@@ -62,9 +63,9 @@ export default function FileExplorer(props: AppComponentProps) {
     setWindowTitle(title)
   }, [currentPath, setWindowTitle, isInVolumeRoot])
 
-  const { fetch, loading, data, setData } = useFetch((path: string) => getDirItems(path))
-  const { fetch: fetchDelete, loading: deleting } = useFetch((path: string) => deleteItem(path))
-  const { fetch: fetchUpload } = useFetch((path: string, file: File) => uploadFile(path, file))
+  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getDirItems(path))
+  const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteItem(path))
+  const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
 
   const { dirItemList, isItemListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? dirItemConverter(data).sort(itemSorter) : []
@@ -83,7 +84,7 @@ export default function FileExplorer(props: AppComponentProps) {
     return {
       navBack: position <= 0,
       navForward: list.length === position + 1,
-      refresh: loading || !currentPath,
+      refresh: fetching || !currentPath,
       backToTop: !currentPath || isInVolumeRoot,
       newDir: newDirMode,
       rename: selectedItemList.length !== 1,
@@ -96,15 +97,15 @@ export default function FileExplorer(props: AppComponentProps) {
       showHidden: false,
       gridMode: false,
     }
-  }, [history, loading, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
+  }, [history, fetching, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
 
-  const fetchPath = useCallback((path: string, keepData?: boolean) => {
+  const fetchPathData = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
-    fetch(path)
+    fetchPath(path)
     setNewDirMode(false)
-  }, [setData, fetch])
+  }, [setData, fetchPath])
 
-  const updateHistory = useCallback((direction: 1 | -1, path?: string) => {
+  const updateHistory = useCallback((direction: DirectionType, path?: string) => {
     const { position: pos, list: li } = history
     const position: number = pos + direction
     let list = [...li]
@@ -115,56 +116,58 @@ export default function FileExplorer(props: AppComponentProps) {
     setHistory({ position, list })
   }, [history])
 
-  const handleVolumeClick = useCallback((volumeMount: string) => {
-    setCurrentVolume(volumeMount)
-    setCurrentPath(volumeMount)
-    fetchPath(volumeMount)
-    updateHistory(1, volumeMount)
-  }, [fetchPath, updateHistory])
+  const handlePathChange = useCallback((props: {
+    path: string
+    direction: DirectionType
+    needPushPath?: boolean
+    needUpdateVolume?: boolean
+  }) => {
+    const { path, direction, needPushPath, needUpdateVolume } = props
+    setCurrentPath(path)
+    fetchPathData(path)
+    updateHistory(direction, needPushPath ? path : undefined)
+    if (needUpdateVolume) {
+      const mount = volumeMountList.find(m => path.startsWith(m))!
+      setActiveVolume(mount)
+    }
+  }, [fetchPathData, volumeMountList, updateHistory])
+
+  const handleVolumeClick = useCallback((path: string) => {
+    handlePathChange({ path, direction: 1, needPushPath: true, needUpdateVolume: true })
+  }, [handlePathChange])
 
   const handleDirOpen = useCallback((dirMount: string) => {
-    const newPath = `${currentPath}/${dirMount}`
-    setCurrentPath(newPath)
-    fetchPath(newPath)
-    updateHistory(1, newPath)
-  }, [fetchPath, currentPath, updateHistory])
+    const path = `${currentPath}/${dirMount}`
+    handlePathChange({ path, direction: 1, needPushPath: true })
+  }, [handlePathChange, currentPath])
 
-  const handleGoFullPath = useCallback((fullPath: string) => {
-    setCurrentPath(fullPath)
-    fetchPath(fullPath)
-    updateHistory(1, fullPath)
-  }, [fetchPath, updateHistory])
+  const handleGoFullPath = useCallback((path: string) => {
+    handlePathChange({ path, direction: 1, needPushPath: true })
+  }, [handlePathChange])
 
   const handleNavBack = useCallback(() => {
     const { position, list } = history
-    const targetPath = list[position - 1]
-    setCurrentPath(targetPath)
-    fetchPath(targetPath)
-    updateHistory(-1)
-  }, [history, updateHistory, fetchPath])
+    const path = list[position - 1]
+    handlePathChange({ path, direction: -1, needUpdateVolume: true })
+  }, [history, handlePathChange])
 
   const handleNavForward = useCallback(() => {
     const { position, list } = history
-    const targetPath = list[position + 1]
-    setCurrentPath(targetPath)
-    fetchPath(targetPath)
-    updateHistory(1)
-  }, [history, updateHistory, fetchPath])
+    const path = list[position + 1]
+    handlePathChange({ path, direction: 1, needUpdateVolume: true })
+  }, [history, handlePathChange])
 
-  const handleRefresh = useCallback(async (cb?: () => void) => {
+  const handleRefresh = useCallback(() => {
     setSelectedItemList([])
-    await fetchPath(currentPath, true)
-    cb && cb()
-  }, [fetchPath, currentPath])
+    fetchPathData(currentPath, true)
+  }, [fetchPathData, currentPath])
 
   const handleBackToTop = useCallback(() => {
     const list = currentPath.split('/')
     list.pop()
-    const newPath = list.join('/')
-    setCurrentPath(newPath)
-    fetchPath(newPath)
-    updateHistory(1, newPath)
-  }, [currentPath, fetchPath, setCurrentPath, updateHistory])
+    const path = list.join('/')
+    handlePathChange({ path, direction: 1, needPushPath: true })
+  }, [currentPath, handlePathChange])
 
   const handleNewDir = useCallback(() => {
     setSelectedItemList([])
@@ -177,7 +180,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setVirtualFiles(files)
     const okList: boolean[] = []
     for (const file of files) {
-      const data = await fetchUpload(currentPath, file)
+      const data = await uploadFileToPath(currentPath, file)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         document.querySelector(`[data-name="${file.name}"]`)!.setAttribute('style', 'opacity:1;')
@@ -190,13 +193,11 @@ export default function FileExplorer(props: AppComponentProps) {
       setVirtualFiles([])
     }
     (uploadInputRef.current as any).value = ''
-  }, [currentPath, fetchUpload, handleRefresh])
+  }, [currentPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
-    if (
-      e.metaKey ||
-      e.ctrlKey ||
-      e.shiftKey ||
+    if (  // avoid multiple select and rename
+      e.metaKey || e.ctrlKey || e.shiftKey ||
       document.getElementById('file-explorer-name-input')
     ) return
     setSelectedItemList([])
@@ -242,7 +243,6 @@ export default function FileExplorer(props: AppComponentProps) {
         downloadItems(currentPath, downloadName, cmd)
       },
     })
-
   }, [currentPath, selectedItemList])
 
   const handleDeleteClick = useCallback(async () => {
@@ -267,7 +267,7 @@ export default function FileExplorer(props: AppComponentProps) {
         const okList: boolean[] = []
         for (const item of selectedItemList) {
           const { name } = item
-          const { ok } = await fetchDelete(`${currentPath}/${name}`)
+          const { ok } = await deletePath(`${currentPath}/${name}`)
           document.querySelector(`.dir-item[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
           okList.push(ok)
         }
@@ -277,7 +277,7 @@ export default function FileExplorer(props: AppComponentProps) {
         }
       },
     })
-  }, [fetchDelete, currentPath, selectedItemList, handleRefresh])
+  }, [deletePath, currentPath, selectedItemList, handleRefresh])
 
   useEffect(() => {
     if (!currentPath && volumeList.length) {
@@ -287,13 +287,13 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => {
     const container: any = containerRef.current
-    if (container && waitScrollToSelected && !loading) {
+    if (container && waitScrollToSelected && !fetching) {
       const target: any = document.querySelector('.dir-item[data-selected="true"]')
       const top = target ? target.offsetTop - 10 : 0
       container!.scrollTo({ top, behavior: 'smooth' })
       setWaitScrollToSelected(false)
     }
-  }, [waitScrollToSelected, loading])
+  }, [waitScrollToSelected, fetching])
 
   useEffect(() => {
     setRenameMode(false)
@@ -341,18 +341,16 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedItemList(isSelectAll ? dirItemList : [])
   }, [setSelectedItemList, dirItemList, selectedItemList])
 
-  const handleRectSelect = useCallback((info: { startX: number, startY: number, endX: number, endY: number }) => {
-    const items = document.querySelectorAll('.dir-item')
-    if (!items.length) return
-    const { startX, startY, endX, endY } = info
+  const handleRectSelect = useCallback((info: IRectInfo) => {
+    const itemElements = document.querySelectorAll('.dir-item')
+    if (!itemElements.length) return
     const indexList: number[] = []
-    items.forEach((item: any, itemIndex) => {
-      const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = item
-      const isContained = offsetLeft + offsetWidth > startX &&
-        offsetTop + offsetHeight > startY &&
-        offsetLeft < endX &&
-        offsetTop < endY
-      isContained && indexList.push(itemIndex)
+    itemElements.forEach((el: any, elIndex) => {
+      const isContained = getIsContained({
+        ...info,
+        ...pick(el, 'offsetTop', 'offsetLeft', 'offsetWidth', 'offsetHeight'),
+      })
+      isContained && indexList.push(elIndex)
     })
     const names = dirItemList.filter((n, nIndex) => indexList.includes(nIndex))
     setSelectedItemList(names)
@@ -382,19 +380,20 @@ export default function FileExplorer(props: AppComponentProps) {
   useShortcuts({
     type: 'keyup',
     bindCondition: isTopWindow && !newDirMode && !renameMode,
-    shortcutFnMap: {
+    shortcutMap: {
       'Delete': disabledMap.delete ? null : handleDeleteClick,
       'Escape': () => setSelectedItemList([]),
       'Shift+A': disabledMap.selectAll ? null : () => handleSelectAll(true),
       'Shift+D': disabledMap.download ? null : handleDownloadClick,
       'Shift+E': disabledMap.rename ? null : handleRename,
       'Shift+F': disabledMap.filter ? null : () => setFilterOpen(true),
+      'Shift+G': disabledMap.showHidden ? null : () => setGridMode(true),
       'Shift+H': disabledMap.showHidden ? null : () => setHiddenShow(!hiddenShow),
+      'Shift+L': disabledMap.showHidden ? null : () => setGridMode(false),
       'Shift+N': disabledMap.newDir ? null : handleNewDir,
       'Shift+R': disabledMap.refresh ? null : handleRefresh,
       'Shift+S': disabledMap.store ? null : null,
       'Shift+U': disabledMap.upload ? null : handleUploadClick,
-      'Shift+V': disabledMap.showHidden ? null : () => setGridMode(!gridMode),
       'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
       'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
       'Shift+ArrowLeft': disabledMap.navBack ? null : handleNavBack,
@@ -406,7 +405,7 @@ export default function FileExplorer(props: AppComponentProps) {
       <div className="absolute inset-0 flex">
         {/* side */}
         <Side
-          {...{ currentPath, currentVolume, volumeList }}
+          {...{ currentPath, activeVolume, volumeList }}
           onVolumeClick={handleVolumeClick}
         />
         {/* main */}
@@ -426,7 +425,8 @@ export default function FileExplorer(props: AppComponentProps) {
             onSelectAll={handleSelectAll}
           />
           <PathLink
-            {...{ loading, dirCount, fileCount, currentPath, currentVolume }}
+            {...{ dirCount, fileCount, currentPath, activeVolume }}
+            loading={fetching}
             selectedLen={selectedItemList.length}
             onDirClick={handleGoFullPath}
             onVolumeClick={handleVolumeClick}
@@ -435,7 +435,7 @@ export default function FileExplorer(props: AppComponentProps) {
             ref={containerRef}
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
-              ${loading ? 'bg-loading' : ''}
+              ${fetching ? 'bg-loading' : ''}
               ${waitDropToCurrentPath ? 'outline-wait-drop' : ''}
             `)}
             onMouseDownCapture={handleCancelSelect}
@@ -445,7 +445,7 @@ export default function FileExplorer(props: AppComponentProps) {
               className="hidden absolute z-10 border box-content border-gray-400 bg-black-100"
             />
             {/* empty tip */}
-            {(!loading && isItemListEmpty) && (
+            {(!fetching && isItemListEmpty) && (
               <div className="absolute inset-0 p-10 flex justify-end items-end text-gray-200">
                 <CropGrowth32 />
               </div>

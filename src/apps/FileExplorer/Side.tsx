@@ -6,7 +6,7 @@ import VolumeList from './VolumeList'
 
 interface SideProps {
   currentPath: string
-  currentVolume: string
+  activeVolume: string
   volumeList: IVolume[]
   onVolumeClick: (mount: string) => void
 }
@@ -15,7 +15,7 @@ export default function Side(props: SideProps) {
 
   const {
     currentPath,
-    currentVolume,
+    activeVolume,
     volumeList,
     onVolumeClick,
   } = props
@@ -32,7 +32,7 @@ export default function Side(props: SideProps) {
       <div className="p-2 w-64 h-full border-r overflow-x-hidden overflow-y-auto">
         <p className="p-1 text-xs text-gray-400">宗卷</p>
         <VolumeList
-          {...{ currentPath, currentVolume, volumeList }}
+          {...{ currentPath, activeVolume, volumeList }}
           onVolumeClick={onVolumeClick}
         />
         <p className="mt-3 p-1 text-xs text-gray-400">收藏</p>

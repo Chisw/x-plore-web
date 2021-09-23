@@ -45,14 +45,14 @@ export default function Window(props: WindowProps) {
   const [rndInstance, setRndInstance] = useState<any>(null)
 
   const isTopWindow = useMemo(() => currentIndex === topWindowIndex, [currentIndex, topWindowIndex])
-  
+
   const handleMoveToFront = useCallback((e) => {
-    if (e.target.closest('[prevent-move-to-front]')) return
+    if (isTopWindow || e.target.closest('[prevent-move-to-front]')) return
     const newTopIndex = topWindowIndex + 1
     setCurrentIndex(newTopIndex)
     setTopWindowIndex(newTopIndex)
     document.getElementById(`window-${runningId}`)!.style.zIndex = String(newTopIndex)
-  }, [runningId, topWindowIndex, setTopWindowIndex])
+  }, [isTopWindow, runningId, topWindowIndex, setTopWindowIndex])
 
   const handleZoom = useCallback(() => {
     if (isFullScreen) {

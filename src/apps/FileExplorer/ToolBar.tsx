@@ -213,7 +213,7 @@ export default function ToolBar(props: ToolBarProps) {
           {hiddenShow ? <ViewOff16 /> : <View16 />}
         </ToolButton>
         <ToolButton
-          title="展示方式 [Shift + V]"
+          title={gridMode ? '显示为列表 [Shift + L]' : '显示为图标 [Shift + G]'}
           onClick={() => setGridMode(!gridMode)}
         >
           {gridMode ? <List16 /> : <Grid16 />}

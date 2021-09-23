@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 interface useShortcutsProps {
   type: 'keydown' | 'keyup'
   bindCondition: boolean
-  shortcutFnMap: {[KEY: string]: any}  // null | () => void
+  shortcutMap: {[KEY: string]: any}  // null | () => void
 }
 
 export default function useShortcuts(props: useShortcutsProps) {
@@ -11,17 +11,17 @@ export default function useShortcuts(props: useShortcutsProps) {
   const {
     type,
     bindCondition,
-    shortcutFnMap,
+    shortcutMap,
   } = props
 
   useEffect(() => {
-    const shortcutKeys = Object.keys(shortcutFnMap)
+    const shortcutKeys = Object.keys(shortcutMap)
     const listener = (e: any) => {
       const { key, shiftKey } = e
       const shortcut = `${shiftKey ? 'Shift+' : ''}${key}`
       // console.log('shortcut:', shortcut)
       if (shortcutKeys.includes(shortcut)) {
-        const fn = shortcutFnMap[shortcut]
+        const fn = shortcutMap[shortcut]
         fn && fn()
       }
     }
@@ -29,5 +29,5 @@ export default function useShortcuts(props: useShortcutsProps) {
     const unbind = () => document.removeEventListener(type, listener)
     bindCondition ? bind() : unbind()
     return unbind
-  }, [type, bindCondition, shortcutFnMap])
+  }, [type, bindCondition, shortcutMap])
 }

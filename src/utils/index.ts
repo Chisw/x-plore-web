@@ -1,4 +1,4 @@
-import { IDirItem } from './types'
+import { IDirItem, IOffsetInfo, IRectInfo } from './types'
 
 export const itemSorter = (a: IDirItem, b: IDirItem) => {
   const typeDirection = a.type - b.type
@@ -83,4 +83,22 @@ export const getDownloadInfo = (currentPath: string, selectedItemList: IDirItem[
       : `cmd=zip${selectedItemList.map(o => `&f=${o.name}`).join('')}`
   
   return { downloadName, msg, cmd }
+}
+
+export const getIsContained = (props: IRectInfo & IOffsetInfo) => {
+  const {
+    startX,
+    startY,
+    endX,
+    endY,
+    offsetTop,
+    offsetLeft,
+    offsetWidth,
+    offsetHeight,
+  } = props
+
+  return offsetLeft + offsetWidth > startX &&
+    offsetTop + offsetHeight > startY &&
+    offsetLeft < endX &&
+    offsetTop < endY
 }
