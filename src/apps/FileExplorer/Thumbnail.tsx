@@ -16,17 +16,19 @@ export default function Thumbnail(props: ThumbnailProps) {
   } = props
 
   return (
-    <div
-      className={line(`
-        relative inline-flex justify-center items-center
-        ${small ? 'w-6 h-6' : 'w-12 h-12'}
-      `)}
-    >
-      <img
-        alt="thumbnail"
-        className="max-w-full max-h-full p-2px bg-white shadow-md border"
-        src={getThumbnailUrl(currentPath, itemName)}
-      />
+    <div className="flex justify-center items-center">
+      <div
+        className={line(`
+          relative inline-flex justify-center items-center
+          ${small ? 'w-6 h-6' : 'w-12 h-12'}
+        `)}
+      >
+        <img
+          alt="thumbnail"
+          className="max-w-full max-h-full p-2px bg-white shadow-md border"
+          src={getThumbnailUrl(currentPath, itemName)}
+        />
+      </div>
     </div>
   )
 }

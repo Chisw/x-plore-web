@@ -2,6 +2,7 @@ import {
   App32,
   Catalog32,
   DataBase32,
+  DocumentAdd32,
   DocumentBlank32,
   DocumentPdf32,
   Folder32,
@@ -56,6 +57,12 @@ const ITEM_ICON_LIST: IDirItemIcon[] = [
     icon: <Folder32 />,
     bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
     match: ['_dir_empty'],
+  },
+  {
+    name: 'document',
+    icon: <DocumentAdd32 />,
+    bg: 'from-gray-200 to-gray-400 border-gray-300',
+    match: ['_txt_new'],
   },
   {
     name: 'image',
@@ -159,24 +166,26 @@ export default function Icon(props: IconProps) {
   }, [itemName])
 
   return (
-    <div
-      className={line(`
-        relative inline-flex justify-center items-center
-        text-white bg-gradient-to-b border
-        ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
-        ${bg}
-      `)}
-    >
-      {icon}
-      {dirSubIcon && (
-        <div
-          className={line(`
-            absolute right-0 bottom-0  bg-center bg-no-repeat bg-contain
-            ${small ? 'w-3 h-3' : '-mr-1 -mb-1 w-5 h-5'}
-          `)}
-          style={{ backgroundImage: `url("${dirSubIcon}")` }}
-        />
-      )}
+    <div className="flex justify-center items-center">
+      <div
+        className={line(`
+          relative inline-flex justify-center items-center
+          text-white bg-gradient-to-b border
+          ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
+          ${bg}
+        `)}
+      >
+        {icon}
+        {dirSubIcon && (
+          <div
+            className={line(`
+              absolute right-0 bottom-0  bg-center bg-no-repeat bg-contain
+              ${small ? 'w-3 h-3' : '-mr-1 -mb-1 w-5 h-5'}
+            `)}
+            style={{ backgroundImage: `url("${dirSubIcon}")` }}
+          />
+        )}
+      </div>
     </div>
   )
 }

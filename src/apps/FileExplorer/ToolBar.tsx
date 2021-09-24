@@ -16,6 +16,7 @@ import {
   View16,
   List16,
   ViewOff16,
+  DocumentAdd16,
 } from '@carbon/icons-react'
 import { line } from '../../utils'
 import { Button, InputGroup } from '@blueprintjs/core'
@@ -26,6 +27,7 @@ export interface IToolBarDisabledMap {
   refresh: boolean
   backToTop: boolean
   newDir: boolean
+  newTxt: boolean
   rename: boolean
   upload: boolean
   download: boolean
@@ -52,6 +54,7 @@ interface ToolBarProps {
   onRefresh: () => void
   onBackToTop: () => void
   onNewDir: () => void
+  onNewTxt: () => void
   onRename: () => void
   onUpload: () => void
   onDownload: () => void
@@ -76,6 +79,7 @@ export default function ToolBar(props: ToolBarProps) {
     onRefresh,
     onBackToTop,
     onNewDir,
+    onNewTxt,
     onRename,
     onUpload,
     onDownload,
@@ -127,6 +131,13 @@ export default function ToolBar(props: ToolBarProps) {
           onClick={onNewDir}
         >
           <FolderAdd16 />
+        </ToolButton>
+        <ToolButton
+          title="新建文本文件 [Shift + T]"
+          disabled={disabledMap.newTxt}
+          onClick={onNewTxt}
+        >
+          <DocumentAdd16 />
         </ToolButton>
         <ToolButton
           title="重命名 [Shift + E]"

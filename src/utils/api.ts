@@ -11,7 +11,7 @@ export const getDirItems = async (path: string) => {
   return data
 }
 
-export const getIsDirExist = async (path: string) => {
+export const getIsExist = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=exists`, { method: 'GET' }).then(res => res.json())
   return data
 }

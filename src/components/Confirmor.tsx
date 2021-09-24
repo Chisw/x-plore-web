@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from 'react'
 export interface ConfirmorProps {
   isOpen: boolean
   content?: ReactNode
+  children?: ReactNode
   onCancel?: () => void
   onConfirm?: () => void
   canEscapeKeyClose?: boolean
@@ -15,6 +16,7 @@ export default function Confirmor(props: ConfirmorProps) {
   const {
     isOpen,
     content = '',
+    children = undefined,
     onCancel = () => { },
     onConfirm = () => { },
     canEscapeKeyClose = true,
@@ -23,7 +25,8 @@ export default function Confirmor(props: ConfirmorProps) {
 
   useEffect(() => {
     const listener = (e: any) => {
-      if (e.key === 'Enter') onConfirm()
+      const { key, shiftKey } = e
+      if (key === 'Enter' && !shiftKey) onConfirm()
     }
     if (isOpen) {
       document.addEventListener('keyup', listener)
@@ -44,7 +47,7 @@ export default function Confirmor(props: ConfirmorProps) {
       onClose={onCancel}
     >
       <div className="pb-4">
-        {content}
+        {content || children}
       </div>
       <div className="flex -mx-1">
         <Button

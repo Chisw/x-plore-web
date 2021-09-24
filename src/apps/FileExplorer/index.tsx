@@ -35,6 +35,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
   const [selectedItemList, setSelectedItemList] = useState<IDirItem[]>([])
   const [newDirMode, setNewDirMode] = useState(false)
+  const [newTxtMode, setNewTxtMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
   const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
@@ -86,7 +87,8 @@ export default function FileExplorer(props: AppComponentProps) {
       navForward: list.length === position + 1,
       refresh: fetching || !currentPath,
       backToTop: !currentPath || isInVolumeRoot,
-      newDir: newDirMode,
+      newDir: newDirMode || newTxtMode,
+      newTxt: newDirMode || newTxtMode,
       rename: selectedItemList.length !== 1,
       upload: false,
       download: isItemListEmpty,
@@ -97,7 +99,7 @@ export default function FileExplorer(props: AppComponentProps) {
       showHidden: false,
       gridMode: false,
     }
-  }, [history, fetching, currentPath, isInVolumeRoot, newDirMode, selectedItemList, isItemListEmpty])
+  }, [history, fetching, currentPath, isInVolumeRoot, newDirMode, newTxtMode, selectedItemList, isItemListEmpty])
 
   const fetchPathData = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
@@ -174,6 +176,11 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(true)
   }, [])
 
+  const handleNewTxt = useCallback(() => {
+    setSelectedItemList([])
+    setNewTxtMode(true)
+  }, [])
+
   const handleRename = useCallback(() => setRenameMode(true), [])
 
   const handleUploadStart = useCallback(async (files: File[], dir?: string) => {
@@ -192,7 +199,7 @@ export default function FileExplorer(props: AppComponentProps) {
       Toast.toast('上传成功', 2000)
       setVirtualFiles([])
     }
-    (uploadInputRef.current as any).value = ''
+    ;(uploadInputRef.current as any).value = ''
   }, [currentPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
@@ -205,6 +212,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleNameSuccess = useCallback((item: IDirItem) => {
     setNewDirMode(false)
+    setNewTxtMode(false)
     setRenameMode(false)
     handleRefresh()
     setSelectedItemList([item])
@@ -214,6 +222,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const handleNameFail = useCallback((failType: NameFailType) => {
     if (['cancel', 'empty', 'no_change'].includes(failType)) {
       setNewDirMode(false)
+      setNewTxtMode(false)
       setRenameMode(false)
     }
   }, [])
@@ -302,9 +311,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setFilterText('')
   }, [currentPath])
 
-  useEffect(() => {
-    setSelectedItemList([])
-  }, [filterText])
+  useEffect(() => setSelectedItemList([]), [filterText])
 
   const handleItemClick = useCallback((e: any, item: IDirItem) => {
     if (newDirMode || renameMode) return
@@ -389,7 +396,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useShortcuts({
     type: 'keyup',
-    bindCondition: isTopWindow && !newDirMode && !renameMode,
+    bindCondition: isTopWindow && !newDirMode && !newTxtMode && !renameMode,
     shortcutMap: {
       'Delete': disabledMap.delete ? null : handleDeleteClick,
       'Escape': () => setSelectedItemList([]),
@@ -403,6 +410,7 @@ export default function FileExplorer(props: AppComponentProps) {
       'Shift+N': disabledMap.newDir ? null : handleNewDir,
       'Shift+R': disabledMap.refresh ? null : handleRefresh,
       'Shift+S': disabledMap.store ? null : null,
+      'Shift+T': disabledMap.newTxt ? null : handleNewTxt,
       'Shift+U': disabledMap.upload ? null : handleUploadClick,
       'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
       'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
@@ -428,6 +436,7 @@ export default function FileExplorer(props: AppComponentProps) {
             onRefresh={handleRefresh}
             onBackToTop={handleBackToTop}
             onNewDir={handleNewDir}
+            onNewTxt={handleNewTxt}
             onRename={handleRename}
             onUpload={handleUploadClick}
             onDownload={handleDownloadClick}
@@ -475,12 +484,32 @@ export default function FileExplorer(props: AppComponentProps) {
                     ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                   `)}
                 >
-                  <div className="flex justify-center items-center">
-                    <Icon small={!gridMode} itemName="fake._dir_new" />
-                  </div>
+                  <Icon small={!gridMode} itemName="fake._dir_new" />
                   <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
                     <NameLine
                       showInput
+                      create="dir"
+                      gridMode={gridMode}
+                      currentPath={currentPath}
+                      onSuccess={handleNameSuccess}
+                      onFail={handleNameFail}
+                    />
+                  </div>
+                </div>
+              )}
+              {/* new txt */}
+              {newTxtMode && (
+                <div
+                  className={line(`
+                    overflow-hidden rounded select-none hover:bg-gray-100
+                    ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                  `)}
+                >
+                  <Icon small={!gridMode} itemName="fake._txt_new" />
+                  <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+                    <NameLine
+                      showInput
+                      create="txt"
                       gridMode={gridMode}
                       currentPath={currentPath}
                       onSuccess={handleNameSuccess}
@@ -515,13 +544,11 @@ export default function FileExplorer(props: AppComponentProps) {
                     onClick={e => handleItemClick(e, item)}
                     onDoubleClick={() => handleItemDoubleClick(item)}
                   >
-                    <div className="flex justify-center items-center">
-                      {useThumbnail ? (
-                        <Thumbnail {...{ small, itemName, currentPath }} />
-                      ) : (
-                        <Icon {...{ small, itemName }} />
-                      )}
-                    </div>
+                    {useThumbnail ? (
+                      <Thumbnail {...{ small, itemName, currentPath }} />
+                    ) : (
+                      <Icon {...{ small, itemName }} />
+                    )}
                     <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
                       <NameLine
                         showInput={renameMode && isSelected}

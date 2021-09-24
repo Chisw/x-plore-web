@@ -2,12 +2,13 @@ import { WarningAltFilled16 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
-import { getIsDirExist, addNewDir, renameItem } from '../../utils/api'
+import { getIsExist, addNewDir, renameItem, uploadFile } from '../../utils/api'
 import { IDirItem } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
 interface NameLineProps {
+  create?: 'dir' | 'txt' 
   showInput?: boolean
   item?: IDirItem,
   isSelected?: boolean
@@ -20,6 +21,7 @@ interface NameLineProps {
 export default function NameLine(props: NameLineProps) {
 
   const {
+    create,
     showInput = false,
     item = undefined,
     isSelected = false,
@@ -38,11 +40,12 @@ export default function NameLine(props: NameLineProps) {
     setInputValue(e.target.value)
   }, [])
 
-  const { fetch: fetchExist, loading: loadingExist } = useFetch((path: string) => getIsDirExist(path))
+  const { fetch: fetchExist, loading: loadingExist } = useFetch((path: string) => getIsExist(path))
   const { fetch: fetchNewDir, loading: loadingNewDir } = useFetch((path: string) => addNewDir(path))
   const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameItem(path, newPath))
+  const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
 
-  const handleDirNameBlur = useCallback(async (e: any) => {
+  const handleName = useCallback(async (e: any) => {
     const oldName = item?.name
     const newName = e.target.value as string
 
@@ -64,18 +67,30 @@ export default function NameLine(props: NameLineProps) {
             onFail('net_error')
           }
         } else {  // new dir
-          const { ok } = await fetchNewDir(newPath)
-          if (ok) {
-            onSuccess({ type: 1, name: newName })
-          } else {
-            onFail('net_error')
+          if (create === 'dir') {
+            const { ok } = await fetchNewDir(newPath)
+            if (ok) {
+              onSuccess({ type: 1, name: newName })
+            } else {
+              onFail('net_error')
+            }
+          } else if (create === 'txt') {
+            const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
+            const file = new File([blob], newName)
+            const data = await uploadFileToPath(currentPath, file)
+            const isUploaded = !!data?.hasDon
+            if (isUploaded) {
+              onSuccess({ type: 2, name: newName })
+            } else {
+              onFail('net_error')
+            }
           }
         }
       }
     } else {
       onFail('empty')
     }
-  }, [item, currentPath, fetchExist, fetchNewDir, fetchRename, onSuccess, onFail])
+  }, [item, currentPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
   return showInput ? (
     <div
@@ -95,7 +110,7 @@ export default function NameLine(props: NameLineProps) {
       <input
         id="file-explorer-name-input"
         autoFocus
-        placeholder="文件夹名称"
+        placeholder="请输入名称"
         className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"
         value={inputValue}
         onChange={handleInputChange}
@@ -103,11 +118,11 @@ export default function NameLine(props: NameLineProps) {
           setIsExist(false)
           ;(document.getElementById('file-explorer-name-input') as any)?.select()
         }}
-        onBlur={handleDirNameBlur}
+        onBlur={handleName}
         onKeyUp={e => {
           const { key } = e
           if (key === 'Enter') {
-            handleDirNameBlur(e)
+            handleName(e)
           } else if (key === 'Escape') {
             onFail('cancel')
           }
@@ -115,18 +130,17 @@ export default function NameLine(props: NameLineProps) {
       />
     </div>
   ) : (
-    <NameText {...{ itemName, gridMode, isSelected }} />
+    <NameLabel {...{ itemName, gridMode, isSelected }} />
   )
 }
 
-
-interface NameTextProps {
+interface NameLabelProps {
   itemName?: string
   isSelected?: boolean
   gridMode: boolean
 }
 
-export function NameText(props: NameTextProps) {
+export function NameLabel(props: NameLabelProps) {
 
   const {
     itemName,

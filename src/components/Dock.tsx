@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useRecoilState } from 'recoil'
 import { runningAppListState, topWindowIndexState } from '../utils/state'
-import { APP_LIST } from '../utils/constant'
+import APP_LIST from '../utils/appList'
 import { IApp } from '../utils/types'
 import { line } from '../utils'
 
