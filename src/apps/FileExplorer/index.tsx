@@ -4,9 +4,9 @@ import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
 import { convertItemName, getBytesSize, getDownloadInfo, getIsContained, isSameItem, itemSorter, line } from '../../utils'
-import { deleteItem, downloadItems, getDirItems, uploadFile } from '../../utils/api'
+import { deleteItem, downloadItems, getDirSize, getPathItems, uploadFile } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
-import { rootInfoState } from '../../utils/state'
+import { rootInfoState, sizeMapState } from '../../utils/state'
 import { AppComponentProps, DirectionType, IDirItem, IHistory, IRectInfo } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
@@ -15,8 +15,6 @@ import { DateTime } from 'luxon'
 import Toast from '../../components/EasyToast'
 import Confirmor, { ConfirmorProps } from '../../components/Confirmor'
 import VirtualItems from './VirtualItems'
-import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
-import Thumbnail from './Thumbnail'
 import Side from './Side'
 import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
@@ -29,6 +27,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const { isTopWindow, setWindowTitle } = props
 
   const [rootInfo] = useRecoilState(rootInfoState)
+  const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
   const [currentPath, setCurrentPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
@@ -64,9 +63,10 @@ export default function FileExplorer(props: AppComponentProps) {
     setWindowTitle(title)
   }, [currentPath, setWindowTitle, isInVolumeRoot])
 
-  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getDirItems(path))
+  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathItems(path))
   const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteItem(path))
   const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
+  const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
 
   const { dirItemList, isItemListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? dirItemConverter(data).sort(itemSorter) : []
@@ -171,14 +171,9 @@ export default function FileExplorer(props: AppComponentProps) {
     handlePathChange({ path, direction: 1, needPushPath: true })
   }, [currentPath, handlePathChange])
 
-  const handleNewDir = useCallback(() => {
+  const handleCreate = useCallback((create: 'dir' | 'txt') => {
     setSelectedItemList([])
-    setNewDirMode(true)
-  }, [])
-
-  const handleNewTxt = useCallback(() => {
-    setSelectedItemList([])
-    setNewTxtMode(true)
+    create === 'dir' ? setNewDirMode(true) : setNewTxtMode(true)
   }, [])
 
   const handleRename = useCallback(() => setRenameMode(true), [])
@@ -313,6 +308,12 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => setSelectedItemList([]), [filterText])
 
+  const updateDirSize = useCallback(async (name: string) => {
+    const path = `${currentPath}/${name}`
+    const { hasDon, size } = await getSize(path)
+    hasDon && setSizeMap({ ...sizeMap, [path]: size })
+  }, [currentPath, getSize, sizeMap, setSizeMap])
+
   const handleItemClick = useCallback((e: any, item: IDirItem) => {
     if (newDirMode || renameMode) return
     let list = [...selectedItemList]
@@ -339,9 +340,10 @@ export default function FileExplorer(props: AppComponentProps) {
       }
     } else {
       list = [item]
+      item.type === 1 && updateDirSize(item.name)
     }
     setSelectedItemList(list)
-  }, [newDirMode, renameMode, selectedItemList, dirItemList])
+  }, [newDirMode, renameMode, selectedItemList, dirItemList, updateDirSize])
 
   const handleItemDoubleClick = useCallback((item: IDirItem) => {
     const { type, name } = item
@@ -407,10 +409,10 @@ export default function FileExplorer(props: AppComponentProps) {
       'Shift+G': disabledMap.showHidden ? null : () => setGridMode(true),
       'Shift+H': disabledMap.showHidden ? null : () => setHiddenShow(!hiddenShow),
       'Shift+L': disabledMap.showHidden ? null : () => setGridMode(false),
-      'Shift+N': disabledMap.newDir ? null : handleNewDir,
+      'Shift+N': disabledMap.newDir ? null : () => handleCreate('dir'),
       'Shift+R': disabledMap.refresh ? null : handleRefresh,
       'Shift+S': disabledMap.store ? null : null,
-      'Shift+T': disabledMap.newTxt ? null : handleNewTxt,
+      'Shift+T': disabledMap.newTxt ? null : () => handleCreate('txt'),
       'Shift+U': disabledMap.upload ? null : handleUploadClick,
       'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
       'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
@@ -435,8 +437,8 @@ export default function FileExplorer(props: AppComponentProps) {
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
             onBackToTop={handleBackToTop}
-            onNewDir={handleNewDir}
-            onNewTxt={handleNewTxt}
+            onNewDir={() => handleCreate('dir')}
+            onNewTxt={() => handleCreate('txt')}
             onRename={handleRename}
             onUpload={handleUploadClick}
             onDownload={handleDownloadClick}
@@ -476,46 +478,26 @@ export default function FileExplorer(props: AppComponentProps) {
                 ${gridMode ? 'p-2' : 'p-4'}
               `)}
             >
-              {/* new dir */}
-              {newDirMode && (
+              {/* create */}
+              {(newDirMode || newTxtMode) && (
                 <div
                   className={line(`
                     overflow-hidden rounded select-none hover:bg-gray-100
                     ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                   `)}
                 >
-                  <Icon small={!gridMode} itemName="fake._dir_new" />
-                  <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
-                    <NameLine
-                      showInput
-                      create="dir"
-                      gridMode={gridMode}
-                      currentPath={currentPath}
-                      onSuccess={handleNameSuccess}
-                      onFail={handleNameFail}
-                    />
-                  </div>
-                </div>
-              )}
-              {/* new txt */}
-              {newTxtMode && (
-                <div
-                  className={line(`
-                    overflow-hidden rounded select-none hover:bg-gray-100
-                    ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
-                  `)}
-                >
-                  <Icon small={!gridMode} itemName="fake._txt_new" />
-                  <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
-                    <NameLine
-                      showInput
-                      create="txt"
-                      gridMode={gridMode}
-                      currentPath={currentPath}
-                      onSuccess={handleNameSuccess}
-                      onFail={handleNameFail}
-                    />
-                  </div>
+                  <Icon
+                    small={!gridMode}
+                    itemName={newDirMode ? 'fake._dir_new' : 'fake._txt_new'}
+                  />
+                  <NameLine
+                    showInput
+                    create={newDirMode ? 'dir' : 'txt'}
+                    gridMode={gridMode}
+                    currentPath={currentPath}
+                    onSuccess={handleNameSuccess}
+                    onFail={handleNameFail}
+                  />
                 </div>
               )}
               {/* items */}
@@ -524,7 +506,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
                 const small = !gridMode
                 const itemName = convertItemName(item)
-                const useThumbnail = THUMBNAIL_MATCH_LIST.some(ext => name.toLowerCase().endsWith(ext))
+                const _size = size === undefined ? sizeMap[`${currentPath}/${name}`] : size
                 return (
                   <div
                     key={encodeURIComponent(name)}
@@ -543,33 +525,37 @@ export default function FileExplorer(props: AppComponentProps) {
                     `)}
                     onClick={e => handleItemClick(e, item)}
                     onDoubleClick={() => handleItemDoubleClick(item)}
+
                   >
-                    {useThumbnail ? (
-                      <Thumbnail {...{ small, itemName, currentPath }} />
-                    ) : (
-                      <Icon {...{ small, itemName }} />
-                    )}
-                    <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
-                      <NameLine
-                        showInput={renameMode && isSelected}
-                        item={item}
-                        isSelected={isSelected}
-                        gridMode={gridMode}
-                        currentPath={currentPath}
-                        onSuccess={handleNameSuccess}
-                        onFail={handleNameFail}
-                      />
+                    <Icon {...{ small, itemName, currentPath }} />
+                    <NameLine
+                      showInput={renameMode && isSelected}
+                      item={item}
+                      isSelected={isSelected}
+                      gridMode={gridMode}
+                      currentPath={currentPath}
+                      onSuccess={handleNameSuccess}
+                      onFail={handleNameFail}
+                    />
+                    <div
+                      className={line(`
+                        w-full text-xs whitespace-nowrap font-din
+                        ${isSelected && !gridMode ? 'text-white' : 'text-gray-400'}
+                        ${gridMode ? 'hidden' : 'pl-2 text-right'}
+                      `)}
+                    >
+                      {lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''}
                     </div>
-                    {!gridMode && (
-                      <>
-                        <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
-                          {size ? getBytesSize(size) : '--'}
-                        </div>
-                        <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
-                          {lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm:ss') : '--'}
-                        </div>
-                      </>
-                    )}
+                    <div
+                      className={line(`
+                        w-full text-xs whitespace-nowrap font-din min-w-16
+                        ${isSelected && !gridMode ? 'text-white' : 'text-gray-400'}
+                        ${gridMode ? 'text-center' : 'pl-2 text-right'}
+                        ${(isSelected && getting) ? 'animate-pulse' : ''}
+                      `)}
+                    >
+                      {_size === undefined ? '--' : getBytesSize(_size)}
+                    </div>
                   </div>
                 )
               })}

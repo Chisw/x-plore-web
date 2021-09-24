@@ -30,7 +30,7 @@ const APP_LIST: IApp[] = [
     width: 960,
     height: 640,
     resizeRange: {
-      minWidth: 720,
+      minWidth: 640,
       minHeight: 480,
     },
     AppComponent: FileExplorer,

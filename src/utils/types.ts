@@ -58,7 +58,7 @@ export interface IDirItem {
 }
 
 export interface IDirItemIcon {
-  name: string
+  type: string
   icon: ReactNode
   bg: string
   match: string[]

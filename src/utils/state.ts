@@ -18,3 +18,8 @@ export const rootInfoState = atom<IRootInfo>({
     volumeList: [],
   },
 })
+
+export const sizeMapState = atom<{ [KEY: string]: number }>({
+  key: 'sizeMapState',
+  default: {},
+})

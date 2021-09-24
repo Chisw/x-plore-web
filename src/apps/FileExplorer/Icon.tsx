@@ -31,9 +31,11 @@ import dirMi from '../../img/icons/dir-mi.png'
 import dirQQBrowser from '../../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
 import { line } from '../../utils'
+import { getThumbnailUrl } from '../../utils/api'
+import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
 
 const DEFAULT_ITEM_ICON: IDirItemIcon = {
-  name: 'unknown',
+  type: 'unknown',
   icon: <DocumentBlank32 />,
   bg: 'from-gray-300 to-gray-400 border-gray-400',
   match: [],
@@ -41,73 +43,73 @@ const DEFAULT_ITEM_ICON: IDirItemIcon = {
 
 const ITEM_ICON_LIST: IDirItemIcon[] = [
   {
-    name: 'folder',
+    type: 'folder',
     icon: <Folder32 />,
     bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
     match: ['_dir'],
   },
   {
-    name: 'folder',
+    type: 'folder',
     icon: <FolderAdd32 />,
     bg: 'from-yellow-200 to-yellow-400 border-yellow-300',
     match: ['_dir_new'],
   },
   {
-    name: 'folder',
+    type: 'folder',
     icon: <Folder32 />,
     bg: 'from-yellow-300 to-yellow-500 border-yellow-400',
     match: ['_dir_empty'],
   },
   {
-    name: 'document',
+    type: 'document',
     icon: <DocumentAdd32 />,
     bg: 'from-gray-200 to-gray-400 border-gray-300',
     match: ['_txt_new'],
   },
   {
-    name: 'image',
+    type: 'image',
     icon: <Image32 />,
     bg: 'from-orange-400 to-orange-500 border-orange-500',
     match: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'insp'],
   },
   {
-    name: 'music',
+    type: 'music',
     icon: <Music32 />,
     bg: 'from-pink-600 to-pink-700 border-pink-700',
-    match: ['mp3', 'flac'],
+    match: ['mp3', 'flac', 'wav'],
   },
   {
-    name: 'video',
+    type: 'video',
     icon: <Video32 />,
     bg: 'from-blue-400 to-blue-500 border-blue-500',
     match: ['mp4', 'mov', 'wmv', 'insv'],
   },
   {
-    name: 'zip',
+    type: 'zip',
     icon: <Zip32 />,
     bg: 'from-amber-600 to-amber-700 border-amber-700',
     match: ['zip'],
   },
   {
-    name: 'pdf',
+    type: 'pdf',
     icon: <DocumentPdf32 />,
     bg: 'from-red-800 to-red-900 border-red-900',
     match: ['pdf'],
   },
   {
-    name: 'data',
+    type: 'data',
     icon: <DataBase32 />,
     bg: 'from-gray-300 to-gray-400 border-gray-400',
-    match: ['dat', 'db', 'sql'],
+    match: ['dat', 'db', 'sql', 'json'],
   },
   {
-    name: 'log',
+    type: 'log',
     icon: <Catalog32 />,
     bg: 'from-gray-300 to-gray-400 border-gray-400',
     match: ['log'],
   },
   {
-    name: 'application',
+    type: 'application',
     icon: <App32 />,
     bg: 'from-lime-400 to-lime-500 border-lime-500',
     match: ['apk'],
@@ -149,19 +151,24 @@ const getDirSubIcon: (name: string) => string | undefined = name => {
 interface IconProps {
   small?: boolean
   itemName: string
+  currentPath?: string
 }
-
 
 export default function Icon(props: IconProps) {
 
   const {
     small = false,
     itemName,
+    currentPath = '',
   } = props
 
+  const useThumbnail = useMemo(() => {
+    return THUMBNAIL_MATCH_LIST.some(ext => itemName.toLowerCase().endsWith(ext))
+  }, [itemName])
+
   const { bg, icon, dirSubIcon } = useMemo(() => {
-    const { name, bg, icon } = getIcon(itemName)
-    const dirSubIcon = name === 'folder' ? getDirSubIcon(itemName) : undefined
+    const { type, bg, icon } = getIcon(itemName)
+    const dirSubIcon = type === 'folder' ? getDirSubIcon(itemName) : undefined
     return { bg, icon, dirSubIcon }
   }, [itemName])
 
@@ -170,16 +177,24 @@ export default function Icon(props: IconProps) {
       <div
         className={line(`
           relative inline-flex justify-center items-center
-          text-white bg-gradient-to-b border
           ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
-          ${bg}
+          ${useThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
         `)}
       >
-        {icon}
+        {useThumbnail ? (
+          <img
+            alt="thumbnail"
+            className={line(`
+              max-w-full max-h-full bg-white shadow-md border pointer-events-none
+              ${small ? 'p-1px' : 'p-2px'}
+            `)}
+            src={getThumbnailUrl(currentPath, itemName)}
+          />
+        ) : icon}
         {dirSubIcon && (
           <div
             className={line(`
-              absolute right-0 bottom-0  bg-center bg-no-repeat bg-contain
+              absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain
               ${small ? 'w-3 h-3' : '-mr-1 -mb-1 w-5 h-5'}
             `)}
             style={{ backgroundImage: `url("${dirSubIcon}")` }}

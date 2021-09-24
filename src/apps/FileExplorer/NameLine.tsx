@@ -92,45 +92,49 @@ export default function NameLine(props: NameLineProps) {
     }
   }, [item, currentPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
-  return showInput ? (
-    <div
-      className={line(`
-        relative h-5 bg-white border border-gray-300 rounded
-        ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
-      `)}
-    >
-      {isExist && (
-        <span
-          title="已存在"
-          className="absolute top-0 right-0 bottom-0 flex items-center mr-1 text-center text-xs text-yellow-500"
+  return (
+    <div className={`leading-none ${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+      {showInput ? (
+        <div
+          className={line(`
+            relative h-5 bg-white border border-gray-300 rounded
+            ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
+          `)}
         >
-          <WarningAltFilled16 />
-        </span>
+          {isExist && (
+            <span
+              title="已存在"
+              className="absolute top-0 right-0 bottom-0 flex items-center mr-1 text-center text-xs text-yellow-500"
+            >
+              <WarningAltFilled16 />
+            </span>
+          )}
+          <input
+            id="file-explorer-name-input"
+            autoFocus
+            placeholder="请输入名称"
+            className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => {
+              setIsExist(false)
+              ;(document.getElementById('file-explorer-name-input') as any)?.select()
+            }}
+            onBlur={handleName}
+            onKeyUp={e => {
+              const { key } = e
+              if (key === 'Enter') {
+                handleName(e)
+              } else if (key === 'Escape') {
+                onFail('cancel')
+              }
+            }}
+          />
+        </div>
+      ) : (
+        <NameLabel {...{ itemName, gridMode, isSelected }} />
       )}
-      <input
-        id="file-explorer-name-input"
-        autoFocus
-        placeholder="请输入名称"
-        className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"
-        value={inputValue}
-        onChange={handleInputChange}
-        onFocus={() => {
-          setIsExist(false)
-          ;(document.getElementById('file-explorer-name-input') as any)?.select()
-        }}
-        onBlur={handleName}
-        onKeyUp={e => {
-          const { key } = e
-          if (key === 'Enter') {
-            handleName(e)
-          } else if (key === 'Escape') {
-            onFail('cancel')
-          }
-        }}
-      />
     </div>
-  ) : (
-    <NameLabel {...{ itemName, gridMode, isSelected }} />
   )
 }
 

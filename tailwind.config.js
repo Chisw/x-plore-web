@@ -107,6 +107,7 @@ module.exports = {
       }, percent),
       // margin padding
       spacing: Object.assign({
+        '1px': '1px',
         '2px': '2px',
       }, base, extra),
       width: Object.assign({

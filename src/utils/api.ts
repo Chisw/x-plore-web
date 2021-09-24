@@ -6,13 +6,18 @@ export const getRootInfo = async () => {
   return data
 }
 
-export const getDirItems = async (path: string) => {
+export const getPathItems = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=list`, { method: 'GET' }).then(res => res.json())
   return data
 }
 
 export const getIsExist = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=exists`, { method: 'GET' }).then(res => res.json())
+  return data
+}
+
+export const getDirSize = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=dir_size`).then(res => res.json())
   return data
 }
 
