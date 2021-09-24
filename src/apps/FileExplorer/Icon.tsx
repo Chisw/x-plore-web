@@ -10,6 +10,7 @@ import {
   // FolderDetails32,
   Image32,
   Music32,
+  Pen32,
   Video32,
   Zip32,
 } from '@carbon/icons-react'
@@ -19,10 +20,15 @@ import dirAndroid from '../../img/icons/dir-android.png'
 import dirAlipay from '../../img/icons/dir-alipay.png'
 import dirAutonavi from '../../img/icons/dir-autonavi.png'
 import dirBackup from '../../img/icons/dir-backup.png'
+import dirBaidu from '../../img/icons/dir-baidu.png'
 import dirBrowser from '../../img/icons/dir-browser.png'
 import dirCamera from '../../img/icons/dir-camera.png'
 import dirDownload from '../../img/icons/dir-download.png'
 import dirDuokan from '../../img/icons/dir-duokan.png'
+import dirFonts from '../../img/icons/dir-fonts.png'
+import dirMovies from '../../img/icons/app-video-player.png'
+import dirMusic from '../../img/icons/app-music-player.png'
+import dirPictures from '../../img/icons/app-photo-gallery.png'
 import dirRetroArch from '../../img/icons/dir-retroarch.png'
 import dirSogou from '../../img/icons/dir-sogou.png'
 import dirTencent from '../../img/icons/dir-tencent.png'
@@ -103,6 +109,12 @@ const ITEM_ICON_LIST: IDirItemIcon[] = [
     match: ['dat', 'db', 'sql', 'json'],
   },
   {
+    type: 'text',
+    icon: <Pen32 />,
+    bg: 'from-gray-300 to-gray-400 border-gray-400',
+    match: ['txt'],
+  },
+  {
     type: 'log',
     icon: <Catalog32 />,
     bg: 'from-gray-300 to-gray-400 border-gray-400',
@@ -132,10 +144,15 @@ const getDirSubIcon: (name: string) => string | undefined = name => {
     'Android': dirAndroid,
     'autonavi': dirAutonavi,
     'backups': dirBackup,
+    'baidu': dirBaidu,
     'browser': dirBrowser,
     'DCIM': dirCamera,
     'DuoKan': dirDuokan,
     'Download': dirDownload,
+    'Fonts': dirFonts,
+    'Movies': dirMovies,
+    'Music': dirMusic,
+    'Pictures': dirPictures,
     'QQBrowser': dirQQBrowser,
     'RetroArch': dirRetroArch,
     'sogou': dirSogou,
