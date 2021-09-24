@@ -28,7 +28,7 @@ export const dirItemConverter: (data: any) => IDirItem[] = data => {
     size,
     mime,
     hidden,
-    timestamp: time,
+    lastModified: time,
     hasChildren: has_children,
   }))
 }

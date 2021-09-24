@@ -53,7 +53,7 @@ export interface IDirItem {
   size?: number
   mime?: string
   hidden?: boolean
-  timestamp?: number
+  lastModified?: number
   hasChildren?: boolean
 }
 

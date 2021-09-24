@@ -25,8 +25,10 @@ export default function useDragOperations(props: useDragOperationsProps) {
     const listener = (e: any) => {
       e.preventDefault()
       e.stopPropagation()
+
       const { type, dataTransfer, target } = e
       const closestDir = target.closest('[data-dir="true"]')
+
       if (closestDir) {
         clear()
         closestDir.setAttribute('data-drag-hover', 'true')
@@ -34,6 +36,7 @@ export default function useDragOperations(props: useDragOperationsProps) {
         clear()
       }
       const dir = closestDir ? closestDir.getAttribute('data-name') : undefined
+
       if (type === 'dragenter' || target === containerInner) {
         onEnterContainer()
       }

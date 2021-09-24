@@ -28,4 +28,5 @@ html, body {
 [data-drag-hover="true"] {
   outline: 3px solid #34D399;
   outline-offset: -3px;
+  animation: pulse .6s ease-in-out infinite;
 }

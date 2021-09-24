@@ -183,7 +183,7 @@ export default function FileExplorer(props: AppComponentProps) {
       const data = await uploadFileToPath(`${currentPath}${dir ? `/${dir}` : ''}`, file)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
-        document.querySelector(`[data-name="${file.name}"]`)!.setAttribute('style', 'opacity:1;')
+        document.querySelector(`[data-name="${file.name}"]`)?.setAttribute('style', 'opacity:1;')
       }
       okList.push(isUploaded)
     }
@@ -443,10 +443,10 @@ export default function FileExplorer(props: AppComponentProps) {
           />
           <div
             ref={containerRef}
+            data-drag-hover={waitDropToCurrentPath}
             className={line(`
               relative flex-grow overflow-x-hidden overflow-y-auto
               ${fetching ? 'bg-loading' : ''}
-              ${waitDropToCurrentPath ? 'outline-wait-drop animate-pulse duration-75' : ''}
             `)}
             onMouseDownCapture={handleCancelSelect}
           >
@@ -491,7 +491,7 @@ export default function FileExplorer(props: AppComponentProps) {
               )}
               {/* items */}
               {dirItemList.map(item => {
-                const { name, type, hidden, size, timestamp } = item
+                const { name, type, hidden, size, lastModified } = item
                 const isSelected = !!selectedItemList.find(o => isSameItem(o, item))
                 const small = !gridMode
                 const itemName = convertItemName(item)
@@ -539,7 +539,7 @@ export default function FileExplorer(props: AppComponentProps) {
                           {size ? getBytesSize(size) : '--'}
                         </div>
                         <div className={`w-full text-right text-xs ${isSelected ? 'text-white' : 'text-gray-400'} font-din`}>
-                          {timestamp ? DateTime.fromMillis(timestamp).toFormat('yyyy-MM-dd HH:mm:ss') : '--'}
+                          {lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm:ss') : '--'}
                         </div>
                       </>
                     )}

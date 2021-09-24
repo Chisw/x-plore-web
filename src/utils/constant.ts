@@ -1,5 +1,6 @@
 import { IApp } from './types'
 import iconFileExplorer from '../img/icons/app-file-explorer.png'
+import iconTransfer from '../img/icons/app-transfer.png'
 import iconTextEditor from '../img/icons/app-text-editor.png'
 import iconPhotoGallery from '../img/icons/app-photo-gallery.png'
 import iconMusicPlayer from '../img/icons/app-music-player.png'
@@ -10,6 +11,7 @@ import iconPQINA from '../img/icons/app-pqina.png'
 import iconPS from '../img/icons/app-ps.png'
 import bgMusic from '../img/bg-music.jpg'
 import FileExplorer from '../apps/FileExplorer'
+import Transfer from '../apps/Transfer'
 import TextEditor from '../apps/TextEditor'
 import PhotoGallery from '../apps/PhotoGallery'
 import MusicPlayer from '../apps/MusicPlayer'
@@ -32,6 +34,20 @@ export const APP_LIST: IApp[] = [
       minHeight: 480,
     },
     AppComponent: FileExplorer,
+  },
+  {
+    id: 'transfer',
+    runningId: 0,
+    title: '传输助手',
+    icon: iconTransfer,
+    width: 400,
+    height: 400,
+    resizeRange: {
+      minWidth: 400,
+      minHeight: 400,
+      maxWidth: 400,
+    },
+    AppComponent: Transfer,
   },
   {
     id: 'text-editor',

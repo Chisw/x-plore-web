@@ -149,9 +149,6 @@ module.exports = {
         'all': 'all',
         'box-shadow': 'box-shadow',
       },
-      outline: {
-        'wait-drop': ['4px solid #34D399', '-4px'],
-      },
     },
   },
   variants: {
