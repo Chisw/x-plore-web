@@ -166,6 +166,7 @@ const getDirSubIcon: (name: string) => string | undefined = name => {
 }
 
 interface IconProps {
+  fake?: boolean
   small?: boolean
   itemName: string
   currentPath?: string
@@ -174,14 +175,18 @@ interface IconProps {
 export default function Icon(props: IconProps) {
 
   const {
+    fake = false,
     small = false,
     itemName,
     currentPath = '',
   } = props
 
-  const useThumbnail = useMemo(() => {
-    return THUMBNAIL_MATCH_LIST.some(ext => itemName.toLowerCase().endsWith(ext))
-  }, [itemName])
+  const { useThumbnail, isVideo } = useMemo(() => {
+    const lowerName = itemName.toLowerCase()
+    const useThumbnail = !fake && THUMBNAIL_MATCH_LIST.some(ext => lowerName.endsWith(ext))
+    const isVideo = lowerName.endsWith('.mp4')
+    return { useThumbnail, isVideo }
+  }, [itemName, fake])
 
   const { bg, icon, dirSubIcon } = useMemo(() => {
     const { type, bg, icon } = getIcon(itemName)
@@ -190,20 +195,25 @@ export default function Icon(props: IconProps) {
   }, [itemName])
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center pointer-events-none">
       <div
         className={line(`
           relative inline-flex justify-center items-center
-          ${small ? 'w-6 h-6 rounded' : 'w-12 h-12 rounded-lg'}
           ${useThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
+          ${small
+            ? 'w-6 h-6 rounded'
+            : useThumbnail
+              ? 'w-20 h-12'
+              : 'w-12 h-12 rounded-lg'
+          }
         `)}
       >
         {useThumbnail ? (
           <img
             alt="thumbnail"
             className={line(`
-              max-w-full max-h-full bg-white shadow-md border pointer-events-none
-              ${small ? 'p-1px' : 'p-2px'}
+              max-w-full max-h-full bg-white shadow-md
+              ${isVideo ? '' : `border ${small ? 'p-1px' : 'p-2px'}`}
             `)}
             src={getThumbnailUrl(currentPath, itemName)}
           />

@@ -20,6 +20,7 @@ import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
 import useShortcuts from '../../hooks/useShortcuts'
 import { pick } from 'lodash'
+import { Button, ContextMenu } from '@blueprintjs/core'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -36,13 +37,13 @@ export default function FileExplorer(props: AppComponentProps) {
   const [newDirMode, setNewDirMode] = useState(false)
   const [newTxtMode, setNewTxtMode] = useState(false)
   const [renameMode, setRenameMode] = useState(false)
+  const [filterMode, setFilterMode] = useState(false)
+  const [filterText, setFilterText] = useState('')
   const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
   const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
   const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [virtualFiles, setVirtualFiles] = useState<File[]>([])
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterText, setFilterText] = useState('')
   const [hiddenShow, setHiddenShow] = useState(false)
 
   const rectRef = useRef(null)
@@ -226,9 +227,9 @@ export default function FileExplorer(props: AppComponentProps) {
     (uploadInputRef.current as any)?.click()
   }, [])
 
-  const handleDownloadClick = useCallback(() => {
-
-    const { msg, downloadName, cmd } = getDownloadInfo(currentPath, selectedItemList)
+  const handleDownloadClick = useCallback((ctxItemList?: IDirItem[]) => {
+    const processList = ctxItemList || selectedItemList
+    const { msg, downloadName, cmd } = getDownloadInfo(currentPath, processList)
     const close = () => setDownloadConfirmorProps({ isOpen: false })
 
     setDownloadConfirmorProps({
@@ -249,10 +250,11 @@ export default function FileExplorer(props: AppComponentProps) {
     })
   }, [currentPath, selectedItemList])
 
-  const handleDeleteClick = useCallback(async () => {
-    const len = selectedItemList.length
+  const handleDeleteClick = useCallback(async (ctxItemList?: IDirItem[]) => {
+    const processList = ctxItemList || selectedItemList
+    const len = processList.length
     if (!len) return
-    const msg = len === 1 ? selectedItemList[0].name : `${len} 个项目`
+    const msg = len === 1 ? processList[0].name : `${len} 个项目`
     const close = () => setDeleteConfirmorProps({ isOpen: false })
 
     setDeleteConfirmorProps({
@@ -269,7 +271,7 @@ export default function FileExplorer(props: AppComponentProps) {
       onConfirm: async () => {
         close()
         const okList: boolean[] = []
-        for (const item of selectedItemList) {
+        for (const item of processList) {
           const { name } = item
           const { ok } = await deletePath(`${currentPath}/${name}`)
           document.querySelector(`.dir-item[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
@@ -302,7 +304,7 @@ export default function FileExplorer(props: AppComponentProps) {
   useEffect(() => {
     setRenameMode(false)
     setSelectedItemList([])
-    setFilterOpen(false)
+    setFilterMode(false)
     setFilterText('')
   }, [currentPath])
 
@@ -398,14 +400,14 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useShortcuts({
     type: 'keyup',
-    bindCondition: isTopWindow && !newDirMode && !newTxtMode && !renameMode,
+    bindCondition: isTopWindow && !newDirMode && !newTxtMode && !renameMode && !filterMode,
     shortcutMap: {
       'Delete': disabledMap.delete ? null : handleDeleteClick,
       'Escape': () => setSelectedItemList([]),
       'Shift+A': disabledMap.selectAll ? null : () => handleSelectAll(true),
       'Shift+D': disabledMap.download ? null : handleDownloadClick,
       'Shift+E': disabledMap.rename ? null : handleRename,
-      'Shift+F': disabledMap.filter ? null : () => setFilterOpen(true),
+      'Shift+F': disabledMap.filter ? null : () => setFilterMode(true),
       'Shift+G': disabledMap.showHidden ? null : () => setGridMode(true),
       'Shift+H': disabledMap.showHidden ? null : () => setHiddenShow(!hiddenShow),
       'Shift+L': disabledMap.showHidden ? null : () => setGridMode(false),
@@ -420,6 +422,111 @@ export default function FileExplorer(props: AppComponentProps) {
     },
   })
 
+  const handleContextMenu = useCallback((e: any) => {
+    e.preventDefault()
+
+    const {
+      target,
+      clientX: left,
+      clientY: top,
+    } = e
+
+    let isOnBlank = true
+    // let isOnDir = false
+    let ctxItemList: IDirItem[] = []
+
+    const targetItem = target.closest('.dir-item')
+    if (targetItem) {
+      isOnBlank = false
+      // const isDir = targetItem.getAttribute('data-dir') === 'true'
+      // if (isDir) isOnDir = true
+      const itemName = targetItem.getAttribute('data-name')
+      const item = dirItemList.find(o => o.name === itemName)
+      if (item) {
+        ctxItemList = [item]
+        setSelectedItemList(ctxItemList)
+      }
+    }
+
+    const actions = [
+      {
+        icon: <></>,
+        text: '新建文件夹',
+        isShow: isOnBlank,
+        onClick: () => setNewDirMode(true),
+      },
+      {
+        icon: <></>,
+        text: '新建文本文件',
+        isShow: isOnBlank,
+        onClick: () => setNewTxtMode(true),
+      },
+      {
+        icon: <></>,
+        text: '刷新',
+        isShow: isOnBlank,
+        onClick: handleRefresh,
+      },
+      {
+        icon: <></>,
+        text: '重命名',
+        isShow: !isOnBlank,
+        onClick: () => setTimeout(handleRename, 1),
+      },
+      {
+        icon: <></>,
+        text: '上传',
+        isShow: isOnBlank,
+        onClick: handleUploadClick,
+      },
+      {
+        icon: <></>,
+        text: '下载',
+        isShow: true,
+        onClick: () => handleDownloadClick(ctxItemList),
+      },
+      // {
+      //   icon: <></>,
+      //   text: '收藏',
+      //   isShow: isOnDir,
+      //   onClick: () => { },
+      // },
+      {
+        icon: <></>,
+        text: '删除',
+        isShow: !isOnBlank,
+        onClick: () => handleDeleteClick(ctxItemList),
+      },
+    ]
+
+    const menu = (
+      <div className="p-1 w-40 force-outline-none">
+        {actions
+          .filter(({ isShow }) => isShow)
+          .map(({ icon, text, onClick }, ) => (
+            <Button
+              small
+              fill
+              minimal
+              alignText="left"
+              className="my-1"
+              {...{icon, text }}
+              onClick={() => {
+                onClick()
+                ContextMenu.hide()
+              }}
+            />
+          ))
+        }
+      </div>
+    )
+
+    const onClose = () => setSelectedItemList([])
+
+    ContextMenu.show(menu, { top, left }, onClose)
+
+  }, [dirItemList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
+
   return (
     <>
       <div className="absolute inset-0 flex">
@@ -431,8 +538,8 @@ export default function FileExplorer(props: AppComponentProps) {
         {/* main */}
         <div className="relative flex-grow h-full bg-white flex flex-col">
           <ToolBar
-            {...{ disabledMap, gridMode, filterOpen, filterText, hiddenShow }}
-            {...{ setGridMode, setFilterOpen, setFilterText, setHiddenShow }}
+            {...{ disabledMap, gridMode, filterMode, filterText, hiddenShow }}
+            {...{ setGridMode, setFilterMode, setFilterText, setHiddenShow }}
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
@@ -477,6 +584,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 relative min-h-full flex flex-wrap content-start
                 ${gridMode ? 'p-2' : 'p-4'}
               `)}
+              onContextMenu={handleContextMenu}
             >
               {/* create */}
               {(newDirMode || newTxtMode) && (
@@ -511,8 +619,8 @@ export default function FileExplorer(props: AppComponentProps) {
                   <div
                     key={encodeURIComponent(name)}
                     data-name={name}
-                    data-selected={isSelected}
                     data-dir={type === 1}
+                    data-selected={isSelected}
                     draggable
                     className={line(`
                       dir-item

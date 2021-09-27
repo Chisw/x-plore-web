@@ -30,3 +30,8 @@ html, body {
   outline-offset: -3px;
   animation: pulse .6s ease-in-out infinite;
 }
+
+.force-outline-none,
+.force-outline-none * {
+  outline: none !important;
+}

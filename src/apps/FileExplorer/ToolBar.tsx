@@ -42,11 +42,11 @@ export interface IToolBarDisabledMap {
 interface ToolBarProps {
   disabledMap: IToolBarDisabledMap
   gridMode: boolean
-  filterOpen: boolean
+  filterMode: boolean
   filterText: string
   hiddenShow: boolean
   setGridMode: (mode: boolean) => void
-  setFilterOpen: (open: boolean) => void
+  setFilterMode: (open: boolean) => void
   setFilterText: (text: string) => void
   setHiddenShow: (show: boolean) => void
   onNavBack: () => void
@@ -67,11 +67,11 @@ export default function ToolBar(props: ToolBarProps) {
   const {
     disabledMap,
     gridMode,
-    filterOpen,
+    filterMode,
     filterText,
     hiddenShow,
     setGridMode,
-    setFilterOpen,
+    setFilterMode,
     setFilterText,
     setHiddenShow,
     onNavBack,
@@ -88,7 +88,7 @@ export default function ToolBar(props: ToolBarProps) {
   } = props
 
   const cancel = () => {
-    setFilterOpen(false)
+    setFilterMode(false)
     setFilterText('')
   }
 
@@ -174,8 +174,8 @@ export default function ToolBar(props: ToolBarProps) {
 
         <div className="flex-grow border-r" />
 
-        <div className={`${filterOpen ? 'w-40' : 'w-8'} transition-all duration-200`}>
-          {filterOpen ? (
+        <div className={`${filterMode ? 'w-40' : 'w-8'} transition-all duration-200`}>
+          {filterMode ? (
             <div className="px-1 h-full flex items-center">
               <InputGroup
                 small
@@ -195,7 +195,7 @@ export default function ToolBar(props: ToolBarProps) {
                 )}
                 value={filterText}
                 onChange={e => setFilterText(e.target.value)}
-                onBlur={e => !e.target.value && setFilterOpen(false)}
+                onBlur={e => !e.target.value && setFilterMode(false)}
                 onKeyUp={e => e.key === 'Escape' && cancel()}
               />
             </div>
@@ -203,7 +203,7 @@ export default function ToolBar(props: ToolBarProps) {
             <ToolButton
               title="筛选 [Shift + F]"
               disabled={disabledMap.filter}
-              onClick={() => setFilterOpen(true)}
+              onClick={() => setFilterMode(true)}
             >
               <Filter16 />
             </ToolButton>

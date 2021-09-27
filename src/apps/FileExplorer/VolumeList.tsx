@@ -25,6 +25,7 @@ export default function VolumeList(props: VolumeListProps) {
           const title = `${name || mount} (${label})`
           const isActive = mount === activeVolume
           const canVolumeClick = currentPath !== mount
+          const spaceUsed = spaceTotal - spaceFree
           return (
             <div
               key={volumeIndex}
@@ -42,13 +43,13 @@ export default function VolumeList(props: VolumeListProps) {
                 <VmdkDisk16 className="flex-shrink-0" />
                 <span className="ml-1 truncate flex-grow">{title}</span>
                 <span className="font-din text-gray-500">
-                  {`${getBytesSize(spaceFree)}/${getBytesSize(spaceTotal)}`.replace(/\s/g, '')}
+                  {`${getBytesSize(spaceUsed)}/${getBytesSize(spaceTotal)}`.replace(/\s/g, '')}
                 </span>
               </div>
               <div className="relative mt-1 h-1 text-gray-500 font-din bg-white rounded-sm overflow-hidden">
                 <div
                   className="absolute top-0 bottom-0 left-0 bg-green-500"
-                  style={{ width: `${spaceFree / spaceTotal * 100}%` }}
+                  style={{ width: `${spaceUsed / spaceTotal * 100}%` }}
                 />
               </div>
             </div>

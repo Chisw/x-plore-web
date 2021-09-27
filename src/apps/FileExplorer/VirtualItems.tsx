@@ -26,7 +26,7 @@ export default function VirtualItems(props: VirtualItemsProps) {
             ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
           `)}
         >
-          <Icon small={!gridMode} itemName={name} />
+          <Icon fake small={!gridMode} itemName={name} />
           <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
             <NameLabel
               itemName={name}
