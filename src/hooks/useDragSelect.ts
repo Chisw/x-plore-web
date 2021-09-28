@@ -38,15 +38,14 @@ export default function useDragSelect(props: useDragSelectProps) {
     let containerInnerWidth = 0
     let containerInnerHeight = 0
 
-    const mousedownListener = (e: any) => {
+    const mousedownListener = (event: any) => {
 
-      const isLeftClick = e.which === 1
-      const isStartAtContainerInner = e.target === containerInner
+      const isLeftClick = event.which === 1
+      const isStartAtContainerInner = event.target === containerInner
       if (!isLeftClick || !isStartAtContainerInner) return
 
       isMouseDown = true
 
-      const event = window.event || e
       const { top, left } = container.getBoundingClientRect()
       const { width, height } = containerInner.getBoundingClientRect()
 
@@ -61,9 +60,8 @@ export default function useDragSelect(props: useDragSelectProps) {
       rect.style.top = `${startY}px`
     }
 
-    const mousemoveListener = (e: any) => {
+    const mousemoveListener = (event: any) => {
       if (isMouseDown) {
-        const event: any = window.event || e
         endX = (event.x || event.clientX) - containerLeft
         endY = (event.y || event.clientY) - containerTop + container.scrollTop
 

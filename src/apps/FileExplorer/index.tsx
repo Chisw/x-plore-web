@@ -20,7 +20,8 @@ import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
 import useShortcuts from '../../hooks/useShortcuts'
 import { pick } from 'lodash'
-import { Button, ContextMenu } from '@blueprintjs/core'
+import { ContextMenu } from '@blueprintjs/core'
+import Menus from './Menus'
 
 
 export default function FileExplorer(props: AppComponentProps) {
@@ -199,6 +200,7 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [currentPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
+    if (e.button === 2) return  // oncontextmenu
     if (  // avoid multiple select and rename
       e.metaKey || e.ctrlKey || e.shiftKey ||
       document.getElementById('file-explorer-name-input')
@@ -227,8 +229,8 @@ export default function FileExplorer(props: AppComponentProps) {
     (uploadInputRef.current as any)?.click()
   }, [])
 
-  const handleDownloadClick = useCallback((ctxItemList?: IDirItem[]) => {
-    const processList = ctxItemList || selectedItemList
+  const handleDownloadClick = useCallback((contextItemList?: IDirItem[]) => {
+    const processList = contextItemList || selectedItemList
     const { msg, downloadName, cmd } = getDownloadInfo(currentPath, processList)
     const close = () => setDownloadConfirmorProps({ isOpen: false })
 
@@ -250,8 +252,8 @@ export default function FileExplorer(props: AppComponentProps) {
     })
   }, [currentPath, selectedItemList])
 
-  const handleDeleteClick = useCallback(async (ctxItemList?: IDirItem[]) => {
-    const processList = ctxItemList || selectedItemList
+  const handleDeleteClick = useCallback(async (contextItemList?: IDirItem[]) => {
+    const processList = contextItemList || selectedItemList
     const len = processList.length
     if (!len) return
     const msg = len === 1 ? processList[0].name : `${len} 个项目`
@@ -317,7 +319,7 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [currentPath, getSize, sizeMap, setSizeMap])
 
   const handleItemClick = useCallback((e: any, item: IDirItem) => {
-    if (newDirMode || renameMode) return
+    if (newDirMode || newTxtMode || renameMode) return
     let list = [...selectedItemList]
     const { metaKey, ctrlKey, shiftKey } = e
     const selectedLen = selectedItemList.length
@@ -345,7 +347,7 @@ export default function FileExplorer(props: AppComponentProps) {
       item.type === 1 && updateDirSize(item.name)
     }
     setSelectedItemList(list)
-  }, [newDirMode, renameMode, selectedItemList, dirItemList, updateDirSize])
+  }, [newDirMode, newTxtMode, renameMode, selectedItemList, dirItemList, updateDirSize])
 
   const handleItemDoubleClick = useCallback((item: IDirItem) => {
     const { type, name } = item
@@ -400,7 +402,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useShortcuts({
     type: 'keyup',
-    bindCondition: isTopWindow && !newDirMode && !newTxtMode && !renameMode && !filterMode,
+    bindCondition: isTopWindow && !newDirMode && !newTxtMode && !renameMode && !filterMode && !ContextMenu.isOpen(),
     shortcutMap: {
       'Delete': disabledMap.delete ? null : handleDeleteClick,
       'Escape': () => setSelectedItemList([]),
@@ -419,113 +421,23 @@ export default function FileExplorer(props: AppComponentProps) {
       'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
       'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
       'Shift+ArrowLeft': disabledMap.navBack ? null : handleNavBack,
+      'Shift+ArrowDown': (selectedItemList.length === 1 && selectedItemList[0].type === 1)
+        ? () => handleDirOpen(selectedItemList[0].name)
+        : null,
     },
   })
 
-  const handleContextMenu = useCallback((e: any) => {
-    e.preventDefault()
-
-    const {
-      target,
-      clientX: left,
-      clientY: top,
-    } = e
-
-    let isOnBlank = true
-    // let isOnDir = false
-    let ctxItemList: IDirItem[] = []
-
-    const targetItem = target.closest('.dir-item')
-    if (targetItem) {
-      isOnBlank = false
-      // const isDir = targetItem.getAttribute('data-dir') === 'true'
-      // if (isDir) isOnDir = true
-      const itemName = targetItem.getAttribute('data-name')
-      const item = dirItemList.find(o => o.name === itemName)
-      if (item) {
-        ctxItemList = [item]
-        setSelectedItemList(ctxItemList)
-      }
+  const handleContextMenu = useCallback((event: any) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const { target, clientX: left, clientY: top } = event
+    const menuProps = {
+      target, dirItemList, selectedItemList,
+      setNewDirMode, setNewTxtMode, setSelectedItemList,
+      handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
-
-    const actions = [
-      {
-        icon: <></>,
-        text: '新建文件夹',
-        isShow: isOnBlank,
-        onClick: () => setNewDirMode(true),
-      },
-      {
-        icon: <></>,
-        text: '新建文本文件',
-        isShow: isOnBlank,
-        onClick: () => setNewTxtMode(true),
-      },
-      {
-        icon: <></>,
-        text: '刷新',
-        isShow: isOnBlank,
-        onClick: handleRefresh,
-      },
-      {
-        icon: <></>,
-        text: '重命名',
-        isShow: !isOnBlank,
-        onClick: () => setTimeout(handleRename, 1),
-      },
-      {
-        icon: <></>,
-        text: '上传',
-        isShow: isOnBlank,
-        onClick: handleUploadClick,
-      },
-      {
-        icon: <></>,
-        text: '下载',
-        isShow: true,
-        onClick: () => handleDownloadClick(ctxItemList),
-      },
-      // {
-      //   icon: <></>,
-      //   text: '收藏',
-      //   isShow: isOnDir,
-      //   onClick: () => { },
-      // },
-      {
-        icon: <></>,
-        text: '删除',
-        isShow: !isOnBlank,
-        onClick: () => handleDeleteClick(ctxItemList),
-      },
-    ]
-
-    const menu = (
-      <div className="p-1 w-40 force-outline-none">
-        {actions
-          .filter(({ isShow }) => isShow)
-          .map(({ icon, text, onClick }, ) => (
-            <Button
-              small
-              fill
-              minimal
-              alignText="left"
-              className="my-1"
-              {...{icon, text }}
-              onClick={() => {
-                onClick()
-                ContextMenu.hide()
-              }}
-            />
-          ))
-        }
-      </div>
-    )
-
-    const onClose = () => setSelectedItemList([])
-
-    ContextMenu.show(menu, { top, left }, onClose)
-
-  }, [dirItemList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
+    ContextMenu.show(<Menus {...menuProps} />, { top, left })
+  }, [dirItemList, selectedItemList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
 
   return (
     <>
@@ -615,6 +527,8 @@ export default function FileExplorer(props: AppComponentProps) {
                 const small = !gridMode
                 const itemName = convertItemName(item)
                 const _size = size === undefined ? sizeMap[`${currentPath}/${name}`] : size
+                const sizeLabel = _size === undefined ? '--' : getBytesSize(_size)
+                const dateLabel = lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''
                 return (
                   <div
                     key={encodeURIComponent(name)}
@@ -623,8 +537,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     data-selected={isSelected}
                     draggable
                     className={line(`
-                      dir-item
-                      overflow-hidden rounded select-none transition-opacity duration-300
+                      dir-item overflow-hidden rounded select-none transition-opacity duration-300
                       ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                       ${!gridMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
                       ${isSelected ? 'bg-gray-100' : ''}
@@ -652,7 +565,7 @@ export default function FileExplorer(props: AppComponentProps) {
                         ${gridMode ? 'hidden' : 'pl-2 text-right'}
                       `)}
                     >
-                      {lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''}
+                      {dateLabel}
                     </div>
                     <div
                       className={line(`
@@ -662,7 +575,7 @@ export default function FileExplorer(props: AppComponentProps) {
                         ${(isSelected && getting) ? 'animate-pulse' : ''}
                       `)}
                     >
-                      {_size === undefined ? '--' : getBytesSize(_size)}
+                      {sizeLabel}
                     </div>
                   </div>
                 )
