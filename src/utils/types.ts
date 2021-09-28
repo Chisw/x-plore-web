@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 
 // 0: volume  1: directory 2: file
 export type ItemType = 0 | 1 | 2
+// 1: forward  -1: back
 export type DirectionType = 1 | -1
 
 export interface AppComponentProps {

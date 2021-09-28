@@ -1,5 +1,5 @@
 import { atom } from 'recoil'
-import { IApp, IRootInfo } from './types'
+import { IApp, IDirItem, IRootInfo } from './types'
 
 export const topWindowIndexState = atom<number>({
   key: 'topWindowIndexState',
@@ -22,4 +22,9 @@ export const rootInfoState = atom<IRootInfo>({
 export const sizeMapState = atom<{ [KEY: string]: number }>({
   key: 'sizeMapState',
   default: {},
+})
+
+export const transferItemListState = atom<IDirItem[] | null>({
+  key: 'transferItemListState',
+  default: null,
 })

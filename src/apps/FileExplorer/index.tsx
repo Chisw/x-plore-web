@@ -6,7 +6,7 @@ import useFetch from '../../hooks/useFetch'
 import { convertItemName, getBytesSize, getDownloadInfo, getIsContained, isSameItem, itemSorter, line } from '../../utils'
 import { deleteItem, downloadItems, getDirSize, getPathItems, uploadFile } from '../../utils/api'
 import { dirItemConverter } from '../../utils/converters'
-import { rootInfoState, sizeMapState } from '../../utils/state'
+import { transferItemListState, rootInfoState, sizeMapState } from '../../utils/state'
 import { AppComponentProps, DirectionType, IDirItem, IHistory, IRectInfo } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
@@ -30,6 +30,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const [rootInfo] = useRecoilState(rootInfoState)
   const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
+  const [, setTransferItemList] = useRecoilState(transferItemListState)
   const [currentPath, setCurrentPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
@@ -433,11 +434,12 @@ export default function FileExplorer(props: AppComponentProps) {
     const { target, clientX: left, clientY: top } = event
     const menuProps = {
       target, dirItemList, selectedItemList,
+      setTransferItemList,
       setNewDirMode, setNewTxtMode, setSelectedItemList,
       handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
     ContextMenu.show(<Menus {...menuProps} />, { top, left })
-  }, [dirItemList, selectedItemList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
+  }, [dirItemList, selectedItemList, setTransferItemList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
 
   return (
     <>
