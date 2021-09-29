@@ -24,7 +24,7 @@ export const sizeMapState = atom<{ [KEY: string]: number }>({
   default: {},
 })
 
-export const transferItemListState = atom<ITransferItem[] | null>({
+export const transferItemListState = atom<ITransferItem[]>({
   key: 'transferItemListState',
-  default: null,
+  default: [],
 })

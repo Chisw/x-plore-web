@@ -32,6 +32,10 @@ export default function Dock() {
     }
   }, [topWindowIndex, setTopWindowIndex, runningAppList, setRunningAppList])
 
+  // useEffect(() => {
+  //   console.log('transferItemList', transferItemList)
+  // }, [transferItemList])
+
   return (
     <>
       <div className="fixed z-20 bottom-0 left-1/2 transform -translate-x-1/2 mb-2 p-2 pb-3 bg-white-500 rounded-lg shadow-lg flex bg-hazy-100 border border-gray-500 border-opacity-20 bg-clip-padding">

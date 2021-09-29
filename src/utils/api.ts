@@ -52,3 +52,8 @@ export const uploadFile = async (path: string, file: File) => {
 export const getThumbnailUrl = (path: string, name: string) => {
   return `${BASE_URL}${path}/${name}?cmd=thumbnail`
 }
+
+export const getTextFile = async (path: string) => {
+  const data = await fetch(`${BASE_URL}${path}?cmd=text_file`, { method: 'GET' }).then(res => res.text())
+  return data
+}
