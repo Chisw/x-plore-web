@@ -3,18 +3,18 @@ import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
 import { getIsExist, addNewDir, renameItem, uploadFile } from '../../utils/api'
-import { IDirItem } from '../../utils/types'
+import { IItem } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
 interface NameLineProps {
   create?: 'dir' | 'txt' 
   showInput?: boolean
-  item?: IDirItem,
+  item?: IItem,
   isSelected?: boolean
   gridMode: boolean
   currentPath: string
-  onSuccess: (item: IDirItem) => void
+  onSuccess: (item: IItem) => void
   onFail: (failType: NameFailType) => void
 }
 

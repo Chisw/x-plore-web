@@ -6,13 +6,13 @@ import Dock from './components/Dock'
 
 function App() {
   return (
-    <>
+    <div onContextMenuCapture={e => e.preventDefault()}>
       <TopBar />
       <Desktop>
         <WindowContainer />
         <Dock />
       </Desktop>
-    </>
+    </div>
   )
 }
 

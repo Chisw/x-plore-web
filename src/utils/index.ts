@@ -1,6 +1,6 @@
-import { IDirItem, IOffsetInfo, IRectInfo } from './types'
+import { IItem, IOffsetInfo, IRectInfo } from './types'
 
-export const itemSorter = (a: IDirItem, b: IDirItem) => {
+export const itemSorter = (a: IItem, b: IItem) => {
   const typeDirection = a.type - b.type
   if (typeDirection !== 0) return typeDirection
   return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
@@ -20,14 +20,14 @@ export const line = (str: string) => str
   .replace(/\s+/g, ' ')
   .trim()
 
-export const convertItemName = (item: IDirItem) => {
+export const convertItemName = (item: IItem) => {
   const { type, name, hasChildren } = item
   return type === 1
     ? `${name}._dir${hasChildren ? '' : '_empty'}`
     : name
 }
 
-export const isSameItem = (a: IDirItem, b: IDirItem) => {
+export const isSameItem = (a: IItem, b: IItem) => {
   return a.name === b.name && a.type === b.type
 }
 
@@ -49,10 +49,10 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   return result
 }
 
-export const getDownloadInfo = (currentPath: string, selectedItemList: IDirItem[]) => {
+export const getDownloadInfo = (currentPath: string, selectedItemList: IItem[]) => {
   const pathName = currentPath.split('/').reverse()[0]
   const len = selectedItemList.length
-  const firstItem: IDirItem | undefined = selectedItemList[0]
+  const firstItem: IItem | undefined = selectedItemList[0]
   const isDownloadAll = !len
   const isDownloadSingle = len === 1
   const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1

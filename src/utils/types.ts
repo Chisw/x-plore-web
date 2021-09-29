@@ -48,7 +48,7 @@ export interface IRootInfo {
   volumeList: IVolume[]
 }
 
-export interface IDirItem {
+export interface IItem {
   name: string
   type: ItemType
   size?: number
@@ -58,7 +58,12 @@ export interface IDirItem {
   hasChildren?: boolean
 }
 
-export interface IDirItemIcon {
+export interface ITransferItem extends IItem {
+  path: string
+  appId?: string
+}
+
+export interface IItemIcon {
   type: string
   icon: ReactNode
   bg: string

@@ -14,8 +14,8 @@ import {
   Video32,
   Zip32,
 } from '@carbon/icons-react'
-import { useMemo } from 'react'
-import { IDirItemIcon } from '../../utils/types'
+import { useMemo, useState } from 'react'
+import { IItemIcon } from '../../utils/types'
 import dirAndroid from '../../img/icons/dir-android.png'
 import dirAlipay from '../../img/icons/dir-alipay.png'
 import dirAutonavi from '../../img/icons/dir-autonavi.png'
@@ -40,14 +40,14 @@ import { line } from '../../utils'
 import { getThumbnailUrl } from '../../utils/api'
 import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
 
-const DEFAULT_ITEM_ICON: IDirItemIcon = {
+const DEFAULT_ITEM_ICON: IItemIcon = {
   type: 'unknown',
   icon: <DocumentBlank32 />,
   bg: 'from-gray-300 to-gray-400 border-gray-400',
   match: [],
 }
 
-const ITEM_ICON_LIST: IDirItemIcon[] = [
+const ITEM_ICON_LIST: IItemIcon[] = [
   {
     type: 'folder',
     icon: <Folder32 />,
@@ -181,6 +181,8 @@ export default function Icon(props: IconProps) {
     currentPath = '',
   } = props
 
+  const [thumbnailError, setThumbnailError] = useState(false)
+
   const { useThumbnail, isVideo } = useMemo(() => {
     const lowerName = itemName.toLowerCase()
     const useThumbnail = !fake && THUMBNAIL_MATCH_LIST.some(ext => lowerName.endsWith(ext))
@@ -194,21 +196,23 @@ export default function Icon(props: IconProps) {
     return { bg, icon, dirSubIcon }
   }, [itemName])
 
+  const showThumbnail = useThumbnail && !thumbnailError
+
   return (
     <div className="flex justify-center items-center pointer-events-none">
       <div
         className={line(`
           relative inline-flex justify-center items-center
-          ${useThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
+          ${showThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
           ${small
             ? 'w-6 h-6 rounded'
-            : useThumbnail
+            : showThumbnail
               ? 'w-20 h-12'
               : 'w-12 h-12 rounded-lg'
           }
         `)}
       >
-        {useThumbnail ? (
+        {showThumbnail ? (
           <img
             alt="thumbnail"
             className={line(`
@@ -216,6 +220,7 @@ export default function Icon(props: IconProps) {
               ${isVideo ? '' : `border ${small ? 'p-1px' : 'p-2px'}`}
             `)}
             src={getThumbnailUrl(currentPath, itemName)}
+            onError={() => setThumbnailError(true)}
           />
         ) : icon}
         {dirSubIcon && (

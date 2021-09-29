@@ -1,4 +1,4 @@
-import { IDirItem, IRootInfo, IVolume } from './types'
+import { IItem, IRootInfo, IVolume } from './types'
 
 export const rootInfoConverter: (data: any) => IRootInfo = data => {
   const { device_name, files } = data
@@ -20,7 +20,7 @@ export const rootInfoConverter: (data: any) => IRootInfo = data => {
   }
 }
 
-export const dirItemConverter: (data: any) => IDirItem[] = data => {
+export const itemConverter: (data: any) => IItem[] = data => {
   const { files } = data
   return files.map(({ n, t, size, mime, hidden, time, has_children }: any) => ({
     name: n,
