@@ -94,7 +94,7 @@ export default function ToolBar(props: ToolBarProps) {
 
   return (
     <>
-      <div className="h-8 flex-shrink-0 border-b flex">
+      <div className="h-8 flex-shrink-0 flex items-center border-b">
         <ToolButton
           title="后退 [Shift + ←]"
           disabled={disabledMap.navBack}
@@ -124,9 +124,10 @@ export default function ToolBar(props: ToolBarProps) {
           <ArrowUp16 />
         </ToolButton>
 
+        <div className="mx-2 h-3 border-l" />
+
         <ToolButton
           title="新建文件夹 [Shift + N]"
-          className="border-l"
           disabled={disabledMap.newDir}
           onClick={onNewDir}
         >
@@ -172,9 +173,9 @@ export default function ToolBar(props: ToolBarProps) {
           <TrashCan16 />
         </ToolButton>
 
-        <div className="flex-grow border-r" />
+        <div className="flex-grow mx-2 h-3 border-r" />
 
-        <div className={`${filterMode ? 'w-40' : 'w-8'} transition-all duration-200`}>
+        <div className={`${filterMode ? 'w-40' : 'w-8'} h-full transition-all duration-200`}>
           {filterMode ? (
             <div className="px-1 h-full flex items-center">
               <InputGroup

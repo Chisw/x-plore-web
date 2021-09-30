@@ -466,13 +466,6 @@ export default function FileExplorer(props: AppComponentProps) {
             onDelete={handleDeleteClick}
             onSelectAll={handleSelectAll}
           />
-          <PathLink
-            {...{ dirCount, fileCount, currentPath, activeVolume }}
-            loading={fetching}
-            selectedLen={selectedItemList.length}
-            onDirClick={handleGoFullPath}
-            onVolumeClick={handleVolumeClick}
-          />
           <div
             ref={containerRef}
             data-drag-hover={waitDropToCurrentPath}
@@ -587,6 +580,13 @@ export default function FileExplorer(props: AppComponentProps) {
 
             </div>
           </div>
+          <PathLink
+            {...{ dirCount, fileCount, currentPath, activeVolume }}
+            loading={fetching}
+            selectedLen={selectedItemList.length}
+            onDirClick={handleGoFullPath}
+            onVolumeClick={handleVolumeClick}
+          />
         </div>
       </div>
 

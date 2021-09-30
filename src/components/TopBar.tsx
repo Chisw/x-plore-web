@@ -72,7 +72,7 @@ export default function TopBar() {
           className="h-full"
           targetTagName="div"
           targetClassName="h-full"
-          popoverClassName="bg-red-500"
+          popoverClassName="bg-red-500 force-outline-none"
           target={(
             <div className="flex items-center mx-2 px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
               <Wifi16 />&nbsp;&nbsp;

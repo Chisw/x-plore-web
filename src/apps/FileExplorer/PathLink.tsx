@@ -42,7 +42,7 @@ export default function PathLink(props: PathLinkProps) {
   if (!activeVolume) return <div />
 
   return (
-    <div className="flex-shrink-0 px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center bg-gray-100">
+    <div className="flex-shrink-0 px-2 py-1 text-xs text-gray-400 select-none flex justify-between items-center bg-gray-100 border-t">
       <div className="group flex-shrink-0">
         <span
           title={activeVolume}
