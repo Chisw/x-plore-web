@@ -3,6 +3,7 @@ export const THUMBNAIL_MATCH_LIST = [
   '.jpeg',
   '.png',
   '.gif',
+  '.webp',
   '.pbm',
   '.bmp',
   '.mp4',
