@@ -226,8 +226,8 @@ export default function Icon(props: IconProps) {
         {dirSubIcon && (
           <div
             className={line(`
-              absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain
-              ${small ? 'w-3 h-3' : '-mr-1 -mb-1 w-5 h-5'}
+              absolute left-0 bottom-0 bg-center bg-no-repeat bg-contain
+              ${small ? 'w-3 h-3' : 'm-1px w-5 h-5'}
             `)}
             style={{ backgroundImage: `url("${dirSubIcon}")` }}
           />

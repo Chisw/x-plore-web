@@ -19,7 +19,7 @@ export default function useShortcuts(props: useShortcutsProps) {
     const listener = (e: any) => {
       const { key, shiftKey } = e
       const shortcut = `${shiftKey ? 'Shift+' : ''}${key}`
-      // console.log('shortcut:', shortcut)
+
       if (shortcutKeys.includes(shortcut)) {
         const fn = shortcutMap[shortcut]
         fn && fn()

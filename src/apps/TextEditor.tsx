@@ -18,15 +18,13 @@ export default function TextEditor(props: AppComponentProps) {
     setWindowLoading(fetching)
   }, [setWindowLoading, fetching])
 
-  console.log('text 1')
-
   useEffect(() => {
     const item = transferItemList[0]
-    if (item && item.appId === 'text-editor') {
+    if (!textContent && item && item.appId === 'text-editor') {
       setCurrentItem(item)
       setTransferItemList([])
     }
-  }, [transferItemList, setTransferItemList])
+  }, [textContent, transferItemList, setTransferItemList])
 
   useEffect(() => {
     if (currentItem) {
