@@ -1,4 +1,4 @@
-import { CropGrowth32, Delete32, Download32 } from '@carbon/icons-react'
+import { CropGrowth32, Delete32, Download32, ChevronRight16 } from '@carbon/icons-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
@@ -26,11 +26,12 @@ import Menus from './Menus'
 
 export default function FileExplorer(props: AppComponentProps) {
 
-  const { isTopWindow, setWindowTitle } = props
+  const { isTopWindow, setWindowTitle, setWindowLoading } = props
 
   const [rootInfo] = useRecoilState(rootInfoState)
   const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
   const [, setTransferEntryList] = useRecoilState(transferEntryListState)
+  const [sideCollapse, setSideCollapse] = useState(false)
   const [currentPath, setCurrentPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
@@ -124,42 +125,42 @@ export default function FileExplorer(props: AppComponentProps) {
   const handlePathChange = useCallback((props: {
     path: string
     direction: DirectionType
-    needPushPath?: boolean
-    needUpdateVolume?: boolean
+    pushPath?: boolean
+    updateVolume?: boolean
   }) => {
-    const { path, direction, needPushPath, needUpdateVolume } = props
+    const { path, direction, pushPath, updateVolume } = props
     setCurrentPath(path)
     fetchPathData(path)
-    updateHistory(direction, needPushPath ? path : undefined)
-    if (needUpdateVolume) {
+    updateHistory(direction, pushPath ? path : undefined)
+    if (updateVolume) {
       const mount = volumeMountList.find(m => path.startsWith(m))!
       setActiveVolume(mount)
     }
   }, [fetchPathData, volumeMountList, updateHistory])
 
   const handleVolumeClick = useCallback((path: string) => {
-    handlePathChange({ path, direction: 1, needPushPath: true, needUpdateVolume: true })
+    handlePathChange({ path, direction: 1, pushPath: true, updateVolume: true })
   }, [handlePathChange])
 
   const handleDirOpen = useCallback((dirName: string) => {
     const path = `${currentPath}/${dirName}`
-    handlePathChange({ path, direction: 1, needPushPath: true })
+    handlePathChange({ path, direction: 1, pushPath: true })
   }, [handlePathChange, currentPath])
 
   const handleGoFullPath = useCallback((path: string) => {
-    handlePathChange({ path, direction: 1, needPushPath: true })
+    handlePathChange({ path, direction: 1, pushPath: true })
   }, [handlePathChange])
 
   const handleNavBack = useCallback(() => {
     const { position, list } = history
     const path = list[position - 1]
-    handlePathChange({ path, direction: -1, needUpdateVolume: true })
+    handlePathChange({ path, direction: -1, updateVolume: true })
   }, [history, handlePathChange])
 
   const handleNavForward = useCallback(() => {
     const { position, list } = history
     const path = list[position + 1]
-    handlePathChange({ path, direction: 1, needUpdateVolume: true })
+    handlePathChange({ path, direction: 1, updateVolume: true })
   }, [history, handlePathChange])
 
   const handleRefresh = useCallback(() => {
@@ -171,7 +172,7 @@ export default function FileExplorer(props: AppComponentProps) {
     const list = currentPath.split('/')
     list.pop()
     const path = list.join('/')
-    handlePathChange({ path, direction: 1, needPushPath: true })
+    handlePathChange({ path, direction: 1, pushPath: true })
   }, [currentPath, handlePathChange])
 
   const handleCreate = useCallback((create: 'dir' | 'txt') => {
@@ -287,6 +288,8 @@ export default function FileExplorer(props: AppComponentProps) {
       },
     })
   }, [deletePath, currentPath, selectedEntryList, handleRefresh])
+
+  useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 
   useEffect(() => {
     if (!currentPath && volumeList.length) {
@@ -446,11 +449,25 @@ export default function FileExplorer(props: AppComponentProps) {
       <div className="absolute inset-0 flex">
         {/* side */}
         <Side
-          {...{ currentPath, activeVolume, volumeList }}
+          {...{ sideCollapse, currentPath, activeVolume, volumeList }}
           onVolumeClick={handleVolumeClick}
         />
         {/* main */}
-        <div className="relative flex-grow h-full bg-white flex flex-col">
+        <div className="relative flex-grow h-full bg-white flex flex-col group">
+          <div
+            title={sideCollapse ? '展开' : '收起'}
+            className={line(`
+              absolute z-10 top-1/2 left-0
+              w-3 h-12 bg-gray-200 rounded-r-lg
+              opacity-20 group-hover:opacity-40 hover:bg-gray-300
+              transition-all duration-200
+              transform -translate-y-1/2 cursor-pointer
+              flex justify-center items-center
+            `)}
+            onClick={() => setSideCollapse(!sideCollapse)}
+          >
+            <ChevronRight16 className={sideCollapse ? '' : 'transform -rotate-180'} />
+          </div>
           <ToolBar
             {...{ disabledMap, gridMode, filterMode, filterText, hiddenShow }}
             {...{ setGridMode, setFilterMode, setFilterText, setHiddenShow }}
@@ -469,10 +486,7 @@ export default function FileExplorer(props: AppComponentProps) {
           <div
             ref={containerRef}
             data-drag-hover={waitDropToCurrentPath}
-            className={line(`
-              relative flex-grow overflow-x-hidden overflow-y-auto
-              ${fetching ? 'bg-loading' : ''}
-            `)}
+            className="relative flex-grow overflow-x-hidden overflow-y-auto"
             onMouseDownCapture={handleCancelSelect}
           >
             <div

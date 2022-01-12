@@ -1,4 +1,4 @@
-import { Checkmark16, Copy16, DocumentBlank16, Folder16 } from '@carbon/icons-react'
+import { Checkmark16, Copy16, DocumentBlank16, Folder16, ChevronRight16 } from '@carbon/icons-react'
 import { useMemo } from 'react'
 import Toast from '../../components/EasyToast'
 import { copy } from '../../utils'
@@ -54,14 +54,14 @@ export default function PathLink(props: PathLinkProps) {
         {mountList.map((mount, mountIndex) => {
           const prefix = mountList.filter((m, mIndex) => mIndex < mountIndex).join('/')
           const fullPath = `${activeVolume}/${prefix ? `${prefix}/` : ''}${mount}`
-          const isDirDisabled = mountIndex > mountList.length - 2
+          const isDisabledDir = mountIndex > mountList.length - 2
           return (
             <span key={encodeURIComponent(fullPath)}>
-              <span>/</span>
+              <ChevronRight16 className="inline transform scale-75 -mt-2px" />
               <span
                 title={fullPath}
-                className={isDirDisabled ? '' : 'cursor-pointer hover:text-black'}
-                onClick={() => !isDirDisabled && onDirClick(fullPath)}
+                className={isDisabledDir ? '' : 'cursor-pointer hover:text-black'}
+                onClick={() => !isDisabledDir && onDirClick(fullPath)}
               >
                 {mount}
               </span>
@@ -76,7 +76,7 @@ export default function PathLink(props: PathLinkProps) {
             Toast.toast('路径复制成功')
           }}
         >
-          <Copy16 className="inline" />
+          <Copy16 className="inline transform scale-75 -mt-2px" />
         </span>
       </div>
       <div className="flex-shrink-0 flex items-center pl-4 pr-1 font-din">
