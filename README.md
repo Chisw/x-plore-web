@@ -78,6 +78,6 @@ server {
 
 ### TODO
 
-加载中变化 currentPath, 取消上轮加载
-同目录拖拽
-方向选择目录
+- 加载中变化 currentPath, 取消上轮加载
+- 同目录拖拽
+- 方向选择目录

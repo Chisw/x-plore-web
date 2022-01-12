@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
 
 // 0: volume  1: directory 2: file
-export type ItemType = 0 | 1 | 2
+export type EntryType = 0 | 1 | 2
+
 // 1: forward  -1: back
 export type DirectionType = 1 | -1
 
@@ -35,7 +36,7 @@ export interface IApp {
 export interface IVolume {
   label: string
   name: string
-  type: ItemType
+  type: EntryType
   mount: string
   hasChildren: boolean
   fileSystem: string
@@ -48,9 +49,9 @@ export interface IRootInfo {
   volumeList: IVolume[]
 }
 
-export interface IItem {
+export interface IEntry {
   name: string
-  type: ItemType
+  type: EntryType
   size?: number
   mime?: string
   hidden?: boolean
@@ -58,12 +59,12 @@ export interface IItem {
   hasChildren?: boolean
 }
 
-export interface ITransferItem extends IItem {
+export interface ITransferEntry extends IEntry {
   path: string
   appId?: string
 }
 
-export interface IItemIcon {
+export interface IEntryIcon {
   type: string
   icon: ReactNode
   bg: string

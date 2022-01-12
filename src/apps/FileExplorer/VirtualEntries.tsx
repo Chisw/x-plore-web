@@ -2,12 +2,12 @@ import { line } from "../../utils"
 import Icon from "./Icon"
 import { NameLabel } from "./NameLine"
 
-interface VirtualItemsProps {
+interface VirtualEntriesProps {
   virtualFiles: File[]
   gridMode: boolean
 }
 
-export default function VirtualItems(props: VirtualItemsProps) {
+export default function VirtualEntries(props: VirtualEntriesProps) {
 
  const {
    virtualFiles,
@@ -26,10 +26,10 @@ export default function VirtualItems(props: VirtualItemsProps) {
             ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
           `)}
         >
-          <Icon fake small={!gridMode} itemName={name} />
+          <Icon fake small={!gridMode} entryName={name} />
           <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
             <NameLabel
-              itemName={name}
+              entryName={name}
               gridMode={gridMode}
             />
           </div>

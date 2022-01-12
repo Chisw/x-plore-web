@@ -1,6 +1,6 @@
 import { ContextMenu, Menu, MenuItem } from '@blueprintjs/core'
 import { Application16, DocumentAdd16, Download16, Edit16, Export16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
-import { IApp, IItem, ITransferItem } from '../../utils/types'
+import { IApp, IEntry, ITransferEntry } from '../../utils/types'
 import APP_LIST from '../../utils/appList'
 import { useCallback, useMemo } from 'react'
 
@@ -9,17 +9,17 @@ const availableAppIdList = ['text-editor', 'image-previewer', 'music-player', 'v
 interface MenusProps {
   target: any
   currentPath: string
-  itemList: IItem[]
-  selectedItemList: IItem[]
-  setTransferItemList: (items: ITransferItem[]) => void
-  setSelectedItemList: (item: IItem[]) => void
+  entryList: IEntry[]
+  selectedEntryList: IEntry[]
+  setTransferEntryList: (entries: ITransferEntry[]) => void
+  setSelectedEntryList: (entry: IEntry[]) => void
   setNewDirMode: (mode: boolean) => void
   setNewTxtMode: (mode: boolean) => void
   handleRefresh: () => void
   handleRename: () => void
   handleUploadClick: () => void
-  handleDownloadClick: (items?: IItem[]) => void
-  handleDeleteClick: (items?: IItem[]) => void
+  handleDownloadClick: (entries?: IEntry[]) => void
+  handleDeleteClick: (entries?: IEntry[]) => void
 }
 
 export default function Menus(props: MenusProps) {
@@ -27,10 +27,10 @@ export default function Menus(props: MenusProps) {
   const {
     target,
     currentPath,
-    itemList,
-    selectedItemList,
-    setTransferItemList,
-    setSelectedItemList,
+    entryList,
+    selectedEntryList,
+    setTransferEntryList,
+    setSelectedEntryList,
     setNewDirMode,
     setNewTxtMode,
     handleRefresh,
@@ -53,47 +53,47 @@ export default function Menus(props: MenusProps) {
   const {
     isOnBlank,
     isOnDir,
-    contextItemList,
+    contextEntryList,
     isSingleConfirmed,
   } = useMemo(() => {
     let isOnBlank = true
     let isOnDir = false
-    let contextItemList: IItem[] = [...selectedItemList]
+    let contextEntryList: IEntry[] = [...selectedEntryList]
 
-    const unconfirmedLen = contextItemList.length
-    const targetItem = target.closest('.dir-item')
+    const unconfirmedLen = contextEntryList.length
+    const targetEntry = target.closest('.entry-node')
 
-    if (targetItem) {
+    if (targetEntry) {
       isOnBlank = false
 
-      const isDir = targetItem.getAttribute('data-dir') === 'true'
-      const itemName = targetItem.getAttribute('data-name')
-      const item = itemList.find(o => o.name === itemName)
+      const isDir = targetEntry.getAttribute('data-dir') === 'true'
+      const entryName = targetEntry.getAttribute('data-name')
+      const entry = entryList.find(o => o.name === entryName)
 
       if (isDir) isOnDir = true
-      if (unconfirmedLen <= 1 && item) {
-        contextItemList = [item]
-        setSelectedItemList(contextItemList)
+      if (unconfirmedLen <= 1 && entry) {
+        contextEntryList = [entry]
+        setSelectedEntryList(contextEntryList)
       }
     } else {
-      setSelectedItemList([])
+      setSelectedEntryList([])
     }
 
-    const confirmedLen = contextItemList.length
+    const confirmedLen = contextEntryList.length
     const isSingleConfirmed = confirmedLen === 1
 
     return {
       isOnBlank,
       isOnDir,
-      contextItemList,
+      contextEntryList,
       isSingleConfirmed,
     }
-  }, [target, selectedItemList, itemList, setSelectedItemList])
+  }, [target, selectedEntryList, entryList, setSelectedEntryList])
 
   const transfer = useCallback((appId: string) => {
-    const list = contextItemList.map(item => ({ ...item, path: currentPath, appId }))
-    setTransferItemList(list)
-  }, [contextItemList, currentPath, setTransferItemList])
+    const list = contextEntryList.map(entry => ({ ...entry, path: currentPath, appId }))
+    setTransferEntryList(list)
+  }, [contextEntryList, currentPath, setTransferEntryList])
 
   const actions = useMemo(() => {
     return [
@@ -142,7 +142,7 @@ export default function Menus(props: MenusProps) {
         icon: <Download16 />,
         text: '下载',
         isShow: true,
-        onClick: () => handleDownloadClick(contextItemList),
+        onClick: () => handleDownloadClick(contextEntryList),
       },
       // {
       //   icon: <></>,
@@ -154,11 +154,11 @@ export default function Menus(props: MenusProps) {
         icon: <TrashCan16 />,
         text: '删除',
         isShow: !isOnBlank,
-        onClick: () => handleDeleteClick(contextItemList),
+        onClick: () => handleDeleteClick(contextEntryList),
       },
     ]
   }, [
-    availableAppMap, contextItemList, isOnBlank, isOnDir, isSingleConfirmed,
+    availableAppMap, contextEntryList, isOnBlank, isOnDir, isSingleConfirmed,
     setNewDirMode, setNewTxtMode, transfer,
     handleDeleteClick, handleDownloadClick, handleRefresh, handleRename, handleUploadClick,
   ])

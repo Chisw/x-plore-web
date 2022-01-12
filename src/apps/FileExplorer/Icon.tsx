@@ -15,7 +15,7 @@ import {
   Zip32,
 } from '@carbon/icons-react'
 import { useMemo, useState } from 'react'
-import { IItemIcon } from '../../utils/types'
+import { IEntryIcon } from '../../utils/types'
 import dirAndroid from '../../img/icons/dir-android.png'
 import dirAlipay from '../../img/icons/dir-alipay.png'
 import dirAutonavi from '../../img/icons/dir-autonavi.png'
@@ -40,14 +40,14 @@ import { line } from '../../utils'
 import { getThumbnailUrl } from '../../utils/api'
 import { THUMBNAIL_MATCH_LIST } from '../../utils/constant'
 
-const DEFAULT_ITEM_ICON: IItemIcon = {
+const DEFAULT_ITEM_ICON: IEntryIcon = {
   type: 'unknown',
   icon: <DocumentBlank32 />,
   bg: 'from-gray-300 to-gray-400 border-gray-400',
   match: [],
 }
 
-const ITEM_ICON_LIST: IItemIcon[] = [
+const ITEM_ICON_LIST: IEntryIcon[] = [
   {
     type: 'folder',
     icon: <Folder32 />,
@@ -128,9 +128,9 @@ const ITEM_ICON_LIST: IItemIcon[] = [
   }
 ]
 
-const getIcon = (itemName: string) => {
-  if (itemName.includes('.')) {
-    const ext = itemName.split('.').reverse()[0].toLowerCase()
+const getIcon = (entryName: string) => {
+  if (entryName.includes('.')) {
+    const ext = entryName.split('.').reverse()[0].toLowerCase()
     return ITEM_ICON_LIST.find(o => o.match.includes(ext)) || DEFAULT_ITEM_ICON
   } else {
     return DEFAULT_ITEM_ICON
@@ -168,7 +168,7 @@ const getDirSubIcon: (name: string) => string | undefined = name => {
 interface IconProps {
   fake?: boolean
   small?: boolean
-  itemName: string
+  entryName: string
   currentPath?: string
 }
 
@@ -177,24 +177,24 @@ export default function Icon(props: IconProps) {
   const {
     fake = false,
     small = false,
-    itemName,
+    entryName,
     currentPath = '',
   } = props
 
   const [thumbnailError, setThumbnailError] = useState(false)
 
   const { useThumbnail, isVideo } = useMemo(() => {
-    const lowerName = itemName.toLowerCase()
+    const lowerName = entryName.toLowerCase()
     const useThumbnail = !fake && THUMBNAIL_MATCH_LIST.some(ext => lowerName.endsWith(ext))
     const isVideo = lowerName.endsWith('.mp4')
     return { useThumbnail, isVideo }
-  }, [itemName, fake])
+  }, [entryName, fake])
 
   const { bg, icon, dirSubIcon } = useMemo(() => {
-    const { type, bg, icon } = getIcon(itemName)
-    const dirSubIcon = type === 'folder' ? getDirSubIcon(itemName) : undefined
+    const { type, bg, icon } = getIcon(entryName)
+    const dirSubIcon = type === 'folder' ? getDirSubIcon(entryName) : undefined
     return { bg, icon, dirSubIcon }
-  }, [itemName])
+  }, [entryName])
 
   const showThumbnail = useThumbnail && !thumbnailError
 
@@ -219,7 +219,7 @@ export default function Icon(props: IconProps) {
               max-w-full max-h-full bg-white shadow-md
               ${isVideo ? '' : `border ${small ? 'p-1px' : 'p-2px'}`}
             `)}
-            src={getThumbnailUrl(currentPath, itemName)}
+            src={getThumbnailUrl(currentPath, entryName)}
             onError={() => setThumbnailError(true)}
           />
         ) : icon}

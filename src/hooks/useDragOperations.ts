@@ -7,7 +7,7 @@ interface useDragOperationsProps {
   onUpload: (files: File[], dir?: string) => void
 }
 
-const clear = () => document.querySelectorAll('.dir-item').forEach(el => el.removeAttribute('data-drag-hover'))
+const clear = () => document.querySelectorAll('.entry-node').forEach(el => el.removeAttribute('data-drag-hover'))
 
 export default function useDragOperations(props: useDragOperationsProps) {
 

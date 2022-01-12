@@ -1,6 +1,6 @@
-import { IItem, IOffsetInfo, IRectInfo } from './types'
+import { IEntry, IOffsetInfo, IRectInfo } from './types'
 
-export const itemSorter = (a: IItem, b: IItem) => {
+export const entrySorter = (a: IEntry, b: IEntry) => {
   const typeDirection = a.type - b.type
   if (typeDirection !== 0) return typeDirection
   return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
@@ -20,14 +20,14 @@ export const line = (str: string) => str
   .replace(/\s+/g, ' ')
   .trim()
 
-export const convertItemName = (item: IItem) => {
-  const { type, name, hasChildren } = item
+export const convertEntryName = (entry: IEntry) => {
+  const { type, name, hasChildren } = entry
   return type === 1
     ? `${name}._dir${hasChildren ? '' : '_empty'}`
     : name
 }
 
-export const isSameItem = (a: IItem, b: IItem) => {
+export const isSameEntry = (a: IEntry, b: IEntry) => {
   return a.name === b.name && a.type === b.type
 }
 
@@ -49,28 +49,28 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   return result
 }
 
-export const getDownloadInfo = (currentPath: string, selectedItemList: IItem[]) => {
+export const getDownloadInfo = (currentPath: string, selectedEntryList: IEntry[]) => {
   const pathName = currentPath.split('/').reverse()[0]
-  const len = selectedItemList.length
-  const firstItem: IItem | undefined = selectedItemList[0]
+  const len = selectedEntryList.length
+  const firstEntry: IEntry | undefined = selectedEntryList[0]
   const isDownloadAll = !len
   const isDownloadSingle = len === 1
-  const isDownloadSingleDir = isDownloadSingle && firstItem.type === 1
-  const singleItemName = firstItem?.name
+  const isDownloadSingleDir = isDownloadSingle && firstEntry.type === 1
+  const singleEntryName = firstEntry?.name
 
   const downloadName = isDownloadAll
     ? `${pathName}.zip`
     : isDownloadSingle
       ? isDownloadSingleDir
-        ? `${singleItemName}/${singleItemName}.zip`
-        : `${singleItemName}`
+        ? `${singleEntryName}/${singleEntryName}.zip`
+        : `${singleEntryName}`
       : `${pathName}.zip`
 
   const msg = isDownloadAll
     ? `下载当前整个目录为 ${downloadName}`
     : isDownloadSingle
       ? isDownloadSingleDir
-        ? `下载 ${singleItemName} 为 ${singleItemName}.zip`
+        ? `下载 ${singleEntryName} 为 ${singleEntryName}.zip`
         : `下载 ${downloadName}`
       : `下载 ${len} 个项目为 ${downloadName}`
 
@@ -80,7 +80,7 @@ export const getDownloadInfo = (currentPath: string, selectedItemList: IItem[]) 
       ? isDownloadSingleDir
         ? 'cmd=zip'
         : 'cmd=file&mime=application%2Foctet-stream'
-      : `cmd=zip${selectedItemList.map(o => `&f=${o.name}`).join('')}`
+      : `cmd=zip${selectedEntryList.map(o => `&f=${o.name}`).join('')}`
   
   return { downloadName, msg, cmd }
 }

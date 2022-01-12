@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import useFetch from '../hooks/useFetch'
 import { getTextFile } from '../utils/api'
-import { transferItemListState } from '../utils/state'
-import { AppComponentProps, ITransferItem } from '../utils/types'
+import { transferEntryListState } from '../utils/state'
+import { AppComponentProps, ITransferEntry } from '../utils/types'
 
 export default function TextEditor(props: AppComponentProps) {
 
   const { setWindowTitle, setWindowLoading } = props
 
-  const [transferItemList, setTransferItemList] = useRecoilState(transferItemListState)
-  const [currentItem, setCurrentItem] = useState<ITransferItem | null>(null)
+  const [transferEntryList, setTransferEntryList] = useRecoilState(transferEntryListState)
+  const [currentEntry, setCurrentEntry] = useState<ITransferEntry | null>(null)
 
   const { fetch: fetchText, loading: fetching, data: textContent } = useFetch((path: string) => getTextFile(path))
 
@@ -19,20 +19,20 @@ export default function TextEditor(props: AppComponentProps) {
   }, [setWindowLoading, fetching])
 
   useEffect(() => {
-    const item = transferItemList[0]
-    if (!textContent && item && item.appId === 'text-editor') {
-      setCurrentItem(item)
-      setTransferItemList([])
+    const entry = transferEntryList[0]
+    if (!textContent && entry && entry.appId === 'text-editor') {
+      setCurrentEntry(entry)
+      setTransferEntryList([])
     }
-  }, [textContent, transferItemList, setTransferItemList])
+  }, [textContent, transferEntryList, setTransferEntryList])
 
   useEffect(() => {
-    if (currentItem) {
-      const { path, name } = currentItem
+    if (currentEntry) {
+      const { path, name } = currentEntry
       fetchText(`${path}/${name}`)
       setWindowTitle(name)
     }
-  }, [currentItem, fetchText, setWindowTitle])
+  }, [currentEntry, fetchText, setWindowTitle])
 
   return (
     <>

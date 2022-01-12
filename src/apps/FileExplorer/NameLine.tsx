@@ -2,19 +2,19 @@ import { WarningAltFilled16 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
-import { getIsExist, addNewDir, renameItem, uploadFile } from '../../utils/api'
-import { IItem } from '../../utils/types'
+import { getIsExist, addNewDir, renameEntry, uploadFile } from '../../utils/api'
+import { IEntry } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
 interface NameLineProps {
   create?: 'dir' | 'txt' 
   showInput?: boolean
-  item?: IItem,
+  entry?: IEntry,
   isSelected?: boolean
   gridMode: boolean
   currentPath: string
-  onSuccess: (item: IItem) => void
+  onSuccess: (entry: IEntry) => void
   onFail: (failType: NameFailType) => void
 }
 
@@ -23,7 +23,7 @@ export default function NameLine(props: NameLineProps) {
   const {
     create,
     showInput = false,
-    item = undefined,
+    entry = undefined,
     isSelected = false,
     gridMode,
     currentPath,
@@ -31,9 +31,9 @@ export default function NameLine(props: NameLineProps) {
     onFail,
   } = props
 
-  const itemName = item?.name
+  const entryName = entry?.name
   const [isExist, setIsExist] = useState(false)
-  const [inputValue, setInputValue] = useState(itemName)
+  const [inputValue, setInputValue] = useState(entryName)
 
   const handleInputChange = useCallback((e: any) => {
     setIsExist(false)
@@ -42,11 +42,11 @@ export default function NameLine(props: NameLineProps) {
 
   const { fetch: fetchExist, loading: loadingExist } = useFetch((path: string) => getIsExist(path))
   const { fetch: fetchNewDir, loading: loadingNewDir } = useFetch((path: string) => addNewDir(path))
-  const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameItem(path, newPath))
+  const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameEntry(path, newPath))
   const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
 
   const handleName = useCallback(async (e: any) => {
-    const oldName = item?.name
+    const oldName = entry?.name
     const newName = e.target.value as string
 
     if (newName) {
@@ -62,7 +62,7 @@ export default function NameLine(props: NameLineProps) {
           const oldPath = `${currentPath}/${oldName}`
           const { ok } = await fetchRename(oldPath, newPath)
           if (ok) {
-            onSuccess({ ...item!, name: newName })
+            onSuccess({ ...entry!, name: newName })
           } else {
             onFail('net_error')
           }
@@ -90,7 +90,7 @@ export default function NameLine(props: NameLineProps) {
     } else {
       onFail('empty')
     }
-  }, [item, currentPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
+  }, [entry, currentPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
   return (
     <div className={`leading-none ${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
@@ -132,14 +132,14 @@ export default function NameLine(props: NameLineProps) {
           />
         </div>
       ) : (
-        <NameLabel {...{ itemName, gridMode, isSelected }} />
+        <NameLabel {...{ entryName, gridMode, isSelected }} />
       )}
     </div>
   )
 }
 
 interface NameLabelProps {
-  itemName?: string
+  entryName?: string
   isSelected?: boolean
   gridMode: boolean
 }
@@ -147,21 +147,21 @@ interface NameLabelProps {
 export function NameLabel(props: NameLabelProps) {
 
   const {
-    itemName,
+    entryName,
     gridMode,
     isSelected,
   } = props
 
   return (
     <span
-      title={itemName}
+      title={entryName}
       className={line(`
         inline-block px-2 rounded truncate text-xs
         ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
         ${gridMode ? 'max-w-full' : 'w-72'}
       `)}
     >
-      {itemName}
+      {entryName}
     </span>
   )
 }

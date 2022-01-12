@@ -33,8 +33,8 @@ export default function Dock() {
   }, [topWindowIndex, setTopWindowIndex, runningAppList, setRunningAppList])
 
   // useEffect(() => {
-  //   console.log('transferItemList', transferItemList)
-  // }, [transferItemList])
+  //   console.log('transferEntryList', transferEntryList)
+  // }, [transferEntryList])
 
   return (
     <>

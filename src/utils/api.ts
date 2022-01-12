@@ -6,7 +6,7 @@ export const getRootInfo = async () => {
   return data
 }
 
-export const getPathItems = async (path: string) => {
+export const getPathEntries = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=list`, { method: 'GET' }).then(res => res.json())
   return data
 }
@@ -26,17 +26,17 @@ export const addNewDir = async (path: string) => {
   return data
 }
 
-export const renameItem = async (path: string, newPath: string) => {
+export const renameEntry = async (path: string, newPath: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=rename&n=${encodeURIComponent(newPath)}`, { method: 'PUT' }).then(res => res.json())
   return data
 }
 
-export const deleteItem = async (path: string) => {
+export const deleteEntry = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=delete`, { method: 'DELETE' }).then(res => res.json())
   return data
 }
 
-export const downloadItems = (path: string, downloadName: string, cmd: string) => {
+export const downloadEntries = (path: string, downloadName: string, cmd: string) => {
   window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`, '_self')
 }
 
