@@ -1,6 +1,6 @@
 import { Toaster, IconName, Intent } from '@blueprintjs/core'
 
-const toaster = Toaster.create({ position: 'bottom-right'})
+const toaster = Toaster.create({ position: 'top' })
 
 const Toast = {
 

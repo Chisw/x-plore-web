@@ -117,7 +117,7 @@ export default function ToolBar(props: ToolBarProps) {
           <Renew16 />
         </ToolButton>
         <ToolButton
-          title="返回上级 [Shift + ↑]"
+          title="上级目录 [Shift + ↑]"
           disabled={disabledMap.backToTop}
           onClick={onBackToTop}
         >

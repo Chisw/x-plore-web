@@ -1,3 +1,5 @@
+import { IFilePack } from "./types"
+
 const { fetch } = window
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
 
@@ -40,8 +42,12 @@ export const downloadEntries = (path: string, downloadName: string, cmd: string)
   window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`, '_self')
 }
 
-export const uploadFile = async (path: string, file: File) => {
-  const data = await fetch(`${BASE_URL}${path}/${file.name}?cmd=file&size=${file.size}&file_date=${file.lastModified}`, {
+export const uploadFile = async (path: string, filePack: IFilePack) => {
+  const { file, fullPath } = filePack
+  const { name, size, lastModified } = file
+  const targetFileName = fullPath || `/${name}`
+
+  const data = await fetch(`${BASE_URL}${path}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, {
     method: 'POST',
     body: file,
     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },

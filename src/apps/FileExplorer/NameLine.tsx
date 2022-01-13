@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
 import { getIsExist, addNewDir, renameEntry, uploadFile } from '../../utils/api'
-import { IEntry } from '../../utils/types'
+import { IEntry, IFilePack } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
@@ -43,7 +43,7 @@ export default function NameLine(props: NameLineProps) {
   const { fetch: fetchExist, loading: loadingExist } = useFetch((path: string) => getIsExist(path))
   const { fetch: fetchNewDir, loading: loadingNewDir } = useFetch((path: string) => addNewDir(path))
   const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameEntry(path, newPath))
-  const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
+  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
 
   const handleName = useCallback(async (e: any) => {
     const oldName = entry?.name
@@ -78,7 +78,7 @@ export default function NameLine(props: NameLineProps) {
             const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
             const suffix = newName.endsWith('.txt') ? '' : '.txt'
             const file = new File([blob], newName + suffix)
-            const data = await uploadFileToPath(currentPath, file)
+            const data = await uploadFileToPath(currentPath, { file })
             const isUploaded = !!data?.hasDon
             if (isUploaded) {
               onSuccess({ type: 2, name: newName })

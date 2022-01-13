@@ -89,3 +89,8 @@ export interface IOffsetInfo {
   offsetWidth: number
   offsetHeight: number
 }
+
+export interface IFilePack {
+  file: File
+  fullPath?: string
+}

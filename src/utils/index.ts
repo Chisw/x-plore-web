@@ -1,4 +1,4 @@
-import { IEntry, IOffsetInfo, IRectInfo } from './types'
+import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
 
 export const entrySorter = (a: IEntry, b: IEntry) => {
   const typeDirection = a.type - b.type
@@ -142,4 +142,50 @@ export function SpeedCounter(this: typeof SpeedCounter) {
   ;(this as any).isStable = () => {
     return lastUsedBucket * 2 >= buckets.length
   }
+}
+
+export const getEntryFilePackList = async (entry: any) => {  // any: FileSystemEntry
+  const filePackList: IFilePack[] = []
+  if (entry.isFile) {
+    await new Promise((resolve, reject) => {
+      (entry as any).file((file: File) => {  // any: FileSystemFileEntry
+        const fileName = file.name
+        if (fileName !== '.DS_Store' && !fileName.startsWith('._')) {
+          filePackList.push({
+            file,
+            fullPath: entry.fullPath,
+          })
+        }
+        resolve(true)
+      })
+    })
+  } else {
+    await new Promise((resolve, reject) => {
+      const reader = (entry as any).createReader()  // any: FileSystemDirectoryEntry
+      reader.readEntries(async (entries: any) => {  // any: FileSystemEntry[]
+        for (const entry of entries) {
+          const list = await getEntryFilePackList(entry)
+          filePackList.push(...list)
+        }
+        resolve(true)
+      })
+    })
+  }
+  return filePackList
+}
+
+export const getDTFilePackList = async (dataTransfer: DataTransfer) => {
+  const filePackList: IFilePack[] = []
+  const { items } = dataTransfer as any
+  // don't use `for of`
+  await Promise.all([...items].map(async (item) => {
+    if (item.kind === 'file' && item.webkitGetAsEntry) {
+      const entry = item.webkitGetAsEntry() as any // any: FileSystemEntry
+      const files = await getEntryFilePackList(entry)
+      filePackList.push(...files)
+    } else if (item.kind === 'string') {
+      // handle string
+    }
+  }))
+  return filePackList
 }

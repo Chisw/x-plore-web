@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
+import { getDTFilePackList } from '../utils'
+import { IFilePack } from '../utils/types'
 
 interface useDragOperationsProps {
   containerInnerRef: any
   onEnterContainer: () => void
   onLeaveContainer: () => void
-  onUpload: (files: File[], dir?: string) => void
+  onUpload: (files: IFilePack[], dir?: string) => void
 }
 
 const clear = () => document.querySelectorAll('.entry-node').forEach(el => el.removeAttribute('data-drag-hover'))
@@ -35,7 +37,8 @@ export default function useDragOperations(props: useDragOperationsProps) {
       } else {
         clear()
       }
-      const dir = closestDir ? closestDir.getAttribute('data-name') : undefined
+
+      const destDir = closestDir ? closestDir.getAttribute('data-name') : undefined
 
       if (type === 'dragenter' || target === containerInner) {
         onEnterContainer()
@@ -44,8 +47,10 @@ export default function useDragOperations(props: useDragOperationsProps) {
         onLeaveContainer()
       }
       if (type === 'drop') {
-        onUpload(dataTransfer.files, dir)
-        clear()
+        getDTFilePackList(dataTransfer).then(files => {
+          onUpload(files, destDir)
+          clear()
+        })
       }
     }
 

@@ -7,7 +7,7 @@ import { convertEntryName, getBytesSize, getDownloadInfo, getIsContained, isSame
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { transferEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
-import { AppComponentProps, DirectionType, IEntry, IHistory, IRectInfo } from '../../utils/types'
+import { AppComponentProps, DirectionType, IEntry, IHistory, IRectInfo, IFilePack } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -69,7 +69,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
   const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
-  const { fetch: uploadFileToPath } = useFetch((path: string, file: File) => uploadFile(path, file))
+  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
   const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
 
   const { entryList, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
@@ -182,14 +182,20 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
-  const handleUploadStart = useCallback(async (files: File[], dir?: string) => {
-    !dir && setVirtualFiles(files)
+  const handleUploadStart = useCallback(async (filePackList: IFilePack[], destDir?: string) => {
+    if (!filePackList.length) {
+      Toast.toast('无有效文件', 2000)
+      return
+    }
+    // if (!destDir) {
+    //   setVirtualFiles(filePackList.map(f => f.file))
+    // }
     const okList: boolean[] = []
-    for (const file of files) {
-      const data = await uploadFileToPath(`${currentPath}${dir ? `/${dir}` : ''}`, file)
+    for (const filePack of filePackList) {
+      const data = await uploadFileToPath(`${currentPath}${destDir ? `/${destDir}` : ''}`, filePack)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
-        document.querySelector(`[data-name="${file.name}"]`)?.setAttribute('style', 'opacity:1;')
+        document.querySelector(`[data-name="${filePack.file.name}"]`)?.setAttribute('style', 'opacity:1;')
       }
       okList.push(isUploaded)
     }
@@ -398,9 +404,9 @@ export default function FileExplorer(props: AppComponentProps) {
     onLeaveContainer: () => {
       setWaitDropToCurrentPath(false)
     },
-    onUpload: (files, dir) => {
+    onUpload: (filePackList, destDir) => {
       setWaitDropToCurrentPath(false)
-      handleUploadStart(files, dir)
+      handleUploadStart(filePackList, destDir)
     },
   })
 
@@ -442,7 +448,11 @@ export default function FileExplorer(props: AppComponentProps) {
       handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
     ContextMenu.show(<Menus {...menuProps} />, { top, left })
-  }, [currentPath, entryList, selectedEntryList, setTransferEntryList, handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick])
+  }, [
+    currentPath, entryList, selectedEntryList,
+    setTransferEntryList,
+    handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
+  ])
 
   return (
     <>
@@ -453,21 +463,7 @@ export default function FileExplorer(props: AppComponentProps) {
           onVolumeClick={handleVolumeClick}
         />
         {/* main */}
-        <div className="relative flex-grow h-full bg-white flex flex-col group">
-          <div
-            title={sideCollapse ? '展开' : '收起'}
-            className={line(`
-              absolute z-10 top-1/2 left-0
-              w-3 h-12 bg-gray-200 rounded-r-lg
-              opacity-20 group-hover:opacity-40 hover:bg-gray-300
-              transition-all duration-200
-              transform -translate-y-1/2 cursor-pointer
-              flex justify-center items-center
-            `)}
-            onClick={() => setSideCollapse(!sideCollapse)}
-          >
-            <ChevronRight16 className={sideCollapse ? '' : 'transform -rotate-180'} />
-          </div>
+        <div className="relative flex-grow h-full bg-white flex flex-col">
           <ToolBar
             {...{ disabledMap, gridMode, filterMode, filterText, hiddenShow }}
             {...{ setGridMode, setFilterMode, setFilterText, setHiddenShow }}
@@ -486,9 +482,21 @@ export default function FileExplorer(props: AppComponentProps) {
           <div
             ref={containerRef}
             data-drag-hover={waitDropToCurrentPath}
-            className="relative flex-grow overflow-x-hidden overflow-y-auto"
+            className="relative flex-grow overflow-x-hidden overflow-y-auto group"
             onMouseDownCapture={handleCancelSelect}
           >
+            <div
+              title={sideCollapse ? '展开' : '收起'}
+              className={line(`
+                absolute z-10 top-1/2 left-0 w-3 h-12 bg-gray-200 rounded-r-lg
+                opacity-20 group-hover:opacity-40 hover:bg-gray-300
+                transition-all duration-200 transform -translate-y-1/2 cursor-pointer
+                flex justify-center items-center
+              `)}
+              onClick={() => setSideCollapse(!sideCollapse)}
+            >
+              <ChevronRight16 className={sideCollapse ? '' : 'transform -rotate-180'} />
+            </div>
             <div
               ref={rectRef}
               className="hidden absolute z-10 border box-content border-gray-400 bg-black-100"
@@ -555,7 +563,6 @@ export default function FileExplorer(props: AppComponentProps) {
                     `)}
                     onClick={e => handleEntryClick(e, entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
-
                   >
                     <Icon {...{ small, entryName, currentPath }} />
                     <NameLine
@@ -609,7 +616,10 @@ export default function FileExplorer(props: AppComponentProps) {
         ref={uploadInputRef}
         type="file"
         className="hidden"
-        onChange={(e: any) => handleUploadStart(e.target.files)}
+        onChange={(e: any) => {
+          const filePackList = [...e.target.files].map((file: File) => ({ file }))
+          handleUploadStart(filePackList)
+        }}
       />
 
       <Confirmor {...downloadConfirmorProps} />
