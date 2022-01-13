@@ -6,7 +6,7 @@ import useFetch from '../../hooks/useFetch'
 import { convertEntryName, getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line } from '../../utils'
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
-import { transferEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
+import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
 import { AppComponentProps, DirectionType, IEntry, IHistory, IRectInfo, IFilePack } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
@@ -30,7 +30,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const [rootInfo] = useRecoilState(rootInfoState)
   const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
-  const [, setTransferEntryList] = useRecoilState(transferEntryListState)
+  const [, setOpenedEntryList] = useRecoilState(openedEntryListState)
   const [sideCollapse, setSideCollapse] = useState(false)
   const [currentPath, setCurrentPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
@@ -46,7 +46,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
   const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
-  const [virtualFiles, setVirtualFiles] = useState<File[]>([])
+  const [virtualEntries, setVirtualEntries] = useState<File[]>([])
   const [hiddenShow, setHiddenShow] = useState(false)
 
   const rectRef = useRef(null)
@@ -187,9 +187,9 @@ export default function FileExplorer(props: AppComponentProps) {
       Toast.toast('无有效文件', 2000)
       return
     }
-    // if (!destDir) {
-    //   setVirtualFiles(filePackList.map(f => f.file))
-    // }
+    if (!destDir) {
+      setVirtualEntries(filePackList.filter(p => '/' + p.file.name === p.fullPath).map(p => p.file))
+    }
     const okList: boolean[] = []
     for (const filePack of filePackList) {
       const data = await uploadFileToPath(`${currentPath}${destDir ? `/${destDir}` : ''}`, filePack)
@@ -202,7 +202,7 @@ export default function FileExplorer(props: AppComponentProps) {
     if (okList.every(Boolean)) {
       handleRefresh()
       Toast.toast('上传成功', 2000)
-      setVirtualFiles([])
+      setVirtualEntries([])
     }
     ;(uploadInputRef.current as any).value = ''
   }, [currentPath, uploadFileToPath, handleRefresh])
@@ -443,14 +443,14 @@ export default function FileExplorer(props: AppComponentProps) {
     const { target, clientX: left, clientY: top } = event
     const menuProps = {
       target, currentPath, entryList, selectedEntryList,
-      setTransferEntryList,
+      setOpenedEntryList,
       setNewDirMode, setNewTxtMode, setSelectedEntryList,
       handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
     ContextMenu.show(<Menus {...menuProps} />, { top, left })
   }, [
     currentPath, entryList, selectedEntryList,
-    setTransferEntryList,
+    setOpenedEntryList,
     handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
   ])
 
@@ -597,7 +597,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 )
               })}
 
-              <VirtualEntries {...{ virtualFiles, gridMode }} />
+              <VirtualEntries {...{ virtualEntries, gridMode }} />
 
             </div>
           </div>

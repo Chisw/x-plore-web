@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useRecoilState } from 'recoil'
-import { runningAppListState, topWindowIndexState } from '../utils/state'
+import { openedEntryListState, runningAppListState, topWindowIndexState } from '../utils/state'
 import APP_LIST from '../utils/appList'
 import { IApp } from '../utils/types'
 import { line } from '../utils'
@@ -10,6 +10,7 @@ export default function Dock() {
 
   const [topWindowIndex, setTopWindowIndex] = useRecoilState(topWindowIndexState)
   const [runningAppList, setRunningAppList] = useRecoilState(runningAppListState)
+  const [openedEntryList, setOpenedEntryList] = useRecoilState(openedEntryListState)
 
   const handleOpenApp = useCallback((app: IApp) => {
     const sameRunningAppList = runningAppList.filter(a => a.id === app.id)
@@ -32,9 +33,14 @@ export default function Dock() {
     }
   }, [topWindowIndex, setTopWindowIndex, runningAppList, setRunningAppList])
 
-  // useEffect(() => {
-  //   console.log('transferEntryList', transferEntryList)
-  // }, [transferEntryList])
+  useEffect(() => {
+    console.log('openedEntryList', openedEntryList)
+    const openedEntry = openedEntryList[0]
+    if (openedEntry) {
+      const app = APP_LIST.find(a => a.id === openedEntry.openAppId)!
+      handleOpenApp(app)
+    }
+  }, [openedEntryList, setOpenedEntryList, handleOpenApp])
 
   return (
     <>

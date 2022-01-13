@@ -2,44 +2,44 @@ import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import useFetch from '../hooks/useFetch'
 import { getTextFile } from '../utils/api'
-import { transferEntryListState } from '../utils/state'
-import { AppComponentProps, ITransferEntry } from '../utils/types'
+import { openedEntryListState } from '../utils/state'
+import { AppComponentProps, IOpenedEntry } from '../utils/types'
 
 export default function TextEditor(props: AppComponentProps) {
 
   const { setWindowTitle, setWindowLoading } = props
 
-  const [transferEntryList, setTransferEntryList] = useRecoilState(transferEntryListState)
-  const [currentEntry, setCurrentEntry] = useState<ITransferEntry | null>(null)
+  const [openedEntryList, setOpenedEntryList] = useRecoilState(openedEntryListState)
+  const [currentEntry, setCurrentEntry] = useState<IOpenedEntry | null>(null)
 
   const { fetch: fetchText, loading: fetching, data: textContent } = useFetch((path: string) => getTextFile(path))
 
-  useEffect(() => {
-    setWindowLoading(fetching)
-  }, [setWindowLoading, fetching])
+  useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 
   useEffect(() => {
-    const entry = transferEntryList[0]
-    if (!textContent && entry && entry.appId === 'text-editor') {
-      setCurrentEntry(entry)
-      setTransferEntryList([])
+    const openedEntry = openedEntryList[0]
+    if (openedEntry && !openedEntry.isOpen && openedEntry.openAppId === 'text-editor') {
+      setCurrentEntry(openedEntry)
+      setOpenedEntryList([])
     }
-  }, [textContent, transferEntryList, setTransferEntryList])
+
+  }, [openedEntryList, setOpenedEntryList])
 
   useEffect(() => {
     if (currentEntry) {
-      const { path, name } = currentEntry
-      fetchText(`${path}/${name}`)
-      setWindowTitle(name)
+      const { entryPath, name, isOpen } = currentEntry
+      if (!isOpen) {
+        fetchText(`${entryPath}/${name}`)
+        setWindowTitle(name)
+        setCurrentEntry({ ...currentEntry, isOpen: true })
+      }
     }
   }, [currentEntry, fetchText, setWindowTitle])
 
   return (
     <>
-      <div className="absolute inset-0 bg-white">
-        <div className="p-1">
-          {textContent}
-        </div>
+      <div className="absolute inset-0 bg-white p-2">
+        <div dangerouslySetInnerHTML={{ __html: (textContent || '').replaceAll('\n', '<br>') }}></div>
       </div>
     </>
   )

@@ -59,9 +59,10 @@ export interface IEntry {
   hasChildren?: boolean
 }
 
-export interface ITransferEntry extends IEntry {
-  path: string
-  appId?: string
+export interface IOpenedEntry extends IEntry {
+  entryPath: string
+  openAppId: string
+  isOpen: boolean
 }
 
 export interface IEntryIcon {

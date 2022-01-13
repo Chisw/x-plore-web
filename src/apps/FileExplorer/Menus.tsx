@@ -1,17 +1,17 @@
 import { ContextMenu, Menu, MenuItem } from '@blueprintjs/core'
 import { Application16, DocumentAdd16, Download16, Edit16, Export16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
-import { IApp, IEntry, ITransferEntry } from '../../utils/types'
+import { IApp, IEntry, IOpenedEntry } from '../../utils/types'
 import APP_LIST from '../../utils/appList'
 import { useCallback, useMemo } from 'react'
 
-const availableAppIdList = ['text-editor', 'image-previewer', 'music-player', 'video-player']
+const availableAppIdList = ['text-editor', 'photo-gallery', 'music-player', 'video-player']
 
 interface MenusProps {
   target: any
   currentPath: string
   entryList: IEntry[]
   selectedEntryList: IEntry[]
-  setTransferEntryList: (entries: ITransferEntry[]) => void
+  setOpenedEntryList: (entries: IOpenedEntry[]) => void
   setSelectedEntryList: (entry: IEntry[]) => void
   setNewDirMode: (mode: boolean) => void
   setNewTxtMode: (mode: boolean) => void
@@ -29,7 +29,7 @@ export default function Menus(props: MenusProps) {
     currentPath,
     entryList,
     selectedEntryList,
-    setTransferEntryList,
+    setOpenedEntryList,
     setSelectedEntryList,
     setNewDirMode,
     setNewTxtMode,
@@ -90,10 +90,15 @@ export default function Menus(props: MenusProps) {
     }
   }, [target, selectedEntryList, entryList, setSelectedEntryList])
 
-  const transfer = useCallback((appId: string) => {
-    const list = contextEntryList.map(entry => ({ ...entry, path: currentPath, appId }))
-    setTransferEntryList(list)
-  }, [contextEntryList, currentPath, setTransferEntryList])
+  const handleOpenEntry = useCallback((appId: string) => {
+    const list = contextEntryList.map(entry => ({
+      ...entry,
+      entryPath: currentPath,
+      openAppId: appId,
+      isOpen: false,
+    }))
+    setOpenedEntryList(list)
+  }, [contextEntryList, currentPath, setOpenedEntryList])
 
   const actions = useMemo(() => {
     return [
@@ -129,7 +134,7 @@ export default function Menus(props: MenusProps) {
         children: availableAppIdList.map(appId => ({
           icon: <img src={availableAppMap[appId].icon} alt="app" className="w-4 h-4" />,
           text: availableAppMap[appId].title,
-          onClick: () => transfer(appId),
+          onClick: () => handleOpenEntry(appId),
         })),
       },
       {
@@ -159,7 +164,7 @@ export default function Menus(props: MenusProps) {
     ]
   }, [
     availableAppMap, contextEntryList, isOnBlank, isOnDir, isSingleConfirmed,
-    setNewDirMode, setNewTxtMode, transfer,
+    setNewDirMode, setNewTxtMode, handleOpenEntry,
     handleDeleteClick, handleDownloadClick, handleRefresh, handleRename, handleUploadClick,
   ])
 

@@ -63,7 +63,7 @@ const APP_LIST: IApp[] = [
     AppComponent: TextEditor,
   },
   {
-    id: 'image-previewer',
+    id: 'photo-gallery',
     runningId: 0,
     title: '图片查看器',
     icon: iconPhotoGallery,
@@ -96,8 +96,8 @@ const APP_LIST: IApp[] = [
     runningId: 0,
     title: '视频播放器',
     icon: iconVideoPlayer,
-    width: 400,
-    height: 320,
+    width: 1280,
+    height: 720,
     resizeRange: {
       minWidth: 320,
       minHeight: 240,

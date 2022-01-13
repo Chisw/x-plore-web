@@ -3,20 +3,20 @@ import Icon from "./Icon"
 import { NameLabel } from "./NameLine"
 
 interface VirtualEntriesProps {
-  virtualFiles: File[]
+  virtualEntries: File[]
   gridMode: boolean
 }
 
 export default function VirtualEntries(props: VirtualEntriesProps) {
 
  const {
-   virtualFiles,
+   virtualEntries,
    gridMode,
  } = props
 
   return (
     <>
-      {Array.from(virtualFiles).map(({ name }) => (
+      {Array.from(virtualEntries).map(({ name }) => (
         <div
           key={encodeURIComponent(name)}
           data-name={name}

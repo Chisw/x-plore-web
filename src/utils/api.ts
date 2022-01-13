@@ -63,3 +63,7 @@ export const getTextFile = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=text_file`, { method: 'GET' }).then(res => res.text())
   return data
 }
+
+export const getBinFileUrl = (path: string) => {
+  return `${BASE_URL}${path}?cmd=file`
+}
