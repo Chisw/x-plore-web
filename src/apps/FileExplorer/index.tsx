@@ -480,23 +480,23 @@ export default function FileExplorer(props: AppComponentProps) {
             onSelectAll={handleSelectAll}
           />
           <div
+            title={sideCollapse ? '展开' : '收起'}
+            className={line(`
+              absolute z-10 top-1/2 left-0 w-3 h-12 bg-gray-200 rounded-r-lg
+              opacity-40 hover:bg-gray-300
+              transition-all duration-200 transform -translate-y-1/2 cursor-pointer
+              flex justify-center items-center
+            `)}
+            onClick={() => setSideCollapse(!sideCollapse)}
+          >
+            <ChevronRight16 className={sideCollapse ? '' : 'transform -rotate-180'} />
+          </div>
+          <div
             ref={containerRef}
             data-drag-hover={waitDropToCurrentPath}
-            className="relative flex-grow overflow-x-hidden overflow-y-auto group"
+            className="relative flex-grow overflow-x-hidden overflow-y-auto"
             onMouseDownCapture={handleCancelSelect}
           >
-            <div
-              title={sideCollapse ? '展开' : '收起'}
-              className={line(`
-                absolute z-10 top-1/2 left-0 w-3 h-12 bg-gray-200 rounded-r-lg
-                opacity-20 group-hover:opacity-40 hover:bg-gray-300
-                transition-all duration-200 transform -translate-y-1/2 cursor-pointer
-                flex justify-center items-center
-              `)}
-              onClick={() => setSideCollapse(!sideCollapse)}
-            >
-              <ChevronRight16 className={sideCollapse ? '' : 'transform -rotate-180'} />
-            </div>
             <div
               ref={rectRef}
               className="hidden absolute z-10 border box-content border-gray-400 bg-black-100"

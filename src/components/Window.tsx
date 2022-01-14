@@ -98,7 +98,7 @@ export default function Window(props: WindowProps) {
         <div
           className={line(`
             move-to-front-trigger
-            absolute inset-0 bg-white-800 bg-hazy-100 rounded-lg overflow-hidden
+            absolute inset-0 bg-white-700 bg-hazy-100 rounded-lg overflow-hidden
             border border-gray-500 border-opacity-30 bg-clip-padding
             transition-box-shadow duration-200 flex flex-col
             ${isTopWindow ? 'shadow-xl' : 'shadow'}
@@ -108,8 +108,8 @@ export default function Window(props: WindowProps) {
           {/* header */}
           <div
             className={line(`
-              w-full h-8 bg-white flex items-center select-none border-b
-              ${windowLoading ? 'bg-loading' : ''}
+              w-full h-8 flex items-center select-none
+              ${windowLoading ? 'bg-loading' : 'bg-gradient-to-b from-transparent to-gray-200'}
               ${isTopWindow ? '' : 'filter grayscale opacity-60'}
             `)}
           >
