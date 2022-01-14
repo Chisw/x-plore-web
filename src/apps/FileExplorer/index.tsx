@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertEntryName, getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line } from '../../utils'
+import { convertEntryName, getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line, getMatchAppId } from '../../utils'
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
@@ -32,7 +32,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
   const [, setOpenedEntryList] = useRecoilState(openedEntryListState)
   const [sideCollapse, setSideCollapse] = useState(false)
-  const [currentPath, setCurrentPath] = useState('')
+  const [currentDirPath, setCurrentPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
   const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
@@ -60,12 +60,12 @@ export default function FileExplorer(props: AppComponentProps) {
     return { volumeList, volumeMountList }
   }, [rootInfo])
 
-  const isInVolumeRoot = useMemo(() => volumeMountList.includes(currentPath), [volumeMountList, currentPath])
+  const isInVolumeRoot = useMemo(() => volumeMountList.includes(currentDirPath), [volumeMountList, currentDirPath])
 
   useEffect(() => {
-    const title = isInVolumeRoot ? currentPath : currentPath.split('/').pop() as string
+    const title = isInVolumeRoot ? currentDirPath : currentDirPath.split('/').pop() as string
     setWindowTitle(title)
-  }, [currentPath, setWindowTitle, isInVolumeRoot])
+  }, [currentDirPath, setWindowTitle, isInVolumeRoot])
 
   const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
   const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
@@ -89,8 +89,8 @@ export default function FileExplorer(props: AppComponentProps) {
     return {
       navBack: position <= 0,
       navForward: list.length === position + 1,
-      refresh: fetching || !currentPath,
-      backToTop: !currentPath || isInVolumeRoot,
+      refresh: fetching || !currentDirPath,
+      backToTop: !currentDirPath || isInVolumeRoot,
       newDir: newDirMode || newTxtMode,
       newTxt: newDirMode || newTxtMode,
       rename: selectedEntryList.length !== 1,
@@ -103,7 +103,7 @@ export default function FileExplorer(props: AppComponentProps) {
       showHidden: false,
       gridMode: false,
     }
-  }, [history, fetching, currentPath, isInVolumeRoot, newDirMode, newTxtMode, selectedEntryList, isEntryListEmpty])
+  }, [history, fetching, currentDirPath, isInVolumeRoot, newDirMode, newTxtMode, selectedEntryList, isEntryListEmpty])
 
   const fetchPathData = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
@@ -143,9 +143,9 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [handlePathChange])
 
   const handleDirOpen = useCallback((dirName: string) => {
-    const path = `${currentPath}/${dirName}`
+    const path = `${currentDirPath}/${dirName}`
     handlePathChange({ path, direction: 1, pushPath: true })
-  }, [handlePathChange, currentPath])
+  }, [handlePathChange, currentDirPath])
 
   const handleGoFullPath = useCallback((path: string) => {
     handlePathChange({ path, direction: 1, pushPath: true })
@@ -165,15 +165,15 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRefresh = useCallback(() => {
     setSelectedEntryList([])
-    fetchPathData(currentPath, true)
-  }, [fetchPathData, currentPath])
+    fetchPathData(currentDirPath, true)
+  }, [fetchPathData, currentDirPath])
 
   const handleBackToTop = useCallback(() => {
-    const list = currentPath.split('/')
+    const list = currentDirPath.split('/')
     list.pop()
     const path = list.join('/')
     handlePathChange({ path, direction: 1, pushPath: true })
-  }, [currentPath, handlePathChange])
+  }, [currentDirPath, handlePathChange])
 
   const handleCreate = useCallback((create: 'dir' | 'txt') => {
     setSelectedEntryList([])
@@ -192,7 +192,7 @@ export default function FileExplorer(props: AppComponentProps) {
     }
     const okList: boolean[] = []
     for (const filePack of filePackList) {
-      const data = await uploadFileToPath(`${currentPath}${destDir ? `/${destDir}` : ''}`, filePack)
+      const data = await uploadFileToPath(`${currentDirPath}${destDir ? `/${destDir}` : ''}`, filePack)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         document.querySelector(`[data-name="${filePack.file.name}"]`)?.setAttribute('style', 'opacity:1;')
@@ -205,7 +205,7 @@ export default function FileExplorer(props: AppComponentProps) {
       setVirtualEntries([])
     }
     ;(uploadInputRef.current as any).value = ''
-  }, [currentPath, uploadFileToPath, handleRefresh])
+  }, [currentDirPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
     if (e.button === 2) return  // oncontextmenu
@@ -239,7 +239,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleDownloadClick = useCallback((contextEntryList?: IEntry[]) => {
     const processList = contextEntryList || selectedEntryList
-    const { msg, downloadName, cmd } = getDownloadInfo(currentPath, processList)
+    const { msg, downloadName, cmd } = getDownloadInfo(currentDirPath, processList)
     const close = () => setDownloadConfirmorProps({ isOpen: false })
 
     setDownloadConfirmorProps({
@@ -255,10 +255,10 @@ export default function FileExplorer(props: AppComponentProps) {
       onCancel: close,
       onConfirm: () => {
         close()
-        downloadEntries(currentPath, downloadName, cmd)
+        downloadEntries(currentDirPath, downloadName, cmd)
       },
     })
-  }, [currentPath, selectedEntryList])
+  }, [currentDirPath, selectedEntryList])
 
   const handleDeleteClick = useCallback(async (contextEntryList?: IEntry[]) => {
     const processList = contextEntryList || selectedEntryList
@@ -283,7 +283,7 @@ export default function FileExplorer(props: AppComponentProps) {
         const okList: boolean[] = []
         for (const entry of processList) {
           const { name } = entry
-          const { ok } = await deletePath(`${currentPath}/${name}`)
+          const { ok } = await deletePath(`${currentDirPath}/${name}`)
           document.querySelector(`.entry-node[data-name="${name}"]`)?.setAttribute('style', 'opacity:0;')
           okList.push(ok)
         }
@@ -293,15 +293,15 @@ export default function FileExplorer(props: AppComponentProps) {
         }
       },
     })
-  }, [deletePath, currentPath, selectedEntryList, handleRefresh])
+  }, [deletePath, currentDirPath, selectedEntryList, handleRefresh])
 
   useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 
   useEffect(() => {
-    if (!currentPath && volumeList.length) {
+    if (!currentDirPath && volumeList.length) {
       handleVolumeClick(volumeList[0].mount)
     }
-  }, [currentPath, volumeList, handleVolumeClick])
+  }, [currentDirPath, volumeList, handleVolumeClick])
 
   useEffect(() => {
     const container: any = containerRef.current
@@ -318,15 +318,15 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedEntryList([])
     setFilterMode(false)
     setFilterText('')
-  }, [currentPath])
+  }, [currentDirPath])
 
   useEffect(() => setSelectedEntryList([]), [filterText])
 
   const updateDirSize = useCallback(async (name: string) => {
-    const path = `${currentPath}/${name}`
+    const path = `${currentDirPath}/${name}`
     const { hasDon, size } = await getSize(path)
     hasDon && setSizeMap({ ...sizeMap, [path]: size })
-  }, [currentPath, getSize, sizeMap, setSizeMap])
+  }, [currentDirPath, getSize, sizeMap, setSizeMap])
 
   const handleEntryClick = useCallback((e: any, entry: IEntry) => {
     if (newDirMode || newTxtMode || renameMode) return
@@ -365,9 +365,14 @@ export default function FileExplorer(props: AppComponentProps) {
     if (isDir) {
       handleDirOpen(name)
     } else {
-      handleDownloadClick()
+      const appId = getMatchAppId(entry)
+      if (appId) {
+        setOpenedEntryList([{ ...entry, parentDirPath: currentDirPath, openAppId: appId, isOpen: false }])
+      } else {
+        handleDownloadClick()
+      }
     }
-  }, [handleDirOpen, handleDownloadClick])
+  }, [currentDirPath, handleDirOpen, handleDownloadClick, setOpenedEntryList])
 
   const handleSelectAll = useCallback((force?: boolean) => {
     const isSelectAll = force || !selectedEntryList.length
@@ -442,14 +447,14 @@ export default function FileExplorer(props: AppComponentProps) {
     event.stopPropagation()
     const { target, clientX: left, clientY: top } = event
     const menuProps = {
-      target, currentPath, entryList, selectedEntryList,
+      target, currentDirPath, entryList, selectedEntryList,
       setOpenedEntryList,
       setNewDirMode, setNewTxtMode, setSelectedEntryList,
       handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
     ContextMenu.show(<Menus {...menuProps} />, { top, left })
   }, [
-    currentPath, entryList, selectedEntryList,
+    currentDirPath, entryList, selectedEntryList,
     setOpenedEntryList,
     handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
   ])
@@ -459,7 +464,7 @@ export default function FileExplorer(props: AppComponentProps) {
       <div className="absolute inset-0 flex">
         {/* side */}
         <Side
-          {...{ sideCollapse, currentPath, activeVolume, volumeList }}
+          {...{ sideCollapse, currentDirPath, activeVolume, volumeList }}
           onVolumeClick={handleVolumeClick}
         />
         {/* main */}
@@ -531,7 +536,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     showInput
                     create={newDirMode ? 'dir' : 'txt'}
                     gridMode={gridMode}
-                    currentPath={currentPath}
+                    currentDirPath={currentDirPath}
                     onSuccess={handleNameSuccess}
                     onFail={handleNameFail}
                   />
@@ -543,7 +548,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 const isSelected = !!selectedEntryList.find(o => isSameEntry(o, entry))
                 const small = !gridMode
                 const entryName = convertEntryName(entry)
-                const _size = size === undefined ? sizeMap[`${currentPath}/${name}`] : size
+                const _size = size === undefined ? sizeMap[`${currentDirPath}/${name}`] : size
                 const sizeLabel = _size === undefined ? '--' : getBytesSize(_size)
                 const dateLabel = lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''
                 return (
@@ -564,13 +569,13 @@ export default function FileExplorer(props: AppComponentProps) {
                     onClick={e => handleEntryClick(e, entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
                   >
-                    <Icon {...{ small, entryName, currentPath }} />
+                    <Icon {...{ small, entryName, currentDirPath }} />
                     <NameLine
                       showInput={renameMode && isSelected}
                       entry={entry}
                       isSelected={isSelected}
                       gridMode={gridMode}
-                      currentPath={currentPath}
+                      currentDirPath={currentDirPath}
                       onSuccess={handleNameSuccess}
                       onFail={handleNameFail}
                     />
@@ -602,7 +607,7 @@ export default function FileExplorer(props: AppComponentProps) {
             </div>
           </div>
           <PathLink
-            {...{ dirCount, fileCount, currentPath, activeVolume }}
+            {...{ dirCount, fileCount, currentDirPath, activeVolume }}
             loading={fetching}
             selectedLen={selectedEntryList.length}
             onDirClick={handleGoFullPath}

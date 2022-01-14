@@ -1,3 +1,4 @@
+import { DOUBLE_CLICK_OPEN_APP_LIST } from './appList'
 import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
 
 export const entrySorter = (a: IEntry, b: IEntry) => {
@@ -49,8 +50,15 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   return result
 }
 
-export const getDownloadInfo = (currentPath: string, selectedEntryList: IEntry[]) => {
-  const pathName = currentPath.split('/').reverse()[0]
+export const getMatchAppId = (entry: IEntry) => {
+  const { name } = entry
+  const ext = name.includes('.') ? name.split('.').reverse()[0] : ''
+  if (!ext) return
+  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(ext))?.id
+}
+
+export const getDownloadInfo = (parentDirPathPath: string, selectedEntryList: IEntry[]) => {
+  const pathName = parentDirPathPath.split('/').reverse()[0]
   const len = selectedEntryList.length
   const firstEntry: IEntry | undefined = selectedEntryList[0]
   const isDownloadAll = !len

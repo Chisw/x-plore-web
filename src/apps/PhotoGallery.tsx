@@ -2,6 +2,7 @@ import { Spinner } from '@blueprintjs/core'
 import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import { getBinFileUrl } from '../utils/api'
+import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
 import { AppComponentProps, IOpenedEntry } from '../utils/types'
 
@@ -19,7 +20,7 @@ export default function PhotoGallery(props: AppComponentProps) {
 
   useEffect(() => {
     const openedEntry = openedEntryList[0]
-    if (openedEntry && !openedEntry.isOpen && openedEntry.openAppId === 'photo-gallery') {
+    if (openedEntry && !openedEntry.isOpen && openedEntry.openAppId === APP_ID_MAP.photoGallery) {
       setCurrentEntry(openedEntry)
       setOpenedEntryList([])
     }
@@ -29,8 +30,8 @@ export default function PhotoGallery(props: AppComponentProps) {
   useEffect(() => {
     if (currentEntry) {
       setLoading(true)
-      const { entryPath, name, isOpen } = currentEntry
-      const fileUrl = getBinFileUrl(`${entryPath}/${name}`)
+      const { parentDirPath, name, isOpen } = currentEntry
+      const fileUrl = getBinFileUrl(`${parentDirPath}/${name}`)
       setFileUrl(fileUrl)
 
       if (!isOpen) {
@@ -42,7 +43,7 @@ export default function PhotoGallery(props: AppComponentProps) {
 
   return (
     <>
-      <div className="absolute inset-0 bg-black flex justify-center items-center">
+      <div className="absolute inset-0 flex justify-center items-center">
         {loading && <Spinner />}
         <img
           src={fileUrl}

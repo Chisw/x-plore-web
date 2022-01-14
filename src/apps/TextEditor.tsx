@@ -1,10 +1,12 @@
-import { Reset16, Save16, TextAllCaps16 } from '@carbon/icons-react'
+import { Copy16, Download16, Reset16, Save16, TextAllCaps16 } from '@carbon/icons-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Toast from '../components/EasyToast'
 import ToolButton from '../components/ToolButton'
 import useFetch from '../hooks/useFetch'
-import { getTextFile, uploadFile } from '../utils/api'
+import { copy, getDownloadInfo } from '../utils'
+import { downloadEntries, getTextFile, uploadFile } from '../utils/api'
+import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
 import { AppComponentProps, IFilePack, IOpenedEntry } from '../utils/types'
 
@@ -24,7 +26,7 @@ export default function TextEditor(props: AppComponentProps) {
 
   useEffect(() => {
     const openedEntry = openedEntryList[0]
-    if (openedEntry && !openedEntry.isOpen && openedEntry.openAppId === 'text-editor') {
+    if (openedEntry && !openedEntry.isOpen && openedEntry.openAppId === APP_ID_MAP.textEditor) {
       setCurrentEntry(openedEntry)
       setOpenedEntryList([])
     }
@@ -33,9 +35,9 @@ export default function TextEditor(props: AppComponentProps) {
 
   useEffect(() => {
     if (currentEntry) {
-      const { entryPath, name, isOpen } = currentEntry
+      const { parentDirPath, name, isOpen } = currentEntry
       if (!isOpen) {
-        fetchText(`${entryPath}/${name}`)
+        fetchText(`${parentDirPath}/${name}`)
         setWindowTitle(name)
         setCurrentEntry({ ...currentEntry, isOpen: true })
       }
@@ -50,7 +52,7 @@ export default function TextEditor(props: AppComponentProps) {
     if (currentEntry) {
       const blob = new Blob([value], { type: 'text/plain;charset=utf-8' })
       const file = new File([blob], currentEntry.name)
-      const data = await uploadFileToPath(currentEntry.entryPath, { file })
+      const data = await uploadFileToPath(currentEntry.parentDirPath, { file })
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         Toast.toast('保存成功')
@@ -58,6 +60,13 @@ export default function TextEditor(props: AppComponentProps) {
       }
     }
   }, [value, currentEntry, uploadFileToPath, setTextContent])
+
+  const handleDownload = useCallback(() => {
+    if (currentEntry) {
+      const { downloadName, cmd } = getDownloadInfo(currentEntry.parentDirPath, [currentEntry])
+      downloadEntries(currentEntry.parentDirPath, downloadName, cmd)
+    }
+  }, [currentEntry])
 
   return (
     <>
@@ -80,6 +89,19 @@ export default function TextEditor(props: AppComponentProps) {
             title="等宽"
             icon={<TextAllCaps16 />}
             onClick={() => setMonoMode(!monoMode)}
+          />
+          <ToolButton
+            title="复制文本"
+            icon={<Copy16 />}
+            onClick={() => {
+              copy(value)
+              Toast.toast('文本复制成功')
+            }}
+          />
+          <ToolButton
+            title={`下载 ${currentEntry?.name}`}
+            icon={<Download16 />}
+            onClick={handleDownload}
           />
         </div>
         <div className="flex-grow">

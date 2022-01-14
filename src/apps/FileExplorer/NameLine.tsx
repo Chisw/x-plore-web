@@ -13,7 +13,7 @@ interface NameLineProps {
   entry?: IEntry,
   isSelected?: boolean
   gridMode: boolean
-  currentPath: string
+  currentDirPath: string
   onSuccess: (entry: IEntry) => void
   onFail: (failType: NameFailType) => void
 }
@@ -26,7 +26,7 @@ export default function NameLine(props: NameLineProps) {
     entry = undefined,
     isSelected = false,
     gridMode,
-    currentPath,
+    currentDirPath,
     onSuccess,
     onFail,
   } = props
@@ -52,14 +52,14 @@ export default function NameLine(props: NameLineProps) {
     if (newName) {
       if (oldName && newName === oldName) onFail('no_change')  // no change no request
 
-      const newPath = `${currentPath}/${newName}`
+      const newPath = `${currentDirPath}/${newName}`
       const { exists } = await fetchExist(newPath)
       if (exists) {
         onFail('exist')
         setIsExist(true)
       } else {
         if (oldName) {  // rename
-          const oldPath = `${currentPath}/${oldName}`
+          const oldPath = `${currentDirPath}/${oldName}`
           const { ok } = await fetchRename(oldPath, newPath)
           if (ok) {
             onSuccess({ ...entry!, name: newName })
@@ -78,7 +78,7 @@ export default function NameLine(props: NameLineProps) {
             const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
             const suffix = newName.includes('.') ? '' : '.txt'
             const file = new File([blob], newName + suffix)
-            const data = await uploadFileToPath(currentPath, { file })
+            const data = await uploadFileToPath(currentDirPath, { file })
             const isUploaded = !!data?.hasDon
             if (isUploaded) {
               onSuccess({ type: 2, name: newName })
@@ -91,7 +91,7 @@ export default function NameLine(props: NameLineProps) {
     } else {
       onFail('empty')
     }
-  }, [entry, currentPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
+  }, [entry, currentDirPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
   return (
     <div className={`leading-none ${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>

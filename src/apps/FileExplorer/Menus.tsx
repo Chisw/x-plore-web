@@ -8,7 +8,7 @@ const availableAppIdList = ['text-editor', 'photo-gallery', 'music-player', 'vid
 
 interface MenusProps {
   target: any
-  currentPath: string
+  currentDirPath: string
   entryList: IEntry[]
   selectedEntryList: IEntry[]
   setOpenedEntryList: (entries: IOpenedEntry[]) => void
@@ -26,7 +26,7 @@ export default function Menus(props: MenusProps) {
 
   const {
     target,
-    currentPath,
+    currentDirPath,
     entryList,
     selectedEntryList,
     setOpenedEntryList,
@@ -93,12 +93,12 @@ export default function Menus(props: MenusProps) {
   const handleOpenEntry = useCallback((appId: string) => {
     const list = contextEntryList.map(entry => ({
       ...entry,
-      entryPath: currentPath,
+      parentDirPath: currentDirPath,
       openAppId: appId,
       isOpen: false,
     }))
     setOpenedEntryList(list)
-  }, [contextEntryList, currentPath, setOpenedEntryList])
+  }, [contextEntryList, currentDirPath, setOpenedEntryList])
 
   const actions = useMemo(() => {
     return [

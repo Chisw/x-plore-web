@@ -3,7 +3,7 @@ import { getBytesSize, line } from '../../utils'
 import { IVolume } from '../../utils/types'
 
 interface VolumeListProps {
-  currentPath: string
+  currentDirPath: string
   activeVolume: string
   volumeList: IVolume[]
   onVolumeClick: (mount: string) => void
@@ -12,7 +12,7 @@ interface VolumeListProps {
 export default function VolumeList(props: VolumeListProps) {
 
   const {
-    currentPath,
+    currentDirPath,
     activeVolume,
     volumeList,
     onVolumeClick,
@@ -24,7 +24,7 @@ export default function VolumeList(props: VolumeListProps) {
         {volumeList.map(({ label, name, mount, spaceFree, spaceTotal }, volumeIndex) => {
           const title = `${name || mount} (${label})`
           const isActive = mount === activeVolume
-          const canVolumeClick = currentPath !== mount
+          const canVolumeClick = currentDirPath !== mount
           const spaceUsed = spaceTotal - spaceFree
           return (
             <div

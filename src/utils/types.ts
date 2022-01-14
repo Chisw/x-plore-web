@@ -60,7 +60,7 @@ export interface IEntry {
 }
 
 export interface IOpenedEntry extends IEntry {
-  entryPath: string
+  parentDirPath: string
   openAppId: string
   isOpen: boolean
 }
@@ -69,7 +69,7 @@ export interface IEntryIcon {
   type: string
   icon: ReactNode
   bg: string
-  match: string[]
+  matchList: string[]
 }
 
 export interface IHistory {

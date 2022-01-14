@@ -8,7 +8,7 @@ interface PathLinkProps {
   selectedLen: number
   dirCount: number
   fileCount: number
-  currentPath: string
+  currentDirPath: string
   activeVolume: string
   onDirClick: (mount: string) => void
   onVolumeClick: (mount: string) => void
@@ -21,7 +21,7 @@ export default function PathLink(props: PathLinkProps) {
     selectedLen,
     dirCount,
     fileCount,
-    currentPath,
+    currentDirPath,
     activeVolume,
     onDirClick,
     onVolumeClick,
@@ -31,13 +31,13 @@ export default function PathLink(props: PathLinkProps) {
     mountList,
     isVolumeDisabled,
   } = useMemo(() => {
-    const mountList = currentPath.replace(activeVolume, '').split('/').filter(Boolean)
-    const isVolumeDisabled = currentPath === activeVolume || !mountList.length
+    const mountList = currentDirPath.replace(activeVolume, '').split('/').filter(Boolean)
+    const isVolumeDisabled = currentDirPath === activeVolume || !mountList.length
     return {
       mountList,
       isVolumeDisabled,
     }
-  }, [currentPath, activeVolume])
+  }, [currentDirPath, activeVolume])
 
   if (!activeVolume) return <div />
 
@@ -72,7 +72,7 @@ export default function PathLink(props: PathLinkProps) {
           title="复制"
           className="invisible ml-1 px-1 cursor-pointer group-hover:visible text-xs hover:text-gray-500 active:opacity-50"
           onClick={() => {
-            copy(currentPath)
+            copy(currentDirPath)
             Toast.toast('路径复制成功')
           }}
         >

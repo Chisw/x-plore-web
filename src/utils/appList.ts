@@ -21,9 +21,45 @@ import BaiduMap from '../apps/BaiduMap'
 import PQINA from '../apps/PQINA'
 import PS from '../apps/PS'
 
+export const APP_ID_MAP = {
+  fileExplorer: 'file-explorer',
+  transfer: 'transfer',
+  textEditor: 'text-editor',
+  photoGallery: 'photo-gallery',
+  musicPlayer: 'music-player',
+  videoPlayer: 'video-player',
+  settings: 'settings',
+  baiduMap: 'baidu-map',
+  pqina: 'pqina',
+  ps: 'ps',
+}
+
+export const DOUBLE_CLICK_OPEN_APP_LIST = [
+  {
+    id: APP_ID_MAP.textEditor,
+    icon: iconTextEditor,
+    matchList: ['txt', 'md', 'html', 'css', 'ps', 'php', 'java', 'sh'],
+  },
+  {
+    id: APP_ID_MAP.photoGallery,
+    icon: iconPhotoGallery,
+    matchList: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+  },
+  {
+    id: APP_ID_MAP.musicPlayer,
+    icon: iconMusicPlayer,
+    matchList: ['mp3', 'aac'],
+  },
+  {
+    id: APP_ID_MAP.videoPlayer,
+    icon: iconVideoPlayer,
+    matchList: ['mp4', 'mkv'],
+  },
+]
+
 const APP_LIST: IApp[] = [
   {
-    id: 'file-explorer',
+    id: APP_ID_MAP.fileExplorer,
     runningId: 0,
     title: '文件管理器',
     icon: iconFileExplorer,
@@ -36,7 +72,7 @@ const APP_LIST: IApp[] = [
     AppComponent: FileExplorer,
   },
   {
-    id: 'transfer',
+    id: APP_ID_MAP.transfer,
     runningId: 0,
     title: '传输助手',
     icon: iconTransfer,
@@ -50,7 +86,7 @@ const APP_LIST: IApp[] = [
     AppComponent: Transfer,
   },
   {
-    id: 'text-editor',
+    id: APP_ID_MAP.textEditor,
     runningId: 0,
     title: '文本编辑器',
     icon: iconTextEditor,
@@ -63,7 +99,7 @@ const APP_LIST: IApp[] = [
     AppComponent: TextEditor,
   },
   {
-    id: 'photo-gallery',
+    id: APP_ID_MAP.photoGallery,
     runningId: 0,
     title: '图片查看器',
     icon: iconPhotoGallery,
@@ -76,7 +112,7 @@ const APP_LIST: IApp[] = [
     AppComponent: PhotoGallery,
   },
   {
-    id: 'music-player',
+    id: APP_ID_MAP.musicPlayer,
     runningId: 0,
     title: '音乐播放器',
     icon: iconMusicPlayer,
@@ -92,7 +128,7 @@ const APP_LIST: IApp[] = [
     AppComponent: MusicPlayer,
   },
   {
-    id: 'video-player',
+    id: APP_ID_MAP.videoPlayer,
     runningId: 0,
     title: '视频播放器',
     icon: iconVideoPlayer,
@@ -105,7 +141,7 @@ const APP_LIST: IApp[] = [
     AppComponent: VideoPlayer,
   },
   {
-    id: 'settings',
+    id: APP_ID_MAP.settings,
     runningId: 0,
     title: '偏好设置',
     icon: iconSettings,
@@ -118,7 +154,7 @@ const APP_LIST: IApp[] = [
     AppComponent: Settings,
   },
   {
-    id: 'baidu-map',
+    id: APP_ID_MAP.baiduMap,
     runningId: 0,
     title: '百度地图',
     icon: iconBaiduMap,
@@ -131,7 +167,7 @@ const APP_LIST: IApp[] = [
     AppComponent: BaiduMap,
   },
   {
-    id: 'pqina',
+    id: APP_ID_MAP.pqina,
     runningId: 0,
     title: 'PQINA',
     icon: iconPQINA,
@@ -144,7 +180,7 @@ const APP_LIST: IApp[] = [
     AppComponent: PQINA,
   },
   {
-    id: 'ps',
+    id: APP_ID_MAP.ps,
     runningId: 0,
     title: 'PS',
     icon: iconPS,
