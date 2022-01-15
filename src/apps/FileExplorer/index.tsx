@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Icon from './Icon'
 import useFetch from '../../hooks/useFetch'
-import { convertEntryName, getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line, getMatchAppId } from '../../utils'
+import { getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line, getMatchAppId } from '../../utils'
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
@@ -79,7 +79,7 @@ export default function FileExplorer(props: AppComponentProps) {
       .filter(o => hiddenShow ? true : !o.hidden)
     let dirCount = 0
     let fileCount = 0
-    entryList.forEach(({ type }) => type === 1 ? dirCount++ : fileCount++)
+    entryList.forEach(({ type }) => type === 'directory' ? dirCount++ : fileCount++)
     const isEntryListEmpty = entryList.length === 0
     return { entryList, isEntryListEmpty, dirCount, fileCount }
   }, [data, filterText, hiddenShow])
@@ -112,10 +112,11 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [setData, fetchPath])
 
   const updateHistory = useCallback((direction: DirectionType, path?: string) => {
+    const map = { forward: 1, back: -1 }
     const { position: pos, list: li } = history
-    const position: number = pos + direction
+    const position: number = pos + map[direction]
     let list = [...li]
-    if (direction === 1 && path) {
+    if (direction === 'forward' && path) {
       list = list.filter((i, index) => index < position)
       list.push(path)
     }
@@ -139,28 +140,28 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [fetchPathData, volumeMountList, updateHistory])
 
   const handleVolumeClick = useCallback((path: string) => {
-    handlePathChange({ path, direction: 1, pushPath: true, updateVolume: true })
+    handlePathChange({ path, direction: 'forward', pushPath: true, updateVolume: true })
   }, [handlePathChange])
 
   const handleDirOpen = useCallback((dirName: string) => {
     const path = `${currentDirPath}/${dirName}`
-    handlePathChange({ path, direction: 1, pushPath: true })
+    handlePathChange({ path, direction: 'forward', pushPath: true })
   }, [handlePathChange, currentDirPath])
 
   const handleGoFullPath = useCallback((path: string) => {
-    handlePathChange({ path, direction: 1, pushPath: true })
+    handlePathChange({ path, direction: 'forward', pushPath: true })
   }, [handlePathChange])
 
   const handleNavBack = useCallback(() => {
     const { position, list } = history
     const path = list[position - 1]
-    handlePathChange({ path, direction: -1, updateVolume: true })
+    handlePathChange({ path, direction: 'back', updateVolume: true })
   }, [history, handlePathChange])
 
   const handleNavForward = useCallback(() => {
     const { position, list } = history
     const path = list[position + 1]
-    handlePathChange({ path, direction: 1, updateVolume: true })
+    handlePathChange({ path, direction: 'forward', updateVolume: true })
   }, [history, handlePathChange])
 
   const handleRefresh = useCallback(() => {
@@ -172,7 +173,7 @@ export default function FileExplorer(props: AppComponentProps) {
     const list = currentDirPath.split('/')
     list.pop()
     const path = list.join('/')
-    handlePathChange({ path, direction: 1, pushPath: true })
+    handlePathChange({ path, direction: 'forward', pushPath: true })
   }, [currentDirPath, handlePathChange])
 
   const handleCreate = useCallback((create: 'dir' | 'txt') => {
@@ -354,14 +355,14 @@ export default function FileExplorer(props: AppComponentProps) {
       }
     } else {
       list = [entry]
-      entry.type === 1 && updateDirSize(entry.name)
+      entry.type === 'directory' && updateDirSize(entry.name)
     }
     setSelectedEntryList(list)
   }, [newDirMode, newTxtMode, renameMode, selectedEntryList, entryList, updateDirSize])
 
   const handleEntryDoubleClick = useCallback((entry: IEntry) => {
     const { type, name } = entry
-    const isDir = type === 1
+    const isDir = type === 'directory'
     if (isDir) {
       handleDirOpen(name)
     } else {
@@ -436,7 +437,7 @@ export default function FileExplorer(props: AppComponentProps) {
       'Shift+ArrowUp': disabledMap.backToTop ? null : handleBackToTop,
       'Shift+ArrowRight': disabledMap.navForward ? null : handleNavForward,
       'Shift+ArrowLeft': disabledMap.navBack ? null : handleNavBack,
-      'Shift+ArrowDown': (selectedEntryList.length === 1 && selectedEntryList[0].type === 1)
+      'Shift+ArrowDown': (selectedEntryList.length === 1 && selectedEntryList[0].type === 'directory')
         ? () => handleDirOpen(selectedEntryList[0].name)
         : null,
     },
@@ -530,7 +531,11 @@ export default function FileExplorer(props: AppComponentProps) {
                 >
                   <Icon
                     small={!gridMode}
-                    entryName={newDirMode ? 'fake._dir_new' : 'fake._txt_new'}
+                    entry={{
+                      name: 'virtual-entry',
+                      type: newDirMode ? 'directory' : 'file',
+                      extension: newDirMode ? '_dir_new' : '_txt_new',
+                    }}
                   />
                   <NameLine
                     showInput
@@ -547,7 +552,6 @@ export default function FileExplorer(props: AppComponentProps) {
                 const { name, type, hidden, size, lastModified } = entry
                 const isSelected = !!selectedEntryList.find(o => isSameEntry(o, entry))
                 const small = !gridMode
-                const entryName = convertEntryName(entry)
                 const _size = size === undefined ? sizeMap[`${currentDirPath}/${name}`] : size
                 const sizeLabel = _size === undefined ? '--' : getBytesSize(_size)
                 const dateLabel = lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''
@@ -555,7 +559,7 @@ export default function FileExplorer(props: AppComponentProps) {
                   <div
                     key={encodeURIComponent(name)}
                     data-name={name}
-                    data-dir={type === 1}
+                    data-dir={type === 'directory'}
                     data-selected={isSelected}
                     draggable
                     className={line(`
@@ -569,7 +573,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     onClick={e => handleEntryClick(e, entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
                   >
-                    <Icon {...{ small, entryName, currentDirPath }} />
+                    <Icon {...{ small, entry, currentDirPath }} />
                     <NameLine
                       showInput={renameMode && isSelected}
                       entry={entry}

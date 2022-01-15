@@ -1,10 +1,7 @@
 import { ReactNode } from 'react'
 
-// 0: volume  1: directory 2: file
-export type EntryType = 0 | 1 | 2
-
-// 1: forward  -1: back
-export type DirectionType = 1 | -1
+export type EntryType = 'directory' | 'file'
+export type DirectionType = 'forward' | 'back'
 
 export interface AppComponentProps {
   isTopWindow: boolean
@@ -36,7 +33,6 @@ export interface IApp {
 export interface IVolume {
   label: string
   name: string
-  type: EntryType
   mount: string
   hasChildren: boolean
   fileSystem: string
@@ -52,6 +48,7 @@ export interface IRootInfo {
 export interface IEntry {
   name: string
   type: EntryType
+  extension?: string
   size?: number
   mime?: string
   hidden?: boolean

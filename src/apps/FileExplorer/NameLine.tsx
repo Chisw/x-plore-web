@@ -70,7 +70,7 @@ export default function NameLine(props: NameLineProps) {
           if (create === 'dir') {
             const { ok } = await fetchNewDir(newPath)
             if (ok) {
-              onSuccess({ type: 1, name: newName })
+              onSuccess({ type: 'directory', name: newName })
             } else {
               onFail('net_error')
             }
@@ -81,7 +81,7 @@ export default function NameLine(props: NameLineProps) {
             const data = await uploadFileToPath(currentDirPath, { file })
             const isUploaded = !!data?.hasDon
             if (isUploaded) {
-              onSuccess({ type: 2, name: newName })
+              onSuccess({ type: 'file', name: newName })
             } else {
               onFail('net_error')
             }
@@ -157,7 +157,7 @@ export function NameLabel(props: NameLabelProps) {
     <span
       title={entryName}
       className={line(`
-        inline-block px-2 rounded truncate text-xs
+        inline-block px-1 rounded truncate text-xs
         ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
         ${gridMode ? 'max-w-full' : 'w-72'}
       `)}

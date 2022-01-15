@@ -1,6 +1,6 @@
-import { line } from "../../utils"
-import Icon from "./Icon"
-import { NameLabel } from "./NameLine"
+import { getFileNameExtension, line } from '../../utils'
+import Icon from './Icon'
+import { NameLabel } from './NameLine'
 
 interface VirtualEntriesProps {
   virtualEntries: File[]
@@ -26,7 +26,11 @@ export default function VirtualEntries(props: VirtualEntriesProps) {
             ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
           `)}
         >
-          <Icon fake small={!gridMode} entryName={name} />
+          <Icon
+            virtual
+            small={!gridMode}
+            entry={{ name, type: 'file', extension: getFileNameExtension(name) }}
+          />
           <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
             <NameLabel
               entryName={name}

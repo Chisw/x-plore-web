@@ -1,21 +1,5 @@
-import {
-  App32,
-  Catalog32,
-  DataBase32,
-  DocumentAdd32,
-  DocumentBlank32,
-  DocumentPdf32,
-  Folder32,
-  FolderAdd32,
-  // FolderDetails32,
-  Image32,
-  Music32,
-  Pen32,
-  Video32,
-  Zip32,
-} from '@carbon/icons-react'
 import { useMemo, useState } from 'react'
-import { IEntryIcon } from '../../utils/types'
+import { IEntry, IEntryIcon } from '../../utils/types'
 import dirAndroid from '../../img/icons/dir-android.png'
 import dirAlipay from '../../img/icons/dir-alipay.png'
 import dirAutonavi from '../../img/icons/dir-autonavi.png'
@@ -39,17 +23,34 @@ import { get } from 'lodash'
 import { line } from '../../utils'
 import { getThumbnailUrl } from '../../utils/api'
 import { DOUBLE_CLICK_OPEN_APP_LIST } from '../../utils/appList'
+import {
+  App32,
+  Catalog32,
+  DataBase32,
+  DocumentAdd32,
+  DocumentBlank32,
+  DocumentPdf32,
+  Folder32,
+  FolderAdd32,
+  Image32,
+  Music32,
+  Pen32,
+  Video32,
+  Zip32,
+} from '@carbon/icons-react'
 
-const THUMBNAIL_MATCH_LIST = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pbm', '.bmp', '.mp4']
 
-const DEFAULT_ITEM_ICON: IEntryIcon = {
+const THUMBNAIL_MATCH_LIST = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pbm', 'bmp', 'mp4', 'mkv', 'avi', 'rm', 'rmvb']
+const VIDEO_MATCH_LIST = ['mp4', 'mkv', 'avi', 'rm', 'rmvb']
+
+const DEFAULT_ENTRY_ICON: IEntryIcon = {
   type: 'unknown',
   icon: <DocumentBlank32 />,
   bg: 'from-gray-300 to-gray-400 border-gray-400',
   matchList: [],
 }
 
-const ITEM_ICON_LIST: IEntryIcon[] = [
+const ENTRY_ICON_LIST: IEntryIcon[] = [
   {
     type: 'folder',
     icon: <Folder32 />,
@@ -84,13 +85,13 @@ const ITEM_ICON_LIST: IEntryIcon[] = [
     type: 'music',
     icon: <Music32 />,
     bg: 'from-pink-600 to-pink-700 border-pink-700',
-    matchList: ['mp3', 'flac', 'wav'],
+    matchList: ['mp3', 'flac', 'wav', 'aac'],
   },
   {
     type: 'video',
     icon: <Video32 />,
     bg: 'from-blue-400 to-blue-500 border-blue-500',
-    matchList: ['mp4', 'mov', 'wmv', 'insv'],
+    matchList: ['mp4', 'mov', 'wmv', 'insv', 'mkv', 'avi', 'rm', 'rmvb'],
   },
   {
     type: 'zip',
@@ -130,17 +131,13 @@ const ITEM_ICON_LIST: IEntryIcon[] = [
   }
 ]
 
-const getIcon = (entryName: string) => {
-  if (entryName.includes('.')) {
-    const ext = entryName.split('.').reverse()[0].toLowerCase()
-    return ITEM_ICON_LIST.find(o => o.matchList.includes(ext)) || DEFAULT_ITEM_ICON
-  } else {
-    return DEFAULT_ITEM_ICON
-  }
+const getIcon = (extension: string | undefined) => {
+  return extension
+    ? (ENTRY_ICON_LIST.find(o => o.matchList.includes(extension)) || DEFAULT_ENTRY_ICON)
+    : DEFAULT_ENTRY_ICON
 }
 
-const getDirSubIcon: (name: string) => string | undefined = name => {
-  const dirName = name.replace('._dir', '')
+const getDirSubIcon: (dirName: string) => string | undefined = dirName => {
   const map = {
     'alipay': dirAlipay,
     'Android': dirAndroid,
@@ -167,42 +164,43 @@ const getDirSubIcon: (name: string) => string | undefined = name => {
   return dirSubIcon
 }
 
-const getFileOpenAppIcon: (name: string) => string | undefined = name => {
-  const ext = name.includes('.') ? name.split('.').reverse()[0] : ''
-  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(ext))?.icon
+const getFileOpenAppIcon = (extension: string | undefined) => {
+  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension!))?.icon
 }
 
 interface IconProps {
-  fake?: boolean
+  entry: IEntry
+  virtual?: boolean
   small?: boolean
-  entryName: string
   currentDirPath?: string
 }
 
 export default function Icon(props: IconProps) {
 
   const {
-    fake = false,
+    entry: {
+      name,
+      extension,
+    },
+    virtual = false,
     small = false,
-    entryName,
     currentDirPath = '',
   } = props
 
   const [thumbnailError, setThumbnailError] = useState(false)
 
   const { useThumbnail, isVideo } = useMemo(() => {
-    const lowerName = entryName.toLowerCase()
-    const useThumbnail = !fake && THUMBNAIL_MATCH_LIST.some(ext => lowerName.endsWith(ext))
-    const isVideo = lowerName.endsWith('.mp4')
+    const useThumbnail = !virtual && THUMBNAIL_MATCH_LIST.some(ext => extension === ext)
+    const isVideo = VIDEO_MATCH_LIST.some(ext => extension === ext)
     return { useThumbnail, isVideo }
-  }, [entryName, fake])
+  }, [extension, virtual])
 
   const { bg, icon, dirSubIcon, fileOpenAppIcon } = useMemo(() => {
-    const { type, bg, icon } = getIcon(entryName)
-    const dirSubIcon = type === 'folder' ? getDirSubIcon(entryName) : undefined
-    const fileOpenAppIcon = type !== 'folder' ? getFileOpenAppIcon(entryName) : undefined
+    const { type, bg, icon } = getIcon(extension)
+    const dirSubIcon = type === 'folder' ? getDirSubIcon(name) : undefined
+    const fileOpenAppIcon = (type !== 'folder' && extension) ? getFileOpenAppIcon(extension) : undefined
     return { bg, icon, dirSubIcon, fileOpenAppIcon }
-  }, [entryName])
+  }, [extension, name])
 
   const showThumbnail = useThumbnail && !thumbnailError
 
@@ -225,7 +223,7 @@ export default function Icon(props: IconProps) {
               max-w-full max-h-full bg-white shadow-md
               ${isVideo ? 'border-l-4 border-r-4 border-black' : `border ${small ? 'p-1px' : 'p-2px'}`}
             `)}
-            src={getThumbnailUrl(currentDirPath, entryName)}
+            src={getThumbnailUrl(currentDirPath, name)}
             onError={() => setThumbnailError(true)}
           />
         ) : icon}

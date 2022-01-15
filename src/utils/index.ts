@@ -2,9 +2,17 @@ import { DOUBLE_CLICK_OPEN_APP_LIST } from './appList'
 import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
 
 export const entrySorter = (a: IEntry, b: IEntry) => {
-  const typeDirection = a.type - b.type
+  const map = { directory: 1, file: 2 }
+  const aVal = map[a.type]
+  const bVal = map[b.type]
+  const typeDirection = aVal - bVal
   if (typeDirection !== 0) return typeDirection
   return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+}
+
+export const getFileNameExtension = (name: string) => {
+  if (!name || !name.includes('.')) return undefined
+  return name.split('.').reverse()[0].toLocaleLowerCase()
 }
 
 export const copy = (str: string) => {
@@ -20,13 +28,6 @@ export const line = (str: string) => str
   .replace(/\n/g, ' ')
   .replace(/\s+/g, ' ')
   .trim()
-
-export const convertEntryName = (entry: IEntry) => {
-  const { type, name, hasChildren } = entry
-  return type === 1
-    ? `${name}._dir${hasChildren ? '' : '_empty'}`
-    : name
-}
 
 export const isSameEntry = (a: IEntry, b: IEntry) => {
   return a.name === b.name && a.type === b.type
@@ -51,10 +52,9 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
 }
 
 export const getMatchAppId = (entry: IEntry) => {
-  const { name } = entry
-  const ext = name.includes('.') ? name.split('.').reverse()[0] : ''
-  if (!ext) return
-  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(ext))?.id
+  const { extension } = entry
+  if (!extension) return
+  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension))?.id
 }
 
 export const getDownloadInfo = (parentDirPathPath: string, selectedEntryList: IEntry[]) => {
@@ -63,7 +63,7 @@ export const getDownloadInfo = (parentDirPathPath: string, selectedEntryList: IE
   const firstEntry: IEntry | undefined = selectedEntryList[0]
   const isDownloadAll = !len
   const isDownloadSingle = len === 1
-  const isDownloadSingleDir = isDownloadSingle && firstEntry.type === 1
+  const isDownloadSingleDir = isDownloadSingle && firstEntry.type === 'directory'
   const singleEntryName = firstEntry?.name
 
   const downloadName = isDownloadAll
