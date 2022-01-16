@@ -7,7 +7,7 @@ import { getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
-import { AppComponentProps, DirectionType, IEntry, IHistory, IRectInfo, IFilePack } from '../../utils/types'
+import { AppComponentProps, IEntry, IHistory, IRectInfo, IFilePack } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -111,7 +111,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setNewDirMode(false)
   }, [setData, fetchPath])
 
-  const updateHistory = useCallback((direction: DirectionType, path?: string) => {
+  const updateHistory = useCallback((direction: 'forward' | 'back', path?: string) => {
     const map = { forward: 1, back: -1 }
     const { position: pos, list: li } = history
     const position: number = pos + map[direction]
@@ -125,7 +125,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handlePathChange = useCallback((props: {
     path: string
-    direction: DirectionType
+    direction: 'forward' | 'back'
     pushPath?: boolean
     updateVolume?: boolean
   }) => {
@@ -611,9 +611,8 @@ export default function FileExplorer(props: AppComponentProps) {
             </div>
           </div>
           <PathLink
-            {...{ dirCount, fileCount, currentDirPath, activeVolume }}
+            {...{ dirCount, fileCount, currentDirPath, activeVolume, selectedEntryList }}
             loading={fetching}
-            selectedLen={selectedEntryList.length}
             onDirClick={handleGoFullPath}
             onVolumeClick={handleVolumeClick}
           />

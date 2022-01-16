@@ -180,6 +180,7 @@ export default function Icon(props: IconProps) {
   const {
     entry: {
       name,
+      type,
       extension,
     },
     virtual = false,
@@ -202,6 +203,7 @@ export default function Icon(props: IconProps) {
     return { bg, icon, dirSubIcon, fileOpenAppIcon }
   }, [extension, name])
 
+  const isDir = type === 'directory'
   const showThumbnail = useThumbnail && !thumbnailError
 
   return (
@@ -211,8 +213,8 @@ export default function Icon(props: IconProps) {
           relative inline-flex justify-center items-center
           ${showThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
           ${small
-            ? 'w-6 h-6 rounded'
-            : (showThumbnail ? 'w-20 h-12' : 'w-12 h-12 rounded-lg')
+            ? `rounded ${isDir ? 'w-6' : 'w-5 rounded-tr-lg'} h-6`
+            : (showThumbnail ? 'w-20 h-12' : `${isDir ? 'w-12 rounded-lg' : 'w-10 rounded rounded-tr-xl'} h-12`)
           }
         `)}
       >
@@ -239,8 +241,8 @@ export default function Icon(props: IconProps) {
         {fileOpenAppIcon && (
           <div
             className={line(`
-              absolute right-0 top-0 bg-center bg-no-repeat bg-contain border border-white rounded shadow
-              ${small ? 'w-3 h-3 -m-1' : '-m-2 w-4 h-4'}
+              absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain border-white rounded shadow
+              ${small ? 'border w-3 h-3 -m-1' : 'border-2 -m-2 w-4 h-4'}
             `)}
             style={{ backgroundImage: `url("${fileOpenAppIcon}")` }}
           />

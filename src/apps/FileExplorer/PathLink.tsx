@@ -2,14 +2,15 @@ import { Checkmark16, Copy16, DocumentBlank16, Folder16, ChevronRight16 } from '
 import { useMemo } from 'react'
 import Toast from '../../components/EasyToast'
 import { copy } from '../../utils'
+import { IEntry } from '../../utils/types'
 
 interface PathLinkProps {
   loading: boolean
-  selectedLen: number
   dirCount: number
   fileCount: number
   currentDirPath: string
   activeVolume: string
+  selectedEntryList: IEntry[]
   onDirClick: (mount: string) => void
   onVolumeClick: (mount: string) => void
 }
@@ -18,26 +19,32 @@ export default function PathLink(props: PathLinkProps) {
 
   const {
     loading,
-    selectedLen,
     dirCount,
     fileCount,
     currentDirPath,
     activeVolume,
+    selectedEntryList,
     onDirClick,
     onVolumeClick,
   } = props
 
   const {
+    selectedLen,
     mountList,
     isVolumeDisabled,
   } = useMemo(() => {
+    const selectedLen = selectedEntryList.length
     const mountList = currentDirPath.replace(activeVolume, '').split('/').filter(Boolean)
+    if (selectedLen === 1) {
+      mountList.push(selectedEntryList[0].name)
+    }
     const isVolumeDisabled = currentDirPath === activeVolume || !mountList.length
     return {
+      selectedLen,
       mountList,
       isVolumeDisabled,
     }
-  }, [currentDirPath, activeVolume])
+  }, [currentDirPath, activeVolume, selectedEntryList])
 
   if (!activeVolume) return <div />
 
@@ -54,14 +61,14 @@ export default function PathLink(props: PathLinkProps) {
         {mountList.map((mount, mountIndex) => {
           const prefix = mountList.filter((m, mIndex) => mIndex < mountIndex).join('/')
           const fullPath = `${activeVolume}/${prefix ? `${prefix}/` : ''}${mount}`
-          const isDisabledDir = mountIndex > mountList.length - 2
+          const disabled = mountIndex > mountList.length - 2 - (selectedLen === 1 ? 1 : 0)
           return (
             <span key={encodeURIComponent(fullPath)}>
               <ChevronRight16 className="inline transform scale-75 -mt-2px" />
               <span
                 title={fullPath}
-                className={isDisabledDir ? '' : 'cursor-pointer hover:text-black'}
-                onClick={() => !isDisabledDir && onDirClick(fullPath)}
+                className={disabled ? '' : 'cursor-pointer hover:text-black'}
+                onClick={() => !disabled && onDirClick(fullPath)}
               >
                 {mount}
               </span>
@@ -72,7 +79,7 @@ export default function PathLink(props: PathLinkProps) {
           title="复制"
           className="invisible ml-1 px-1 cursor-pointer group-hover:visible text-xs hover:text-gray-500 active:opacity-50"
           onClick={() => {
-            copy(currentDirPath)
+            copy(activeVolume + mountList.join('/'))
             Toast.toast('路径复制成功')
           }}
         >

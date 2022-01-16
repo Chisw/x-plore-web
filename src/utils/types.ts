@@ -1,7 +1,5 @@
 import { ReactNode } from 'react'
 
-export type EntryType = 'directory' | 'file'
-export type DirectionType = 'forward' | 'back'
 
 export interface AppComponentProps {
   isTopWindow: boolean
@@ -47,7 +45,7 @@ export interface IRootInfo {
 
 export interface IEntry {
   name: string
-  type: EntryType
+  type: 'directory' | 'file'
   extension?: string
   size?: number
   mime?: string

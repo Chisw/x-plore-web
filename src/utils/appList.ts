@@ -48,7 +48,7 @@ export const DOUBLE_CLICK_OPEN_APP_LIST = [
   {
     id: APP_ID_MAP.musicPlayer,
     icon: iconMusicPlayer,
-    matchList: ['mp3', 'aac'],
+    matchList: ['mp3', 'aac', 'flac'],
   },
   {
     id: APP_ID_MAP.videoPlayer,
