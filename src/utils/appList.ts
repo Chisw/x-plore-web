@@ -38,12 +38,12 @@ export const DOUBLE_CLICK_OPEN_APP_LIST = [
   {
     id: APP_ID_MAP.textEditor,
     icon: iconTextEditor,
-    matchList: ['txt', 'md', 'html', 'xml', 'css', 'js', 'json', 'php', 'java', 'sh'],
+    matchList: ['txt', 'md', 'html', 'xml', 'css', 'js', 'json', 'php', 'java', 'sh', 'log', 'md'],
   },
   {
     id: APP_ID_MAP.photoGallery,
     icon: iconPhotoGallery,
-    matchList: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+    matchList: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'],
   },
   {
     id: APP_ID_MAP.musicPlayer,

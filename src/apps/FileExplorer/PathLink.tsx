@@ -80,7 +80,7 @@ export default function PathLink(props: PathLinkProps) {
           className="invisible ml-1 px-1 cursor-pointer group-hover:visible text-xs hover:text-gray-500 active:opacity-50"
           onClick={() => {
             copy(`${activeVolume}/${mountList.join('/')}`)
-            Toast.toast('路径复制成功')
+            Toast.toast('路径复制成功', 1000)
           }}
         >
           <Copy16 className="inline transform scale-75 -mt-2px" />

@@ -77,11 +77,12 @@ export default function NameLine(props: NameLineProps) {
           } else if (create === 'txt') {
             const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
             const suffix = newName.includes('.') ? '' : '.txt'
-            const file = new File([blob], newName + suffix)
+            const name = newName + suffix
+            const file = new File([blob], name)
             const data = await uploadFileToPath(currentDirPath, { file })
             const isUploaded = !!data?.hasDon
             if (isUploaded) {
-              onSuccess({ name: newName, type: 'file', parentPath: currentDirPath })
+              onSuccess({ name, type: 'file', parentPath: currentDirPath })
             } else {
               onFail('net_error')
             }

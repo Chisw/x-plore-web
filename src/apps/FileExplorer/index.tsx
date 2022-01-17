@@ -43,7 +43,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [renameMode, setRenameMode] = useState(false)
   const [filterMode, setFilterMode] = useState(false)
   const [filterText, setFilterText] = useState('')
-  const [waitScrollToSelected, setWaitScrollToSelected] = useState(false)
+  const [scrollWaiter, setScrollWaiter] = useState<{ wait: boolean, smooth?: boolean }>({ wait: false })
   const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
   const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
@@ -225,7 +225,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setRenameMode(false)
     handleRefresh()
     setSelectedEntryList([entry])
-    setWaitScrollToSelected(true)
+    setScrollWaiter({ wait: true, smooth: true })
   }, [handleRefresh])
 
   const handleNameFail = useCallback((failType: NameFailType) => {
@@ -308,13 +308,14 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => {
     const container: any = containerRef.current
-    if (container && waitScrollToSelected && !fetching) {
+    if (container && scrollWaiter.wait && !fetching) {
       const target: any = document.querySelector('.entry-node[data-selected="true"]')
       const top = target ? target.offsetTop - 10 : 0
-      container!.scrollTo({ top, behavior: 'smooth' })
-      setWaitScrollToSelected(false)
+      container!.scrollTo({ top, behavior: scrollWaiter.smooth ? 'smooth' : undefined })
+      setScrollWaiter({ wait: false })
+      setPrevDirPath('')
     }
-  }, [waitScrollToSelected, fetching])
+  }, [scrollWaiter, fetching])
 
   useEffect(() => {
     setRenameMode(false)
@@ -325,7 +326,10 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => {
     const prevEntry = entryList.find(({ name, parentPath }) => `${parentPath}/${name}` === prevDirPath)
-    prevEntry && setSelectedEntryList([prevEntry])
+    if (prevEntry) {
+      setSelectedEntryList([prevEntry])
+      setScrollWaiter({ wait: true })
+    }
   }, [entryList, prevDirPath])
 
   useEffect(() => setSelectedEntryList([]), [filterText])
@@ -533,7 +537,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 <div
                   className={line(`
                     overflow-hidden rounded select-none hover:bg-gray-100
-                    ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                    ${gridMode ? 'm-2 px-1 py-2 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                   `)}
                 >
                   <Icon
@@ -572,7 +576,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     draggable
                     className={line(`
                       entry-node overflow-hidden rounded select-none transition-opacity duration-300
-                      ${gridMode ? 'm-2 px-1 py-3 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
+                      ${gridMode ? 'm-2 px-1 py-2 w-28' : 'mb-1 px-2 py-1 w-full flex items-center'}
                       ${!gridMode && isSelected ? 'bg-blue-600' : 'hover:bg-gray-100'}
                       ${isSelected ? 'bg-gray-100' : ''}
                       ${(isSelected && deleting) ? 'bg-loading' : ''}
