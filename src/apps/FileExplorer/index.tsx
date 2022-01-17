@@ -33,6 +33,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [, setOpenedEntryList] = useRecoilState(openedEntryListState)
   const [sideCollapse, setSideCollapse] = useState(false)
   const [currentDirPath, setCurrentPath] = useState('')
+  const [prevDirPath, setPrevDirPath] = useState('')
   const [activeVolume, setActiveVolume] = useState('')
   const [gridMode, setGridMode] = useState(true)
   const [history, setHistory] = useState<IHistory>({ position: -1, list: [] })
@@ -73,7 +74,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
 
   const { entryList, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
-    const list = data ? entryConverter(data).sort(entrySorter) : []
+    const list = data ? entryConverter(data, currentDirPath).sort(entrySorter) : []
     const entryList = list
       .filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
       .filter(o => hiddenShow ? true : !o.hidden)
@@ -82,7 +83,7 @@ export default function FileExplorer(props: AppComponentProps) {
     entryList.forEach(({ type }) => type === 'directory' ? dirCount++ : fileCount++)
     const isEntryListEmpty = entryList.length === 0
     return { entryList, isEntryListEmpty, dirCount, fileCount }
-  }, [data, filterText, hiddenShow])
+  }, [data, currentDirPath, filterText, hiddenShow])
 
   const disabledMap: IToolBarDisabledMap = useMemo(() => {
     const { position, list } = history
@@ -130,6 +131,7 @@ export default function FileExplorer(props: AppComponentProps) {
     updateVolume?: boolean
   }) => {
     const { path, direction, pushPath, updateVolume } = props
+    setPrevDirPath(currentDirPath)
     setCurrentPath(path)
     fetchPathData(path)
     updateHistory(direction, pushPath ? path : undefined)
@@ -137,7 +139,7 @@ export default function FileExplorer(props: AppComponentProps) {
       const mount = volumeMountList.find(m => path.startsWith(m))!
       setActiveVolume(mount)
     }
-  }, [fetchPathData, volumeMountList, updateHistory])
+  }, [currentDirPath, fetchPathData, volumeMountList, updateHistory])
 
   const handleVolumeClick = useCallback((path: string) => {
     handlePathChange({ path, direction: 'forward', pushPath: true, updateVolume: true })
@@ -321,6 +323,11 @@ export default function FileExplorer(props: AppComponentProps) {
     setFilterText('')
   }, [currentDirPath])
 
+  useEffect(() => {
+    const prevEntry = entryList.find(({ name, parentPath }) => `${parentPath}/${name}` === prevDirPath)
+    prevEntry && setSelectedEntryList([prevEntry])
+  }, [entryList, prevDirPath])
+
   useEffect(() => setSelectedEntryList([]), [filterText])
 
   const updateDirSize = useCallback(async (name: string) => {
@@ -368,7 +375,7 @@ export default function FileExplorer(props: AppComponentProps) {
     } else {
       const appId = getMatchAppId(entry)
       if (appId) {
-        setOpenedEntryList([{ ...entry, parentDirPath: currentDirPath, openAppId: appId, isOpen: false }])
+        setOpenedEntryList([{ ...entry, parentPath: currentDirPath, openAppId: appId, isOpen: false }])
       } else {
         handleDownloadClick()
       }
@@ -534,6 +541,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     entry={{
                       name: 'virtual-entry',
                       type: newDirMode ? 'directory' : 'file',
+                      parentPath: currentDirPath,
                       extension: newDirMode ? '_dir_new' : '_txt_new',
                     }}
                   />
@@ -573,7 +581,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     onClick={e => handleEntryClick(e, entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
                   >
-                    <Icon {...{ small, entry, currentDirPath }} />
+                    <Icon {...{ small, entry }} />
                     <NameLine
                       showInput={renameMode && isSelected}
                       entry={entry}

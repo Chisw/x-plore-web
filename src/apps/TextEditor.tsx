@@ -5,7 +5,7 @@ import Toast from '../components/EasyToast'
 import ToolButton from '../components/ToolButton'
 import useFetch from '../hooks/useFetch'
 import { copy, getDownloadInfo } from '../utils'
-import { downloadEntries, getTextFile, uploadFile } from '../utils/api'
+import { downloadEntries, getTextFileContent, uploadFile } from '../utils/api'
 import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
 import { AppComponentProps, IFilePack, IOpenedEntry } from '../utils/types'
@@ -19,7 +19,7 @@ export default function TextEditor(props: AppComponentProps) {
   const [value, setValue] = useState('')
   const [monoMode, setMonoMode] = useState(false)
 
-  const { fetch: fetchText, loading: fetching, data: textContent, setData: setTextContent } = useFetch((path: string) => getTextFile(path))
+  const { fetch: fetchTextContent, loading: fetching, data: textContent, setData: setTextContent } = useFetch((path: string) => getTextFileContent(path))
   const { fetch: uploadFileToPath, loading: saving } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
 
   useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
@@ -35,14 +35,14 @@ export default function TextEditor(props: AppComponentProps) {
 
   useEffect(() => {
     if (currentEntry) {
-      const { parentDirPath, name, isOpen } = currentEntry
+      const { parentPath, name, isOpen } = currentEntry
       if (!isOpen) {
-        fetchText(`${parentDirPath}/${name}`)
+        fetchTextContent(`${parentPath}/${name}`)
         setWindowTitle(name)
         setCurrentEntry({ ...currentEntry, isOpen: true })
       }
     }
-  }, [currentEntry, fetchText, setWindowTitle])
+  }, [currentEntry, fetchTextContent, setWindowTitle])
 
   useEffect(() => {
     setValue(textContent)
@@ -52,7 +52,7 @@ export default function TextEditor(props: AppComponentProps) {
     if (currentEntry) {
       const blob = new Blob([value], { type: 'text/plain;charset=utf-8' })
       const file = new File([blob], currentEntry.name)
-      const data = await uploadFileToPath(currentEntry.parentDirPath, { file })
+      const data = await uploadFileToPath(currentEntry.parentPath, { file })
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         Toast.toast('保存成功')
@@ -63,8 +63,8 @@ export default function TextEditor(props: AppComponentProps) {
 
   const handleDownload = useCallback(() => {
     if (currentEntry) {
-      const { downloadName, cmd } = getDownloadInfo(currentEntry.parentDirPath, [currentEntry])
-      downloadEntries(currentEntry.parentDirPath, downloadName, cmd)
+      const { downloadName, cmd } = getDownloadInfo(currentEntry.parentPath, [currentEntry])
+      downloadEntries(currentEntry.parentPath, downloadName, cmd)
     }
   }, [currentEntry])
 

@@ -46,6 +46,7 @@ export interface IRootInfo {
 export interface IEntry {
   name: string
   type: 'directory' | 'file'
+  parentPath: string
   extension?: string
   size?: number
   mime?: string
@@ -55,7 +56,6 @@ export interface IEntry {
 }
 
 export interface IOpenedEntry extends IEntry {
-  parentDirPath: string
   openAppId: string
   isOpen: boolean
 }

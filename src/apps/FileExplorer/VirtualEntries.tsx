@@ -29,7 +29,7 @@ export default function VirtualEntries(props: VirtualEntriesProps) {
           <Icon
             virtual
             small={!gridMode}
-            entry={{ name, type: 'file', extension: getFileNameExtension(name) }}
+            entry={{ name, type: 'file', parentPath: '', extension: getFileNameExtension(name) }}
           />
           <div className={`${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
             <NameLabel

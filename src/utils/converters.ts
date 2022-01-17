@@ -29,7 +29,7 @@ export const rootInfoConverter: (data: any) => IRootInfo = data => {
   }
 }
 
-export const entryConverter = (data: { files: any[] }) => {
+export const entryConverter = (data: { files: any[] }, currentDirPath: string) => {
   const { files } = data
   return files.map(({
     n: name,
@@ -42,6 +42,7 @@ export const entryConverter = (data: { files: any[] }) => {
   }: any) => {
     // 0: volume  1: directory 2: file
     const type = t === 1 ? 'directory' : 'file'
+    const parentPath = currentDirPath
     const extension = type === 'directory'
       ? `_dir${hasChildren ? '' : '_empty'}`
       : getFileNameExtension(name)
@@ -49,6 +50,7 @@ export const entryConverter = (data: { files: any[] }) => {
     const entry: IEntry = {
       name,
       type,
+      parentPath,
       extension,
       size,
       mime,

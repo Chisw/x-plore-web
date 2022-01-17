@@ -93,7 +93,7 @@ export default function Menus(props: MenusProps) {
   const handleOpenEntry = useCallback((appId: string) => {
     const list = contextEntryList.map(entry => ({
       ...entry,
-      parentDirPath: currentDirPath,
+      parentPath: currentDirPath,
       openAppId: appId,
       isOpen: false,
     }))

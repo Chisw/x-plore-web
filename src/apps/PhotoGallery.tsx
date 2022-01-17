@@ -30,8 +30,8 @@ export default function PhotoGallery(props: AppComponentProps) {
   useEffect(() => {
     if (currentEntry) {
       setLoading(true)
-      const { parentDirPath, name, isOpen } = currentEntry
-      const fileUrl = getBinFileUrl(`${parentDirPath}/${name}`)
+      const { parentPath, name, isOpen } = currentEntry
+      const fileUrl = getBinFileUrl(`${parentPath}/${name}`)
       setFileUrl(fileUrl)
 
       if (!isOpen) {

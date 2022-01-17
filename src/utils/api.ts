@@ -38,16 +38,16 @@ export const deleteEntry = async (path: string) => {
   return data
 }
 
-export const downloadEntries = (path: string, downloadName: string, cmd: string) => {
-  window.open(`${BASE_URL}${path}/${downloadName}?${cmd}`, '_self')
+export const downloadEntries = (parentPath: string, downloadName: string, cmd: string) => {
+  window.open(`${BASE_URL}${parentPath}/${downloadName}?${cmd}`, '_self')
 }
 
-export const uploadFile = async (path: string, filePack: IFilePack) => {
+export const uploadFile = async (parentPath: string, filePack: IFilePack) => {
   const { file, fullPath } = filePack
   const { name, size, lastModified } = file
   const targetFileName = fullPath || `/${name}`
 
-  const data = await fetch(`${BASE_URL}${path}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, {
+  const data = await fetch(`${BASE_URL}${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, {
     method: 'POST',
     body: file,
     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -55,11 +55,11 @@ export const uploadFile = async (path: string, filePack: IFilePack) => {
   return data
 }
 
-export const getThumbnailUrl = (path: string, name: string) => {
-  return `${BASE_URL}${path}/${name}?cmd=thumbnail`
+export const getThumbnailUrl = (path: string) => {
+  return `${BASE_URL}${path}?cmd=thumbnail`
 }
 
-export const getTextFile = async (path: string) => {
+export const getTextFileContent = async (path: string) => {
   const data = await fetch(`${BASE_URL}${path}?cmd=text_file`, { method: 'GET' }).then(res => res.text())
   return data
 }

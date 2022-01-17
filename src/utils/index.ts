@@ -57,8 +57,8 @@ export const getMatchAppId = (entry: IEntry) => {
   return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension))?.id
 }
 
-export const getDownloadInfo = (parentDirPathPath: string, selectedEntryList: IEntry[]) => {
-  const pathName = parentDirPathPath.split('/').reverse()[0]
+export const getDownloadInfo = (parentPathPath: string, selectedEntryList: IEntry[]) => {
+  const pathName = parentPathPath.split('/').reverse()[0]
   const len = selectedEntryList.length
   const firstEntry: IEntry | undefined = selectedEntryList[0]
   const isDownloadAll = !len

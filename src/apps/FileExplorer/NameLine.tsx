@@ -70,7 +70,7 @@ export default function NameLine(props: NameLineProps) {
           if (create === 'dir') {
             const { ok } = await fetchNewDir(newPath)
             if (ok) {
-              onSuccess({ type: 'directory', name: newName })
+              onSuccess({ name: newName, type: 'directory', parentPath: currentDirPath })
             } else {
               onFail('net_error')
             }
@@ -81,7 +81,7 @@ export default function NameLine(props: NameLineProps) {
             const data = await uploadFileToPath(currentDirPath, { file })
             const isUploaded = !!data?.hasDon
             if (isUploaded) {
-              onSuccess({ type: 'file', name: newName })
+              onSuccess({ name: newName, type: 'file', parentPath: currentDirPath })
             } else {
               onFail('net_error')
             }

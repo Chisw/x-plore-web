@@ -34,14 +34,17 @@ import {
   FolderAdd32,
   Image32,
   Music32,
-  Pen32,
+  Txt32,
   Video32,
   Zip32,
 } from '@carbon/icons-react'
 
 
-const THUMBNAIL_MATCH_LIST = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pbm', 'bmp', 'mp4', 'mkv', 'avi', 'rm', 'rmvb']
 const VIDEO_MATCH_LIST = ['mp4', 'mkv', 'avi', 'rm', 'rmvb']
+const THUMBNAIL_MATCH_LIST = [
+  'jpg', 'jpeg', 'png', 'gif', 'webp', 'pbm', 'bmp',
+  'mp4', 'mkv', 'avi', 'rm', 'rmvb',
+]
 
 const DEFAULT_ENTRY_ICON: IEntryIcon = {
   type: 'unknown',
@@ -113,7 +116,7 @@ const ENTRY_ICON_LIST: IEntryIcon[] = [
   },
   {
     type: 'text',
-    icon: <Pen32 />,
+    icon: <Txt32 />,
     bg: 'from-gray-300 to-gray-400 border-gray-400',
     matchList: ['txt'],
   },
@@ -172,7 +175,6 @@ interface IconProps {
   entry: IEntry
   virtual?: boolean
   small?: boolean
-  currentDirPath?: string
 }
 
 export default function Icon(props: IconProps) {
@@ -181,11 +183,11 @@ export default function Icon(props: IconProps) {
     entry: {
       name,
       type,
+      parentPath,
       extension,
     },
     virtual = false,
     small = false,
-    currentDirPath = '',
   } = props
 
   const [thumbnailError, setThumbnailError] = useState(false)
@@ -213,8 +215,11 @@ export default function Icon(props: IconProps) {
           relative inline-flex justify-center items-center
           ${showThumbnail ? '' : `text-white bg-gradient-to-b border ${bg}`}
           ${small
-            ? `rounded ${isDir ? 'w-6' : 'w-5 rounded-tr-lg'} h-6`
-            : (showThumbnail ? 'w-20 h-12' : `${isDir ? 'w-12 rounded-lg' : 'w-10 rounded rounded-tr-xl'} h-12`)
+            ? `rounded-sm ${isDir ? 'w-7' : 'w-5 rounded-tr'} h-6`
+            : (showThumbnail
+              ? 'w-20 h-12'
+              : `${isDir ? 'w-14 rounded-lg' : 'w-10 rounded rounded-tr-lg'} h-12`
+            )
           }
         `)}
       >
@@ -223,9 +228,12 @@ export default function Icon(props: IconProps) {
             alt="thumbnail"
             className={line(`
               max-w-full max-h-full bg-white shadow-md
-              ${isVideo ? 'border-l-4 border-r-4 border-black' : `border ${small ? 'p-1px' : 'p-2px'}`}
+              ${isVideo
+                ? 'border-l-4 border-r-4 border-black'
+                : `border ${small ? 'p-1px' : 'p-2px'}`
+              }
             `)}
-            src={getThumbnailUrl(currentDirPath, name)}
+            src={getThumbnailUrl(`${parentPath}/${name}`)}
             onError={() => setThumbnailError(true)}
           />
         ) : icon}

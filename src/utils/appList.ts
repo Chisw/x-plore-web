@@ -38,7 +38,7 @@ export const DOUBLE_CLICK_OPEN_APP_LIST = [
   {
     id: APP_ID_MAP.textEditor,
     icon: iconTextEditor,
-    matchList: ['txt', 'md', 'html', 'css', 'ps', 'php', 'java', 'sh'],
+    matchList: ['txt', 'md', 'html', 'xml', 'css', 'js', 'json', 'php', 'java', 'sh'],
   },
   {
     id: APP_ID_MAP.photoGallery,
@@ -132,8 +132,8 @@ const APP_LIST: IApp[] = [
     runningId: 0,
     title: '视频播放器',
     icon: iconVideoPlayer,
-    width: 1280,
-    height: 720,
+    width: 640,
+    height: 360,
     resizeRange: {
       minWidth: 320,
       minHeight: 240,
