@@ -90,3 +90,4 @@ server {
 - 关闭窗口，将最上层 move to front
 - 缩放浏览器，重定位窗口
 - 懒加载缩略图
+- entry 分页

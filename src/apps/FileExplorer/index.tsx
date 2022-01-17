@@ -55,6 +55,11 @@ export default function FileExplorer(props: AppComponentProps) {
   const containerInnerRef = useRef(null)
   const uploadInputRef = useRef(null)
 
+  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
+  const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
+  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
+  const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
+
   const { volumeList, volumeMountList } = useMemo(() => {
     const { volumeList } = rootInfo
     const volumeMountList = volumeList.map(v => v.mount)
@@ -67,11 +72,6 @@ export default function FileExplorer(props: AppComponentProps) {
     const title = isInVolumeRoot ? currentDirPath : currentDirPath.split('/').pop() as string
     setWindowTitle(title)
   }, [currentDirPath, setWindowTitle, isInVolumeRoot])
-
-  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
-  const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
-  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
-  const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
 
   const { entryList, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? entryConverter(data, currentDirPath).sort(entrySorter) : []
@@ -334,11 +334,12 @@ export default function FileExplorer(props: AppComponentProps) {
 
   useEffect(() => setSelectedEntryList([]), [filterText])
 
-  const updateDirSize = useCallback(async (name: string) => {
-    const path = `${currentDirPath}/${name}`
+  const updateDirSize = useCallback(async (entry: IEntry) => {
+    const { name, parentPath } = entry
+    const path = `${parentPath}/${name}`
     const { hasDon, size } = await getSize(path)
     hasDon && setSizeMap({ ...sizeMap, [path]: size })
-  }, [currentDirPath, getSize, sizeMap, setSizeMap])
+  }, [getSize, sizeMap, setSizeMap])
 
   const handleEntryClick = useCallback((e: any, entry: IEntry) => {
     if (newDirMode || newTxtMode || renameMode) return
@@ -366,10 +367,9 @@ export default function FileExplorer(props: AppComponentProps) {
       }
     } else {
       list = [entry]
-      entry.type === 'directory' && updateDirSize(entry.name)
     }
     setSelectedEntryList(list)
-  }, [newDirMode, newTxtMode, renameMode, selectedEntryList, entryList, updateDirSize])
+  }, [newDirMode, newTxtMode, renameMode, selectedEntryList, entryList])
 
   const handleEntryDoubleClick = useCallback((entry: IEntry) => {
     const { type, name } = entry
@@ -460,14 +460,14 @@ export default function FileExplorer(props: AppComponentProps) {
     const { target, clientX: left, clientY: top } = event
     const menuProps = {
       target, currentDirPath, entryList, selectedEntryList,
-      setOpenedEntryList,
+      setOpenedEntryList, updateDirSize,
       setNewDirMode, setNewTxtMode, setSelectedEntryList,
       handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
     }
     ContextMenu.show(<Menus {...menuProps} />, { top, left })
   }, [
     currentDirPath, entryList, selectedEntryList,
-    setOpenedEntryList,
+    setOpenedEntryList, updateDirSize,
     handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
   ])
 
@@ -609,7 +609,7 @@ export default function FileExplorer(props: AppComponentProps) {
                         w-full text-xs whitespace-nowrap font-din min-w-16
                         ${isSelected && !gridMode ? 'text-white' : 'text-gray-400'}
                         ${gridMode ? 'text-center' : 'pl-2 text-right'}
-                        ${(isSelected && getting) ? 'animate-pulse' : ''}
+                        ${(isSelected && getting) ? 'bg-loading' : ''}
                       `)}
                     >
                       {sizeLabel}

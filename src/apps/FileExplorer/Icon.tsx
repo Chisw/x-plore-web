@@ -210,7 +210,7 @@ export default function Icon(props: IconProps) {
       className={line(`
         absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain
         border border-white rounded shadow
-        ${small ? 'w-3 h-3 -m-2px' : '-m-1 w-4 h-4'}
+        ${small ? 'w-3 h-3 -m-2px' : '-m-2 w-4 h-4'}
       `)}
       style={{ backgroundImage: `url("${fileSubIcon}")` }}
     />
@@ -227,7 +227,7 @@ export default function Icon(props: IconProps) {
           `)}
         >
           <img
-            alt="thumbnail"
+            alt={entry.name}
             className={line(`
               max-w-full max-h-full bg-white shadow-md
               ${isVideo ? '' : `border ${small ? 'p-1px' : 'p-2px'}`}

@@ -1,5 +1,5 @@
 import { ContextMenu, Menu, MenuItem } from '@blueprintjs/core'
-import { Application16, DocumentAdd16, Download16, Edit16, Export16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
+import { Application16, Cube16, DocumentAdd16, Download16, Edit16, Export16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
 import { IApp, IEntry, IOpenedEntry } from '../../utils/types'
 import APP_LIST from '../../utils/appList'
 import { useCallback, useMemo } from 'react'
@@ -15,6 +15,7 @@ interface MenusProps {
   setSelectedEntryList: (entry: IEntry[]) => void
   setNewDirMode: (mode: boolean) => void
   setNewTxtMode: (mode: boolean) => void
+  updateDirSize: (entry: IEntry) => void
   handleRefresh: () => void
   handleRename: () => void
   handleUploadClick: () => void
@@ -33,6 +34,7 @@ export default function Menus(props: MenusProps) {
     setSelectedEntryList,
     setNewDirMode,
     setNewTxtMode,
+    updateDirSize,
     handleRefresh,
     handleRename,
     handleUploadClick,
@@ -138,6 +140,12 @@ export default function Menus(props: MenusProps) {
         })),
       },
       {
+        icon: <Cube16 />,
+        text: '文件夹大小',
+        isShow: isOnDir,
+        onClick: () => updateDirSize(contextEntryList[0]),
+      },
+      {
         icon: <Export16 />,
         text: '上传',
         isShow: isOnBlank,
@@ -164,7 +172,7 @@ export default function Menus(props: MenusProps) {
     ]
   }, [
     availableAppMap, contextEntryList, isOnBlank, isOnDir, isSingleConfirmed,
-    setNewDirMode, setNewTxtMode, handleOpenEntry,
+    setNewDirMode, setNewTxtMode, updateDirSize, handleOpenEntry,
     handleDeleteClick, handleDownloadClick, handleRefresh, handleRename, handleUploadClick,
   ])
 
