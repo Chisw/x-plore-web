@@ -1,4 +1,4 @@
-import { Application24, DataBase24, Document24, DocumentBlank24, Folder32, Image24, Music24, Pen24, Video24, Box24, Code24 } from '@carbon/icons-react'
+import { Application20, DataBase20, Document20, Help20, Folder32, Image20, Music20, Pen20, Video20, Box20, Code20 } from '@carbon/icons-react'
 import { useMemo, useState } from 'react'
 import { IEntry, IEntryIcon } from '../../utils/types'
 import dirAndroid from '../../img/icons/dir-android.png'
@@ -35,8 +35,8 @@ const THUMBNAIL_MATCH_LIST = [
 
 const DEFAULT_ENTRY_ICON: IEntryIcon = {
   type: 'unknown',
-  icon: <DocumentBlank24 />,
-  iconBg: 'from-gray-300 to-gray-400 border-gray-400',
+  icon: <Help20 />,
+  iconClassName: 'text-gray-500 bg-gray-100 border-gray-300',
   matchList: [],
 }
 
@@ -44,85 +44,73 @@ const ENTRY_ICON_LIST: IEntryIcon[] = [
   {
     type: 'folder',
     icon: <Folder32 />,
-    iconBg: 'from-yellow-300 to-yellow-500 border-yellow-400',
+    iconClassName: 'text-white bg-gradient-to-b from-yellow-300 to-yellow-500 border-yellow-400',
     matchList: ['_dir'],
   },
   {
     type: 'folder',
     icon: <Folder32 />,
-    iconBg: 'from-yellow-200 to-yellow-400 border-yellow-300',
+    iconClassName: 'text-white bg-gradient-to-b from-yellow-200 to-yellow-400 border-yellow-300',
     matchList: ['_dir_new'],
   },
   {
     type: 'folder',
     icon: <Folder32 />,
-    iconBg: 'from-yellow-300 to-yellow-500 border-yellow-400',
+    iconClassName: 'text-white bg-gradient-to-b from-yellow-300 to-yellow-500 border-yellow-400',
     matchList: ['_dir_empty'],
   },
   {
     type: 'document',
-    icon: <Pen24 />,
-    iconBg: 'from-gray-200 to-gray-400 border-gray-300',
-    matchList: ['_txt_new'],
-  },
-  {
-    type: 'image',
-    icon: <Image24 />,
-    iconBg: 'from-orange-400 to-orange-500 border-orange-500',
-    matchList: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'insp', 'svg', 'ico'],
-  },
-  {
-    type: 'audio',
-    icon: <Music24 />,
-    iconBg: 'from-pink-600 to-pink-700 border-pink-700',
-    matchList: ['mp3', 'flac', 'wav', 'aac'],
-  },
-  {
-    type: 'video',
-    icon: <Video24 />,
-    iconBg: 'from-blue-400 to-blue-500 border-blue-500',
-    matchList: ['mp4', 'mov', 'wmv', 'insv', 'mkv', 'avi', 'rm', 'rmvb'],
-  },
-  // {
-  //   type: 'font',
-  //   icon: <TextFont24 />,
-  //   iconBg: 'from-purple-400 to-purple-500 border-purple-500',
-  //   matchList: ['ttf', 'woff'],
-  // },
-  {
-    type: 'archive',
-    icon: <Box24 />,
-    iconBg: 'from-amber-600 to-amber-700 border-amber-700',
-    matchList: ['zip', 'rar', '.7z'],
+    icon: <Pen20 />,
+    iconClassName: 'text-gray-500 bg-gray-100 border-gray-300',
+    matchList: ['_txt_new', 'txt', 'md'],
   },
   {
     type: 'pdf',
-    icon: <Document24 />,
-    iconBg: 'from-red-800 to-red-900 border-red-900',
+    icon: <Document20 />,
+    iconClassName: 'text-red-900 bg-red-100 border-red-200',
     matchList: ['pdf'],
   },
   {
     type: 'code',
-    icon: <Code24 />,
-    iconBg: 'from-gray-800 to-gray-900 border-black',
+    icon: <Code20 />,
+    iconClassName: 'text-gray-900 bg-gray-300 border-gray-400',
     matchList: ['html', 'css', 'js', 'php'],
   },
   {
     type: 'data',
-    icon: <DataBase24 />,
-    iconBg: 'from-gray-400 to-gray-500 border-gray-500',
+    icon: <DataBase20 />,
+    iconClassName: 'text-gray-700 bg-gray-100 border-gray-300',
     matchList: ['dat', 'db', 'sql', 'json', 'log'],
   },
   {
-    type: 'text',
-    icon: <Pen24 />,
-    iconBg: 'from-gray-400 to-gray-500 border-gray-500',
-    matchList: ['txt', 'md'],
+    type: 'image',
+    icon: <Image20 />,
+    iconClassName: 'text-orange-500 bg-orange-100 border-orange-200',
+    matchList: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'insp', 'svg', 'ico'],
+  },
+  {
+    type: 'audio',
+    icon: <Music20 />,
+    iconClassName: 'text-pink-700 bg-pink-100 border-pink-200',
+    matchList: ['mp3', 'flac', 'wav', 'aac'],
+  },
+  {
+    type: 'video',
+    icon: <Video20 />,
+    iconClassName: 'text-blue-500 bg-blue-100 border-blue-200',
+    matchList: ['mp4', 'mov', 'wmv', 'insv', 'mkv', 'avi', 'rm', 'rmvb'],
+  },
+  {
+    type: 'archive',
+    icon: <Box20 />,
+    iconClassName: 'text-amber-700 bg-amber-100 border-amber-300',
+    matchList: ['zip', 'rar', '.7z'],
   },
   {
     type: 'application',
-    icon: <Application24 />,
-    iconBg: 'from-lime-400 to-lime-500 border-lime-500',
+    icon: <Application20 />,
+    iconClassName: 'text-lime-600 bg-lime-100 border-lime-300',
     matchList: ['apk'],
   }
 ]
@@ -165,12 +153,7 @@ const getIconInfo = (entry: IEntry) => {
     ? undefined
     : DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension!))?.icon
 
-  return {
-    isDir,
-    entryIcon,
-    dirSubIcon,
-    fileSubIcon,
-  }
+  return { isDir, entryIcon, dirSubIcon, fileSubIcon }
 }
 
 interface IconProps {
@@ -196,80 +179,91 @@ export default function Icon(props: IconProps) {
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false)
   const [thumbnailError, setThumbnailError] = useState(false)
 
-  const { useThumbnail, isVideo } = useMemo(() => {
-    const useThumbnail = !virtual && extension && THUMBNAIL_MATCH_LIST.includes(extension)
+  const {
+    useThumbnail, isVideo, isDir,
+    icon, iconClassName, dirSubIcon, fileSubIcon,
+  } = useMemo(() => {
+    const { extension } = entry
+    const useThumbnail = extension && THUMBNAIL_MATCH_LIST.includes(extension)
     const isVideo = extension && VIDEO_MATCH_LIST.includes(extension)
-    return { useThumbnail, isVideo }
-  }, [extension, virtual])
-
-  const { isDir, icon, iconBg, dirSubIcon, fileSubIcon } = useMemo(() => {
-    const { isDir, entryIcon: { icon, iconBg }, dirSubIcon, fileSubIcon } = getIconInfo(entry)
-    return { isDir, iconBg, icon, dirSubIcon, fileSubIcon }
+    const { isDir, entryIcon: { icon, iconClassName }, dirSubIcon, fileSubIcon } = getIconInfo(entry)
+    return {
+      useThumbnail, isVideo, isDir,
+      icon, iconClassName, dirSubIcon, fileSubIcon,
+    }
   }, [entry])
 
-  const showThumbnail = useThumbnail && !thumbnailError
+  const showThumbnail = !virtual && useThumbnail && !thumbnailError
+
+  const DirSubIcon = dirSubIcon && (
+    <div
+      className={line(`
+        absolute left-0 bottom-0 bg-center bg-no-repeat bg-contain m-1px
+        ${small ? 'w-3 h-3' : 'w-5 h-5'}
+      `)}
+      style={{ backgroundImage: `url("${dirSubIcon}")` }}
+    />
+  )
+
+  const FileSubIcon = fileSubIcon && (
+    <div
+      className={line(`
+        absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain
+        border border-white rounded shadow
+        ${small ? 'w-3 h-3 -m-2px' : '-m-1 w-4 h-4'}
+      `)}
+      style={{ backgroundImage: `url("${fileSubIcon}")` }}
+    />
+  )
 
   return (
     <div className="flex justify-center items-center pointer-events-none">
-      <div
-        className={line(`
-          relative inline-flex justify-center items-center
-          ${showThumbnail ? '' : `text-white bg-gradient-to-b border ${iconBg}`}
-          ${small
-            ? `rounded-sm ${isDir ? 'w-7' : 'w-5 rounded-tr'} h-6`
-            : (showThumbnail
-              ? 'w-20 h-12'
-              : `${isDir ? 'w-14 rounded-lg' : 'w-10 rounded rounded-tr-lg'} h-12`
-            )
-          }
-        `)}
-      >
-        {showThumbnail ? (
+      {showThumbnail ? (
+        <div
+          className={line(`
+            relative flex justify-center items-center
+            ${small ? 'w-7 h-6' : 'w-18 h-12'}
+            ${thumbnailLoaded ? (isVideo ? 'bg-black rounded-sm' : '') : 'bg-loading'}
+          `)}
+        >
           <img
             alt="thumbnail"
             className={line(`
-              max-w-full max-h-full min-w-6 min-h-6 bg-white shadow-md
-              ${thumbnailLoaded ? '' : 'bg-loading'}
-              ${isVideo
-                ? 'border-l-4 border-r-4 border-black'
-                : `border ${small ? 'p-1px' : 'p-2px'}`
-              }
+              max-w-full max-h-full bg-white shadow-md
+              ${isVideo ? '' : `border ${small ? 'p-1px' : 'p-2px'}`}
             `)}
             src={getThumbnailUrl(`${parentPath}/${name}`)}
             onLoad={() => setThumbnailLoaded(true)}
             onError={() => setThumbnailError(true)}
           />
-        ) : (
-          small ? icon : (
+          {FileSubIcon}
+        </div>
+      ) : (
+        <div
+          className={line(`
+            relative flex justify-center items-center
+            ${(isDir || small) ? 'border' : 'border-2'}
+            ${(isDir && small)   ? 'w-7  h-6  rounded' : ''}
+            ${(isDir && !small)  ? 'w-14 h-12 rounded-lg' : ''}
+            ${(!isDir && small)  ? 'w-5  h-6  rounded-sm rounded-tr mx-1' : ''}
+            ${(!isDir && !small) ? 'w-10 h-12 rounded    rounded-tr-xl' : ''}
+            ${iconClassName}
+          `)}
+        >
+          {small ? icon : (
             <div>
               <div>{icon}</div>
               {!isDir && (
-                <div className="font-din text-center text-xs">
-                    {extension?.replace('_txt_new', 'txt').toUpperCase()}
+                <div className="mt-2px font-din text-center text-xs">
+                  {extension?.replace('_txt_new', 'txt').toUpperCase()}
                 </div>
               )}
             </div>
-          )
-        )}
-        {dirSubIcon && (
-          <div
-            className={line(`
-              absolute left-0 bottom-0 bg-center bg-no-repeat bg-contain
-              ${small ? 'w-3 h-3' : 'w-5 h-5'}
-            `)}
-            style={{ backgroundImage: `url("${dirSubIcon}")` }}
-          />
-        )}
-        {fileSubIcon && (
-          <div
-            className={line(`
-              absolute right-0 bottom-0 bg-center bg-no-repeat bg-contain border-white rounded shadow
-              ${small ? 'border w-3 h-3 -m-1' : 'border-2 -m-2 w-4 h-4'}
-            `)}
-            style={{ backgroundImage: `url("${fileSubIcon}")` }}
-          />
-        )}
-      </div>
+          )}
+          {DirSubIcon}
+          {FileSubIcon}
+        </div>
+      )}
     </div>
   )
 }

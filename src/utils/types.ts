@@ -63,7 +63,7 @@ export interface IOpenedEntry extends IEntry {
 export interface IEntryIcon {
   type: string
   icon: ReactNode
-  iconBg: string
+  iconClassName: string
   matchList: string[]
 }
 
