@@ -185,7 +185,7 @@ export default function Icon(props: IconProps) {
     if (!icon || !scrollHook) return
     const { top, height } = scrollHook
     const { top: iconTop } = icon.getBoundingClientRect()
-    if (top <= iconTop && iconTop <= (top + height)) {
+    if ((top - 20) <= iconTop && iconTop <= (top + height)) {
       setIsInView(true)
     }
   }, [scrollHook])

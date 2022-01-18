@@ -89,4 +89,3 @@ server {
 - grid 视图双行文件名
 - 关闭窗口，将最上层 move to front
 - 缩放浏览器，重定位窗口
-- entry 分页

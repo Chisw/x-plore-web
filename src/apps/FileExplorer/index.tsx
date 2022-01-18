@@ -22,7 +22,9 @@ import useShortcuts from '../../hooks/useShortcuts'
 import { pick, throttle } from 'lodash'
 import { ContextMenu } from '@blueprintjs/core'
 import Menus from './Menus'
+import Pagination from '../../components/Pagination'
 
+const MAX_PAGE_SIZE = 200
 
 export default function FileExplorer(props: AppComponentProps) {
 
@@ -50,6 +52,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [virtualEntries, setVirtualEntries] = useState<File[]>([])
   const [hiddenShow, setHiddenShow] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)       // containerInnerRef 的容器，y-scroll-auto
@@ -87,8 +90,7 @@ export default function FileExplorer(props: AppComponentProps) {
     return () => container.removeEventListener('scroll', throttleListener)
   }, [])
 
-
-  const { entryList, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
+  const { entryList, entryListLen, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? entryConverter(data, currentDirPath).sort(entrySorter) : []
     const entryList = list
       .filter(o => o.name.toLowerCase().includes(filterText.toLowerCase()))
@@ -96,9 +98,21 @@ export default function FileExplorer(props: AppComponentProps) {
     let dirCount = 0
     let fileCount = 0
     entryList.forEach(({ type }) => type === 'directory' ? dirCount++ : fileCount++)
-    const isEntryListEmpty = entryList.length === 0
-    return { entryList, isEntryListEmpty, dirCount, fileCount }
+    const entryListLen = entryList.length
+    const isEntryListEmpty = entryListLen === 0
+    return { entryList, entryListLen, isEntryListEmpty, dirCount, fileCount }
   }, [data, currentDirPath, filterText, hiddenShow])
+
+  const displayEntryList = useMemo(() => {
+    const start = (currentPage - 1) * MAX_PAGE_SIZE
+    const end = start + MAX_PAGE_SIZE
+    return entryList.slice(start, end)
+  }, [entryList, currentPage])
+
+  useEffect(() => {
+    const container: any = containerRef.current
+    if (container) container.scrollTo({ top: 0 })
+  }, [currentPage])
 
   const disabledMap: IToolBarDisabledMap = useMemo(() => {
     const { position, list } = history
@@ -337,6 +351,7 @@ export default function FileExplorer(props: AppComponentProps) {
     setSelectedEntryList([])
     setFilterMode(false)
     setFilterText('')
+    setCurrentPage(1)
   }, [currentDirPath])
 
   useEffect(() => {
@@ -347,7 +362,10 @@ export default function FileExplorer(props: AppComponentProps) {
     }
   }, [entryList, prevDirPath])
 
-  useEffect(() => setSelectedEntryList([]), [filterText])
+  useEffect(() => {
+    setSelectedEntryList([])
+    setCurrentPage(1)
+  }, [filterText])
 
   const updateDirSize = useCallback(async (entry: IEntry) => {
     const { name, parentPath } = entry
@@ -408,6 +426,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRectSelect = useCallback((info: IRectInfo) => {
     const entryElements = document.querySelectorAll('.entry-node')
+    const pageOffset = (currentPage - 1) * MAX_PAGE_SIZE
     if (!entryElements.length) return
     const indexList: number[] = []
     entryElements.forEach((el: any, elIndex) => {
@@ -415,11 +434,11 @@ export default function FileExplorer(props: AppComponentProps) {
         ...info,
         ...pick(el, 'offsetTop', 'offsetLeft', 'offsetWidth', 'offsetHeight'),
       })
-      isContained && indexList.push(elIndex)
+      isContained && indexList.push(elIndex + pageOffset)
     })
     const names = entryList.filter((n, nIndex) => indexList.includes(nIndex))
     setSelectedEntryList(names)
-  }, [setSelectedEntryList, entryList])
+  }, [currentPage, setSelectedEntryList, entryList])
 
   useDragSelect({
     rectRef,
@@ -486,6 +505,8 @@ export default function FileExplorer(props: AppComponentProps) {
     handleRefresh, handleRename, handleUploadClick, handleDownloadClick, handleDeleteClick,
   ])
 
+  const showPagination = entryListLen > MAX_PAGE_SIZE
+
   return (
     <>
       <div className="absolute inset-0 flex">
@@ -544,6 +565,7 @@ export default function FileExplorer(props: AppComponentProps) {
               className={line(`
                 relative min-h-full flex flex-wrap content-start
                 ${gridMode ? 'p-2' : 'p-4'}
+                ${showPagination ? 'pb-16' : ''}
               `)}
               onContextMenu={handleContextMenu}
             >
@@ -575,7 +597,7 @@ export default function FileExplorer(props: AppComponentProps) {
                 </div>
               )}
               {/* entries */}
-              {entryList.map(entry => {
+              {displayEntryList.map(entry => {
                 const { name, type, hidden, size, lastModified } = entry
                 const isSelected = !!selectedEntryList.find(o => isSameEntry(o, entry))
                 const small = !gridMode
@@ -643,6 +665,16 @@ export default function FileExplorer(props: AppComponentProps) {
             onDirClick={handleGoFullPath}
             onVolumeClick={handleVolumeClick}
           />
+          {showPagination && (
+            <div className="absolute z-10 bottom-0 left-1/2 mb-10 transform -translate-x-1/2 scale-75">
+              <Pagination
+                count={entryListLen}
+                pageSize={MAX_PAGE_SIZE}
+                current={currentPage}
+                onChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </div>
 
