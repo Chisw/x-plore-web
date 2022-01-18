@@ -1,5 +1,5 @@
 import { Application20, DataBase20, Document20, Help20, Folder32, Image20, Music20, Pen20, Video20, Box20, Code20 } from '@carbon/icons-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { IEntry, IEntryIcon } from '../../utils/types'
 import dirAndroid from '../../img/icons/dir-android.png'
 import dirAlipay from '../../img/icons/dir-alipay.png'
@@ -160,6 +160,7 @@ interface IconProps {
   entry: IEntry
   virtual?: boolean
   small?: boolean
+  scrollHook?: { top: number, height: number }
 }
 
 export default function Icon(props: IconProps) {
@@ -168,16 +169,26 @@ export default function Icon(props: IconProps) {
     entry,
     virtual = false,
     small = false,
+    scrollHook,
   } = props
 
-  const {
-    name,
-    parentPath,
-    extension,
-  } = entry
+  const { name, parentPath, extension } = entry
 
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false)
   const [thumbnailError, setThumbnailError] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+
+  const iconRef = useRef<any>(null)
+
+  useEffect(() => {
+    const icon: any = iconRef.current
+    if (!icon || !scrollHook) return
+    const { top, height } = scrollHook
+    const { top: iconTop } = icon.getBoundingClientRect()
+    if (top <= iconTop && iconTop <= (top + height)) {
+      setIsInView(true)
+    }
+  }, [scrollHook])
 
   const {
     useThumbnail, isVideo, isDir,
@@ -217,8 +228,8 @@ export default function Icon(props: IconProps) {
   )
 
   return (
-    <div className="flex justify-center items-center pointer-events-none">
-      {showThumbnail ? (
+    <div ref={iconRef} className="flex justify-center items-center pointer-events-none">
+      {(showThumbnail && isInView) ? (
         <div
           className={line(`
             relative flex justify-center items-center

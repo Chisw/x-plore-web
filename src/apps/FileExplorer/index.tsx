@@ -19,7 +19,7 @@ import Side from './Side'
 import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
 import useShortcuts from '../../hooks/useShortcuts'
-import { pick } from 'lodash'
+import { pick, throttle } from 'lodash'
 import { ContextMenu } from '@blueprintjs/core'
 import Menus from './Menus'
 
@@ -44,6 +44,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [filterMode, setFilterMode] = useState(false)
   const [filterText, setFilterText] = useState('')
   const [scrollWaiter, setScrollWaiter] = useState<{ wait: boolean, smooth?: boolean }>({ wait: false })
+  const [scrollHook, setScrollHook] = useState({ top: 0, height: 0 })
   const [waitDropToCurrentPath, setWaitDropToCurrentPath] = useState(false)
   const [downloadConfirmorProps, setDownloadConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
   const [deleteConfirmorProps, setDeleteConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
@@ -51,8 +52,8 @@ export default function FileExplorer(props: AppComponentProps) {
   const [hiddenShow, setHiddenShow] = useState(false)
 
   const rectRef = useRef(null)
-  const containerRef = useRef(null)
-  const containerInnerRef = useRef(null)
+  const containerRef = useRef(null)       // containerInnerRef 的容器，y-scroll-auto
+  const containerInnerRef = useRef(null)  // entryList 容器，最小高度与 containerRef 的一致，自动撑高
   const uploadInputRef = useRef(null)
 
   const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
@@ -72,6 +73,20 @@ export default function FileExplorer(props: AppComponentProps) {
     const title = isInVolumeRoot ? currentDirPath : currentDirPath.split('/').pop() as string
     setWindowTitle(title)
   }, [currentDirPath, setWindowTitle, isInVolumeRoot])
+
+  useEffect(() => {
+    const container: any = containerRef.current
+    if (!container) return
+    const listener = () => {
+      const { top, height } = container.getBoundingClientRect()
+      setScrollHook({ top, height })
+    }
+    listener()
+    const throttleListener = throttle(listener, 500)
+    container.addEventListener('scroll', throttleListener)
+    return () => container.removeEventListener('scroll', throttleListener)
+  }, [])
+
 
   const { entryList, isEntryListEmpty, dirCount, fileCount } = useMemo(() => {
     const list = data ? entryConverter(data, currentDirPath).sort(entrySorter) : []
@@ -585,7 +600,7 @@ export default function FileExplorer(props: AppComponentProps) {
                     onClick={e => handleEntryClick(e, entry)}
                     onDoubleClick={() => handleEntryDoubleClick(entry)}
                   >
-                    <Icon {...{ small, entry }} />
+                    <Icon {...{ small, entry, scrollHook }} />
                     <NameLine
                       showInput={renameMode && isSelected}
                       entry={entry}
