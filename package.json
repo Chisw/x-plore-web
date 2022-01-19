@@ -1,6 +1,6 @@
 {
   "name": "web-file-manager-system",
-  "homepage": "/web",
+  "homepage": "/wfms",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

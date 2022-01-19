@@ -31,7 +31,7 @@ instance.interceptors.response.use(response => response, (error: AxiosError) => 
 })
 
 export const getRootInfo = async () => {
-  const { data } = await instance.get('?cmd=list_root&filter=dirs')
+  const { data } = await instance.get('/?cmd=list_root&filter=dirs')
   return data
 }
 
