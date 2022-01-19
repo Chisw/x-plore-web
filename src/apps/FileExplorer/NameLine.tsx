@@ -95,11 +95,11 @@ export default function NameLine(props: NameLineProps) {
   }, [entry, currentDirPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
   return (
-    <div className={`leading-none ${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
+    <div className={`w-full leading-none ${gridMode ? 'mt-2 text-center' : 'ml-4 flex justify-center items-center'}`}>
       {showInput ? (
         <div
           className={line(`
-            relative h-5 bg-white border border-gray-300 rounded
+            relative h-4 bg-white border border-gray-300 rounded
             ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
           `)}
         >
@@ -160,7 +160,7 @@ export function NameLabel(props: NameLabelProps) {
       className={line(`
         inline-block px-1 rounded truncate text-xs
         ${isSelected ? 'bg-blue-600 text-white' : 'text-gray-700'}
-        ${gridMode ? 'max-w-full' : 'w-72'}
+        ${gridMode ? 'max-w-full' : 'w-full'}
       `)}
     >
       {entryName}

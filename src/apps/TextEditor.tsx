@@ -1,11 +1,12 @@
-import { Copy16, Download16, Reset16, Save16, TextAllCaps16 } from '@carbon/icons-react'
+import { Copy16, Reset16, Save16, TextAllCaps16 } from '@carbon/icons-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Toast from '../components/EasyToast'
 import ToolButton from '../components/ToolButton'
+import useCommonToolButtons from '../hooks/useCommonToolButtons'
 import useFetch from '../hooks/useFetch'
-import { copy, getDownloadInfo } from '../utils'
-import { downloadEntries, getTextFileContent, uploadFile } from '../utils/api'
+import { copy } from '../utils'
+import { getTextFileContent, uploadFile } from '../utils/api'
 import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
 import { AppComponentProps, IFilePack, IOpenedEntry } from '../utils/types'
@@ -21,6 +22,8 @@ export default function TextEditor(props: AppComponentProps) {
 
   const { fetch: fetchTextContent, loading: fetching, data: textContent, setData: setTextContent } = useFetch((path: string) => getTextFileContent(path))
   const { fetch: uploadFileToPath, loading: saving } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
+
+  const commonToolButtons = useCommonToolButtons(currentEntry)
 
   useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 
@@ -61,13 +64,6 @@ export default function TextEditor(props: AppComponentProps) {
     }
   }, [value, currentEntry, uploadFileToPath, setTextContent])
 
-  const handleDownload = useCallback(() => {
-    if (currentEntry) {
-      const { downloadName, cmd } = getDownloadInfo(currentEntry.parentPath, [currentEntry])
-      downloadEntries(currentEntry.parentPath, downloadName, cmd)
-    }
-  }, [currentEntry])
-
   return (
     <>
       <div className="absolute inset-0 flex flex-col">
@@ -98,11 +94,7 @@ export default function TextEditor(props: AppComponentProps) {
               Toast.toast('文本复制成功')
             }}
           />
-          <ToolButton
-            title={`下载 ${currentEntry?.name}`}
-            icon={<Download16 />}
-            onClick={handleDownload}
-          />
+          {commonToolButtons}
         </div>
         <div className="flex-grow">
           <code style={monoMode ? undefined : { fontFamily: 'unset' }}>

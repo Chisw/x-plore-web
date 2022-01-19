@@ -405,6 +405,7 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [newDirMode, newTxtMode, renameMode, selectedEntryList, entryList])
 
   const handleEntryDoubleClick = useCallback((entry: IEntry) => {
+    if (renameMode) return
     const { type, name } = entry
     const isDir = type === 'directory'
     if (isDir) {
@@ -417,7 +418,7 @@ export default function FileExplorer(props: AppComponentProps) {
         handleDownloadClick()
       }
     }
-  }, [currentDirPath, handleDirOpen, handleDownloadClick, setOpenedEntryList])
+  }, [renameMode, currentDirPath, handleDirOpen, handleDownloadClick, setOpenedEntryList])
 
   const handleSelectAll = useCallback((force?: boolean) => {
     const isSelectAll = force || !selectedEntryList.length
@@ -634,18 +635,18 @@ export default function FileExplorer(props: AppComponentProps) {
                     />
                     <div
                       className={line(`
-                        w-full text-xs whitespace-nowrap font-din
+                        text-xs whitespace-nowrap font-din
                         ${isSelected && !gridMode ? 'text-white' : 'text-gray-400'}
-                        ${gridMode ? 'hidden' : 'pl-2 text-right'}
+                        ${gridMode ? 'hidden' : 'w-36 pl-2 text-right'}
                       `)}
                     >
                       {dateLabel}
                     </div>
                     <div
                       className={line(`
-                        w-full text-xs whitespace-nowrap font-din min-w-16
+                        text-xs whitespace-nowrap font-din min-w-16
                         ${isSelected && !gridMode ? 'text-white' : 'text-gray-400'}
-                        ${gridMode ? 'text-center' : 'pl-2 text-right'}
+                        ${gridMode ? 'w-full text-center' : 'pl-2 w-24 text-right'}
                         ${(isSelected && getting) ? 'bg-loading' : ''}
                       `)}
                     >
@@ -666,7 +667,7 @@ export default function FileExplorer(props: AppComponentProps) {
             onVolumeClick={handleVolumeClick}
           />
           {showPagination && (
-            <div className="absolute z-10 bottom-0 left-1/2 mb-10 transform -translate-x-1/2 scale-75">
+            <div className="absolute z-10 bottom-0 left-1/2 mb-8 transform -translate-x-1/2 scale-75">
               <Pagination
                 count={entryListLen}
                 pageSize={MAX_PAGE_SIZE}

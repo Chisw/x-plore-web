@@ -5,6 +5,8 @@ export interface ConfirmorProps {
   isOpen: boolean
   content?: ReactNode
   children?: ReactNode
+  cancelText?: string
+  confirmText?: string
   onCancel?: () => void
   onConfirm?: () => void
   canEscapeKeyClose?: boolean
@@ -17,6 +19,8 @@ export default function Confirmor(props: ConfirmorProps) {
     isOpen,
     content = '',
     children = undefined,
+    cancelText = '取消',
+    confirmText = '确定',
     onCancel = () => { },
     onConfirm = () => { },
     canEscapeKeyClose = true,
@@ -54,14 +58,14 @@ export default function Confirmor(props: ConfirmorProps) {
           className="mx-1 w-full"
           onClick={onCancel}
         >
-          取消
+          {cancelText}
         </Button>
         <Button
           intent="primary"
           className="mx-1 w-full"
           onClick={onConfirm}
         >
-          确定
+          {confirmText}
         </Button>
       </div>
     </Dialog>

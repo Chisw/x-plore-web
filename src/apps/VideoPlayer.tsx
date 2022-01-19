@@ -1,6 +1,7 @@
 import { Spinner } from '@blueprintjs/core'
 import { useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
+import useCommonToolButtons from '../hooks/useCommonToolButtons'
 import { getBinFileUrl } from '../utils/api'
 import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
@@ -15,6 +16,8 @@ export default function VideoPlayer(props: AppComponentProps) {
   const [currentEntry, setCurrentEntry] = useState<IOpenedEntry | null>(null)
   const [fileUrl, setFileUrl] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const commonToolButtons = useCommonToolButtons(currentEntry)
 
   useEffect(() => setWindowLoading(loading), [setWindowLoading, loading])
 
@@ -43,16 +46,23 @@ export default function VideoPlayer(props: AppComponentProps) {
 
   return (
     <>
-      <div className="absolute inset-0 bg-black flex justify-center items-center">
-        {loading && <Spinner />}
-        <video
-          autoPlay
-          controls
-          src={fileUrl}
-          className={loading ? 'hidden' : 'max-w-full max-h-full outline-none'}
-          onLoadedData={() => setLoading(false)}
-          onError={() => { }}
-        />
+      <div className="absolute inset-0 flex flex-col">
+        <div className="h-8 flex-shrink-0 flex items-center bg-white">
+          {commonToolButtons}
+        </div>
+        <div className="relative flex-grow bg-black">
+          <div className="absolute inset-0 flex justify-center items-center">
+            {loading && <Spinner />}
+            <video
+              autoPlay
+              controls
+              src={fileUrl}
+              className={loading ? 'hidden' : 'max-w-full max-h-full outline-none'}
+              onLoadedData={() => setLoading(false)}
+              onError={() => { }}
+            />
+          </div>
+        </div>
       </div>
     </>
   )

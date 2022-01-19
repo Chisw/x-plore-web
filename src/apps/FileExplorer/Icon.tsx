@@ -253,11 +253,12 @@ export default function Icon(props: IconProps) {
         <div
           className={line(`
             relative flex justify-center items-center
+            ${small ? 'px-2px' : ''}
             ${(isDir || small) ? 'border' : 'border-2'}
             ${(isDir && small)   ? 'w-7  h-6  rounded' : ''}
             ${(isDir && !small)  ? 'w-14 h-12 rounded-lg' : ''}
             ${(!isDir && small)  ? 'w-5  h-6  rounded-sm rounded-tr mx-1' : ''}
-            ${(!isDir && !small) ? 'w-10 h-12 rounded    rounded-tr-xl' : ''}
+            ${(!isDir && !small) ? 'w-10 h-12 rounded    rounded-tr-lg' : ''}
             ${iconClassName}
           `)}
         >
@@ -266,7 +267,7 @@ export default function Icon(props: IconProps) {
               <div>{icon}</div>
               {!isDir && (
                 <div className="mt-2px font-din text-center text-xs">
-                  {extension?.replace('_txt_new', 'txt').toUpperCase()}
+                  {extension?.replace('_txt_new', 'txt').substring(0, 4).toUpperCase()}
                 </div>
               )}
             </div>

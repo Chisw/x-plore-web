@@ -133,7 +133,7 @@ const APP_LIST: IApp[] = [
     title: '视频播放器',
     icon: iconVideoPlayer,
     width: 640,
-    height: 360,
+    height: 400,
     resizeRange: {
       minWidth: 320,
       minHeight: 240,
