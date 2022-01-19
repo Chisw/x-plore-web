@@ -1,6 +1,7 @@
 import { DOUBLE_CLICK_OPEN_APP_LIST } from './appList'
 import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
 
+
 export const entrySorter = (a: IEntry, b: IEntry) => {
   const map = { directory: 1, file: 2 }
   const aVal = map[a.type]

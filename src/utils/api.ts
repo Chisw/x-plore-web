@@ -1,45 +1,68 @@
-import { IFilePack } from "./types"
+import axios, { AxiosError } from 'axios'
+import { IFilePack } from './types'
+import getPass from './pass'
 
-const { fetch } = window
+const PASS_KEY = 'PASS_KEY'
 const BASE_URL = process.env.REACT_APP_BASE_URL || ''
 
+const instance = axios.create({
+  baseURL: BASE_URL,
+  timeout: 20 * 1000,
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+  },
+})
+
+instance.interceptors.request.use(request => {
+  const pass = localStorage.getItem(PASS_KEY)
+  if (pass) request.url += `&pass=${pass}`
+  return request
+})
+
+instance.interceptors.response.use(response => response, (error: AxiosError) => {
+  if (!error.response) return
+  if (error.response.status === 401) {
+    const password = window.prompt('请输入访问密码？')
+    if (password) {
+      const pass = getPass(password)
+      localStorage.setItem(PASS_KEY, pass)
+    }
+  }
+})
+
 export const getRootInfo = async () => {
-  const data = await fetch(`${BASE_URL}/?cmd=list_root&filter=dirs`, { method: 'GET' }).then(res => res.json())
+  const { data } = await instance.get('?cmd=list_root&filter=dirs')
   return data
 }
 
 export const getPathEntries = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=list`, { method: 'GET' }).then(res => res.json())
+  const { data } = await instance.get(`${path}?cmd=list`)
   return data
 }
 
 export const getIsExist = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=exists`, { method: 'GET' }).then(res => res.json())
+  const { data } = await instance.get(`${path}?cmd=exists`)
   return data
 }
 
 export const getDirSize = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=dir_size`).then(res => res.json())
+  const { data } = await instance.get(`${path}?cmd=dir_size`)
   return data
 }
 
 export const addNewDir = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=new_dir`, { method: 'PUT' }).then(res => res.json())
+  const { data } = await instance.put(`${path}?cmd=new_dir`)
   return data
 }
 
 export const renameEntry = async (path: string, newPath: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=rename&n=${encodeURIComponent(newPath)}`, { method: 'PUT' }).then(res => res.json())
+  const { data } = await instance.put(`${path}?cmd=rename&n=${encodeURIComponent(newPath)}`)
   return data
 }
 
 export const deleteEntry = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=delete`, { method: 'DELETE' }).then(res => res.json())
+  const { data } = await instance.delete(`${path}?cmd=delete`)
   return data
-}
-
-export const downloadEntries = (parentPath: string, downloadName: string, cmd: string) => {
-  window.open(`${BASE_URL}${parentPath}/${downloadName}?${cmd}`, '_self')
 }
 
 export const uploadFile = async (parentPath: string, filePack: IFilePack) => {
@@ -47,21 +70,22 @@ export const uploadFile = async (parentPath: string, filePack: IFilePack) => {
   const { name, size, lastModified } = file
   const targetFileName = fullPath || `/${name}`
 
-  const data = await fetch(`${BASE_URL}${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, {
-    method: 'POST',
-    body: file,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-  }).then(res => res.json())
+  const { data } = await instance.post(`${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, file)
   return data
+}
+
+export const getTextFileContent = async (path: string) => {
+  const { data } = await instance.get(`${path}?cmd=text_file`)
+  return data
+}
+
+
+export const downloadEntries = (parentPath: string, downloadName: string, cmd: string) => {
+  window.open(`${BASE_URL}${parentPath}/${downloadName}?${cmd}`, '_self')
 }
 
 export const getThumbnailUrl = (path: string) => {
   return `${BASE_URL}${path}?cmd=thumbnail`
-}
-
-export const getTextFileContent = async (path: string) => {
-  const data = await fetch(`${BASE_URL}${path}?cmd=text_file`, { method: 'GET' }).then(res => res.text())
-  return data
 }
 
 export const getBinFileUrl = (path: string) => {

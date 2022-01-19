@@ -53,15 +53,19 @@ export default function TopBar() {
         onClick: () => document.querySelector('html')?.requestFullscreen(),
       },
       {
+        text: '刷新',
+        onClick: fetch,
+      },
+      {
         text: '回到原版',
         onClick: () => window.location.href = window.location.host,
       },
       {
-        text: '退出登录',
+        text: '退出',
         onClick: () => { },
       },
     ]
-  }, [])
+  }, [fetch])
  
   return (
     <>

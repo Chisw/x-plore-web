@@ -3,8 +3,18 @@ import { Application16, Cube16, DocumentAdd16, Download16, Edit16, Export16, Fol
 import { IApp, IEntry, IOpenedEntry } from '../../utils/types'
 import APP_LIST from '../../utils/appList'
 import { useCallback, useMemo } from 'react'
+import { getBinFileUrl } from '../../utils/api'
+import iina from '../../img/icons/iina.png'
 
 const availableAppIdList = ['text-editor', 'photo-gallery', 'music-player', 'video-player']
+
+const openInIINA = (entry: IEntry) => {
+  if (!entry) return
+  const { name, parentPath } = entry
+  const a = document.createElement('a')
+  a.href = `iina://open?url=${getBinFileUrl(`${parentPath}/${name}`)}`
+  a.click()
+}
 
 interface MenusProps {
   target: any
@@ -137,7 +147,11 @@ export default function Menus(props: MenusProps) {
           icon: <img src={availableAppMap[appId].icon} alt="app" className="w-4 h-4" />,
           text: availableAppMap[appId].title,
           onClick: () => handleOpenEntry(appId),
-        })),
+        })).concat({
+          icon: <img src={iina} alt="iina" className="w-4 h-4" />,
+          text: 'IINA',
+          onClick: () => openInIINA(contextEntryList[0]),
+        }),
       },
       {
         icon: <Cube16 />,
