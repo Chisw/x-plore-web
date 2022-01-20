@@ -1,14 +1,20 @@
 import { Download16, Share16, Share32 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
-import Confirmor, { ConfirmorProps } from '../components/Confirmor'
-import Toast from '../components/EasyToast'
-import ToolButton from '../components/ToolButton'
+import Confirmor, { ConfirmorProps } from './Confirmor'
+import Toast from './EasyToast'
+import ToolButton from './ToolButton'
 import { copy, getDownloadInfo } from '../utils'
 import { downloadEntries, getBinFileUrl } from '../utils/api'
 import { IOpenedEntry } from '../utils/types'
 
+interface CommonToolButtonsProps {
+  currentEntry: IOpenedEntry | null
+}
 
-export default function useCommonToolButtons(currentEntry: IOpenedEntry | null) {
+
+export default function CommonToolButtons(props: CommonToolButtonsProps) {
+
+  const { currentEntry } = props
 
   const [shareConfirmorProps, setShareConfirmorProps] = useState<ConfirmorProps>({ isOpen: false })
 

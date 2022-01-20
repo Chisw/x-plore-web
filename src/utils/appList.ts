@@ -34,48 +34,26 @@ export const APP_ID_MAP = {
   ps: 'ps',
 }
 
-export const DOUBLE_CLICK_OPEN_APP_LIST = [
-  {
-    id: APP_ID_MAP.textEditor,
-    icon: iconTextEditor,
-    matchList: ['txt', 'md', 'html', 'xml', 'css', 'js', 'json', 'php', 'java', 'sh', 'log', 'md'],
-  },
-  {
-    id: APP_ID_MAP.photoGallery,
-    icon: iconPhotoGallery,
-    matchList: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'],
-  },
-  {
-    id: APP_ID_MAP.musicPlayer,
-    icon: iconMusicPlayer,
-    matchList: ['mp3', 'aac', 'flac'],
-  },
-  {
-    id: APP_ID_MAP.videoPlayer,
-    icon: iconVideoPlayer,
-    matchList: ['mp4', 'mkv'],
-  },
-]
-
 const APP_LIST: IApp[] = [
   {
     id: APP_ID_MAP.fileExplorer,
     runningId: 0,
     title: '文件管理器',
     icon: iconFileExplorer,
+    AppComponent: FileExplorer,
     width: 960,
     height: 640,
     resizeRange: {
       minWidth: 640,
       minHeight: 480,
     },
-    AppComponent: FileExplorer,
   },
   {
     id: APP_ID_MAP.transfer,
     runningId: 0,
     title: '传输助手',
     icon: iconTransfer,
+    AppComponent: Transfer,
     width: 400,
     height: 400,
     resizeRange: {
@@ -83,40 +61,41 @@ const APP_LIST: IApp[] = [
       minHeight: 400,
       maxWidth: 400,
     },
-    AppComponent: Transfer,
   },
   {
     id: APP_ID_MAP.textEditor,
     runningId: 0,
     title: '文本编辑器',
     icon: iconTextEditor,
+    AppComponent: TextEditor,
     width: 640,
     height: 480,
     resizeRange: {
       minWidth: 240,
       minHeight: 100,
     },
-    AppComponent: TextEditor,
+    matchList: ['txt', 'md', 'html', 'xml', 'css', 'js', 'json', 'php', 'java', 'sh', 'log', 'md'],
   },
   {
     id: APP_ID_MAP.photoGallery,
     runningId: 0,
     title: '图片查看器',
     icon: iconPhotoGallery,
+    AppComponent: PhotoGallery,
     width: 640,
     height: 480,
     resizeRange: {
       minWidth: 240,
       minHeight: 200,
     },
-    AppComponent: PhotoGallery,
+    matchList: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico'],
   },
   {
     id: APP_ID_MAP.musicPlayer,
     runningId: 0,
     title: '音乐播放器',
     icon: iconMusicPlayer,
-    bgImg: bgMusic,
+    AppComponent: MusicPlayer,
     width: 400,
     height: 200,
     resizeRange: {
@@ -125,73 +104,77 @@ const APP_LIST: IApp[] = [
       minWidth: 400,
       minHeight: 200,
     },
-    AppComponent: MusicPlayer,
+    bgImg: bgMusic,
+    matchList: ['mp3', 'aac', 'flac'],
   },
   {
     id: APP_ID_MAP.videoPlayer,
     runningId: 0,
     title: '视频播放器',
     icon: iconVideoPlayer,
+    AppComponent: VideoPlayer,
     width: 640,
     height: 400,
     resizeRange: {
       minWidth: 320,
       minHeight: 240,
     },
-    AppComponent: VideoPlayer,
+    matchList: ['mp4', 'mkv'],
   },
   {
     id: APP_ID_MAP.settings,
     runningId: 0,
     title: '偏好设置',
     icon: iconSettings,
+    AppComponent: Settings,
     width: 500,
     height: 500,
     resizeRange: {
       minWidth: 500,
       minHeight: 300,
     },
-    AppComponent: Settings,
   },
   {
     id: APP_ID_MAP.baiduMap,
     runningId: 0,
     title: '百度地图',
     icon: iconBaiduMap,
+    AppComponent: BaiduMap,
     width: 800,
     height: 600,
     resizeRange: {
       minWidth: 480,
       minHeight: 320,
     },
-    AppComponent: BaiduMap,
   },
   {
     id: APP_ID_MAP.pqina,
     runningId: 0,
     title: 'PQINA',
     icon: iconPQINA,
+    AppComponent: PQINA,
     width: 800,
     height: 600,
     resizeRange: {
       minWidth: 800,
       minHeight: 600,
     },
-    AppComponent: PQINA,
   },
   {
     id: APP_ID_MAP.ps,
     runningId: 0,
     title: 'PS',
     icon: iconPS,
+    AppComponent: PS,
     width: 1000,
     height: 800,
     resizeRange: {
       minWidth: 800,
       minHeight: 600,
     },
-    AppComponent: PS,
   },
 ]
+
+export const CALLABLE_APP_LIST = APP_LIST.filter(app => !!app.matchList)
 
 export default APP_LIST

@@ -1,8 +1,8 @@
 import './css/index.css'
-import Desktop from './components/Desktop'
-import TopBar from './components/TopBar'
-import WindowContainer from './components/WindowContainer'
-import Dock from './components/Dock'
+import TopBar from './components/layouts/TopBar'
+import Desktop from './components/layouts/Desktop'
+import WindowContainer from './components/layouts/WindowContainer'
+import Dock from './components/layouts/Dock'
 import { FocusStyleManager } from '@blueprintjs/core'
 
 FocusStyleManager.onlyShowFocusOnTabs()

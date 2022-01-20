@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import Toast from '../components/EasyToast'
 import ToolButton from '../components/ToolButton'
-import useCommonToolButtons from '../hooks/useCommonToolButtons'
+import CommonToolButtons from '../components/CommonToolButtons'
 import useFetch from '../hooks/useFetch'
 import { copy } from '../utils'
 import { getTextFileContent, uploadFile } from '../utils/api'
@@ -22,8 +22,6 @@ export default function TextEditor(props: AppComponentProps) {
 
   const { fetch: fetchTextContent, loading: fetching, data: textContent, setData: setTextContent } = useFetch((path: string) => getTextFileContent(path))
   const { fetch: uploadFileToPath, loading: saving } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
-
-  const commonToolButtons = useCommonToolButtons(currentEntry)
 
   useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 
@@ -94,7 +92,7 @@ export default function TextEditor(props: AppComponentProps) {
               Toast.toast('文本复制成功')
             }}
           />
-          {commonToolButtons}
+          <CommonToolButtons {...{ currentEntry }} />
         </div>
         <div className="flex-grow">
           <code style={monoMode ? undefined : { fontFamily: 'unset' }}>

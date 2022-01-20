@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import bg from '../img/bg.jpg'
+import bg from '../../img/bg.jpg'
 
 interface DesktopProps {
   children: ReactNode

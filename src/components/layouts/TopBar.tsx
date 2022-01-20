@@ -3,10 +3,10 @@ import { LogoGithub16, Wifi16 } from '@carbon/icons-react'
 import { DateTime } from 'luxon'
 import { useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import useFetch from '../hooks/useFetch'
-import { getRootInfo } from '../utils/api'
-import { rootInfoConverter } from '../utils/converters'
-import { rootInfoState } from '../utils/state'
+import useFetch from '../../hooks/useFetch'
+import { getRootInfo } from '../../utils/api'
+import { rootInfoConverter } from '../../utils/converters'
+import { rootInfoState } from '../../utils/state'
 
 
 export default function TopBar() {

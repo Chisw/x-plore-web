@@ -23,7 +23,7 @@ import dirQQBrowser from '../../img/icons/dir-qq-browser.png'
 import { get } from 'lodash'
 import { line } from '../../utils'
 import { getThumbnailUrl } from '../../utils/api'
-import { DOUBLE_CLICK_OPEN_APP_LIST } from '../../utils/appList'
+import { CALLABLE_APP_LIST } from '../../utils/appList'
 
 
 const VIDEO_MATCH_LIST = ['mp4', 'mkv', 'avi', 'rm', 'rmvb']
@@ -151,7 +151,7 @@ const getIconInfo = (entry: IEntry) => {
 
   const fileSubIcon = isDir
     ? undefined
-    : DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension!))?.icon
+    : CALLABLE_APP_LIST.find(({ matchList }) => matchList!.includes(extension!))?.icon
 
   return { isDir, entryIcon, dirSubIcon, fileSubIcon }
 }

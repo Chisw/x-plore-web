@@ -16,7 +16,7 @@ export interface IApp {
   runningId: number
   title: string
   icon: string
-  bgImg?: string
+  AppComponent: IAppComponent
   width: number
   height: number
   resizeRange: {
@@ -25,7 +25,8 @@ export interface IApp {
     minWidth?: number
     minHeight?: number
   }
-  AppComponent: IAppComponent
+  bgImg?: string
+  matchList?: string[]
 }
 
 export interface IVolume {

@@ -1,10 +1,10 @@
-import { IApp } from '../utils/types'
+import { IApp } from '../../utils/types'
 import { Rnd } from 'react-rnd'
 import { CenterToFit16, Close16, FitToScreen16, Subtract16 } from '@carbon/icons-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
-import { runningAppListState, topWindowIndexState } from '../utils/state'
-import { line } from '../utils'
+import { runningAppListState, topWindowIndexState } from '../../utils/state'
+import { line } from '../../utils'
 
 const SAME_CLASS_NAME = `w-8 h-8 flex justify-center items-center cursor-pointer transition-all duration-200`
 

@@ -1,4 +1,4 @@
-import { DOUBLE_CLICK_OPEN_APP_LIST } from './appList'
+import { CALLABLE_APP_LIST } from './appList'
 import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
 
 
@@ -55,7 +55,7 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
 export const getMatchAppId = (entry: IEntry) => {
   const { extension } = entry
   if (!extension) return
-  return DOUBLE_CLICK_OPEN_APP_LIST.find(({ matchList }) => matchList.includes(extension))?.id
+  return CALLABLE_APP_LIST.find(({ matchList }) => matchList!.includes(extension))?.id
 }
 
 export const getDownloadInfo = (parentPathPath: string, selectedEntryList: IEntry[]) => {

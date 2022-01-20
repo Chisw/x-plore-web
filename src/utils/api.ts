@@ -2,8 +2,9 @@ import axios, { AxiosError } from 'axios'
 import { IFilePack } from './types'
 import getPass from './pass'
 
+const { protocol, host } = window.location
 const PASS_KEY = 'PASS_KEY'
-const BASE_URL = process.env.REACT_APP_BASE_URL || ''
+const BASE_URL = process.env.REACT_APP_BASE_URL || `${protocol}//${host}`
 
 const instance = axios.create({
   baseURL: BASE_URL,
