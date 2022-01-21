@@ -70,7 +70,8 @@ export default function Window(props: WindowProps) {
   const handleClose = useCallback(() => {
     const list = runningAppList.filter(a => a.runningId !== runningId)
     setRunningAppList(list)
-  }, [runningAppList, setRunningAppList, runningId])
+    setTopWindowIndex(currentIndex - 1)
+  }, [runningAppList, setRunningAppList, runningId, currentIndex, setTopWindowIndex])
 
   return (
     <>

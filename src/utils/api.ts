@@ -14,10 +14,10 @@ const instance = axios.create({
   },
 })
 
-instance.interceptors.request.use(request => {
+instance.interceptors.request.use(config => {
   const pass = localStorage.getItem(PASS_KEY)
-  if (pass) request.url += `&pass=${pass}`
-  return request
+  if (pass) config.url += `&pass=${pass}`
+  return config
 })
 
 instance.interceptors.response.use(response => response, (error: AxiosError) => {
