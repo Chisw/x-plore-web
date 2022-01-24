@@ -20,7 +20,7 @@ import useDragSelect from '../../hooks/useDragSelect'
 import useDragOperations from '../../hooks/useDragOperations'
 import useShortcuts from '../../hooks/useShortcuts'
 import { pick, throttle } from 'lodash'
-import { ContextMenu } from '@blueprintjs/core'
+import { ContextMenu, Spinner } from '@blueprintjs/core'
 import Menus from './Menus'
 import Pagination from '../../components/Pagination'
 
@@ -53,6 +53,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [virtualEntries, setVirtualEntries] = useState<File[]>([])
   const [hiddenShow, setHiddenShow] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [uploadRatio, setUploadRatio] = useState(0)
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)       // containerInnerRef 的容器，y-scroll-auto
@@ -61,7 +62,7 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
   const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
-  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
+  const { fetch: uploadFileToPath, loading: uploading } = useFetch(uploadFile)
   const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
 
   const { volumeList, volumeMountList } = useMemo(() => {
@@ -214,6 +215,11 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
+  const updateUploadRatio = useCallback((e: ProgressEvent) => {
+    const { loaded, total } = e
+    setUploadRatio(loaded / total)
+  }, [])
+
   const handleUploadStart = useCallback(async (filePackList: IFilePack[], destDir?: string) => {
     if (!filePackList.length) {
       Toast.toast('无有效文件', 2000)
@@ -224,7 +230,8 @@ export default function FileExplorer(props: AppComponentProps) {
     }
     const okList: boolean[] = []
     for (const filePack of filePackList) {
-      const data = await uploadFileToPath(`${currentDirPath}${destDir ? `/${destDir}` : ''}`, filePack)
+      const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
+      const data = await uploadFileToPath(parentPath, filePack, updateUploadRatio)
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         document.querySelector(`[data-name="${filePack.file.name}"]`)?.setAttribute('style', 'opacity:1;')
@@ -237,7 +244,7 @@ export default function FileExplorer(props: AppComponentProps) {
       setVirtualEntries([])
     }
     ;(uploadInputRef.current as any).value = ''
-  }, [currentDirPath, uploadFileToPath, handleRefresh])
+  }, [currentDirPath, uploadFileToPath, handleRefresh, updateUploadRatio])
 
   const handleCancelSelect = useCallback((e: any) => {
     if (e.button === 2) return  // oncontextmenu
@@ -570,6 +577,13 @@ export default function FileExplorer(props: AppComponentProps) {
               `)}
               onContextMenu={handleContextMenu}
             >
+              {uploading && (
+                <Spinner
+                  className="absolute right-0 top-0 m-1"
+                  size={12}
+                  value={uploadRatio}
+                />
+              )}
               {/* create */}
               {(newDirMode || newTxtMode) && (
                 <div

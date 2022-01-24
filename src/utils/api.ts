@@ -66,12 +66,12 @@ export const deleteEntry = async (path: string) => {
   return data
 }
 
-export const uploadFile = async (parentPath: string, filePack: IFilePack) => {
+export const uploadFile = async (parentPath: string, filePack: IFilePack, onUploadProgress?: (e: ProgressEvent) => void) => {
   const { file, fullPath } = filePack
   const { name, size, lastModified } = file
   const targetFileName = fullPath || `/${name}`
-
-  const { data } = await instance.post(`${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`, file)
+  const url = `${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`
+  const { data } = await instance.post(url, file, { onUploadProgress })
   return data
 }
 
@@ -80,7 +80,7 @@ export const getTextFileContent = async (path: string) => {
   return data
 }
 
-
+// 
 export const downloadEntries = (parentPath: string, downloadName: string, cmd: string) => {
   window.open(`${BASE_URL}${parentPath}/${downloadName}?${cmd}`, '_self')
 }
