@@ -1,11 +1,12 @@
-import { WarningAltFilled16 } from '@carbon/icons-react'
 import { useCallback, useState } from 'react'
+import Toast from '../../components/EasyToast'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
 import { getIsExist, addNewDir, renameEntry, uploadFile } from '../../utils/api'
+import { INVALID_NAME_CHAR_LIST } from '../../utils/constant'
 import { IEntry } from '../../utils/types'
 
-export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
+export type NameFailType = 'escape' | 'empty' | 'exist' | 'no_change' | 'net_error' | 'invalid'
 
 interface NameLineProps {
   create?: 'dir' | 'txt' 
@@ -32,11 +33,9 @@ export default function NameLine(props: NameLineProps) {
   } = props
 
   const entryName = entry?.name
-  const [isExist, setIsExist] = useState(false)
   const [inputValue, setInputValue] = useState(entryName)
 
   const handleInputChange = useCallback((e: any) => {
-    setIsExist(false)
     setInputValue(e.target.value)
   }, [])
 
@@ -49,48 +48,58 @@ export default function NameLine(props: NameLineProps) {
     const oldName = entry?.name
     const newName = e.target.value as string
 
-    if (newName) {
-      if (oldName && newName === oldName) onFail('no_change')  // no change no request
+    if (!newName) {
+      onFail('empty')
+      return
+    }
 
-      const newPath = `${currentDirPath}/${newName}`
-      const { exists } = await fetchExist(newPath)
-      if (exists) {
-        onFail('exist')
-        setIsExist(true)
-      } else {
-        if (oldName) {  // rename
-          const oldPath = `${currentDirPath}/${oldName}`
-          const { ok } = await fetchRename(oldPath, newPath)
+    if (INVALID_NAME_CHAR_LIST.some(char => newName.includes(char))) {
+      onFail('invalid')
+      Toast.warning(`存在非法字符：${INVALID_NAME_CHAR_LIST.join(' ')}`)
+      return
+    }
+
+    if (oldName && (newName === oldName)) {
+      onFail('no_change')
+      return
+    }
+
+    const newPath = `${currentDirPath}/${newName}`
+    const { exists } = await fetchExist(newPath)
+    if (exists) {
+      onFail('exist')
+      Toast.warning('已存在')
+    } else {
+      if (oldName) {  // rename
+        const oldPath = `${currentDirPath}/${oldName}`
+        const { ok } = await fetchRename(oldPath, newPath)
+        if (ok) {
+          onSuccess({ ...entry!, name: newName })
+        } else {
+          onFail('net_error')
+        }
+      } else {  // new dir
+        if (create === 'dir') {
+          const { ok } = await fetchNewDir(newPath)
           if (ok) {
-            onSuccess({ ...entry!, name: newName })
+            onSuccess({ name: newName, type: 'directory', parentPath: currentDirPath })
           } else {
             onFail('net_error')
           }
-        } else {  // new dir
-          if (create === 'dir') {
-            const { ok } = await fetchNewDir(newPath)
-            if (ok) {
-              onSuccess({ name: newName, type: 'directory', parentPath: currentDirPath })
-            } else {
-              onFail('net_error')
-            }
-          } else if (create === 'txt') {
-            const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
-            const suffix = newName.includes('.') ? '' : '.txt'
-            const name = newName + suffix
-            const file = new File([blob], name)
-            const data = await uploadFileToPath(currentDirPath, { file })
-            const isUploaded = !!data?.hasDon
-            if (isUploaded) {
-              onSuccess({ name, type: 'file', parentPath: currentDirPath })
-            } else {
-              onFail('net_error')
-            }
+        } else if (create === 'txt') {
+          const blob = new Blob([''], { type: 'text/plain;charset=utf-8' })
+          const suffix = newName.includes('.') ? '' : '.txt'
+          const name = newName + suffix
+          const file = new File([blob], name)
+          const data = await uploadFileToPath(currentDirPath, { file })
+          const isUploaded = !!data?.hasDon
+          if (isUploaded) {
+            onSuccess({ name, type: 'file', parentPath: currentDirPath })
+          } else {
+            onFail('net_error')
           }
         }
       }
-    } else {
-      onFail('empty')
     }
   }, [entry, currentDirPath, create, fetchExist, fetchNewDir, fetchRename, uploadFileToPath, onSuccess, onFail])
 
@@ -103,23 +112,15 @@ export default function NameLine(props: NameLineProps) {
             ${(loadingExist || loadingNewDir || loadingRename) ? 'bg-loading' : ''}
           `)}
         >
-          {isExist && (
-            <span
-              title="已存在"
-              className="absolute top-0 right-0 bottom-0 flex items-center mr-1 text-center text-xs text-yellow-500"
-            >
-              <WarningAltFilled16 />
-            </span>
-          )}
           <input
             id="file-explorer-name-input"
             autoFocus
+            autoComplete="false"
             placeholder="请输入名称"
             className="block px-1 max-w-full h-full bg-transparent text-xs text-left text-gray-700 border-none shadow-inner"
             value={inputValue}
             onChange={handleInputChange}
             onFocus={() => {
-              setIsExist(false)
               ;(document.getElementById('file-explorer-name-input') as any)?.select()
             }}
             onBlur={handleName}
@@ -128,7 +129,7 @@ export default function NameLine(props: NameLineProps) {
               if (key === 'Enter') {
                 handleName(e)
               } else if (key === 'Escape') {
-                onFail('cancel')
+                onFail('escape')
               }
             }}
           />

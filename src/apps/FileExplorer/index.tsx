@@ -268,7 +268,7 @@ export default function FileExplorer(props: AppComponentProps) {
   }, [handleRefresh])
 
   const handleNameFail = useCallback((failType: NameFailType) => {
-    if (['cancel', 'empty', 'no_change'].includes(failType)) {
+    if (['escape', 'empty', 'no_change'].includes(failType)) {
       setNewDirMode(false)
       setNewTxtMode(false)
       setRenameMode(false)

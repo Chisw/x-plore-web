@@ -1,1 +1,1 @@
-export default function fn() {}
+export const INVALID_NAME_CHAR_LIST = ['/', '|', '\\', '?', ':', '"', '<', '>', '*']

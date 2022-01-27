@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import { IFilePack } from './types'
 import getPass from './pass'
+import Toast from '../components/EasyToast'
 
 const { protocol, host } = window.location
 const PASS_KEY = 'PASS_KEY'
@@ -8,7 +9,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL || `${protocol}//${host}`
 
 const instance = axios.create({
   baseURL: BASE_URL,
-  // timeout: 20 * 1000,
+  timeout: 10 * 1000,
+  timeoutErrorMessage: 'timeout-error',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
   },
@@ -16,12 +18,15 @@ const instance = axios.create({
 
 // interceptors
 instance.interceptors.request.use(config => {
+  const { url, method } = config
   const pass = localStorage.getItem(PASS_KEY)
   if (pass) config.url += `&pass=${pass}`
+  if (method === 'post' && url?.includes('?cmd=file')) config.timeout = 0
   return config
 })
 
 instance.interceptors.response.use(response => response, (error: AxiosError) => {
+  if (error.message === 'timeout-error') Toast.toast('请求超时，请重试')
   if (!error.response) return
   if (error.response.status === 401) {
     const password = window.prompt('请输入访问密码？')
