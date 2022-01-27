@@ -54,7 +54,7 @@ export default function TopBar() {
       },
       {
         text: '刷新',
-        onClick: fetch,
+        onClick: () => fetch(),
       },
       {
         text: '回到原版',

@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import { IFilePack } from './types'
 import getPass from './pass'
 
@@ -8,12 +8,13 @@ const BASE_URL = process.env.REACT_APP_BASE_URL || `${protocol}//${host}`
 
 const instance = axios.create({
   baseURL: BASE_URL,
-  timeout: 20 * 1000,
+  // timeout: 20 * 1000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
   },
 })
 
+// interceptors
 instance.interceptors.request.use(config => {
   const pass = localStorage.getItem(PASS_KEY)
   if (pass) config.url += `&pass=${pass}`
@@ -31,52 +32,54 @@ instance.interceptors.response.use(response => response, (error: AxiosError) => 
   }
 })
 
-export const getRootInfo = async () => {
-  const { data } = await instance.get('/?cmd=list_root&filter=dirs')
+
+//
+export const getRootInfo = async (config?: AxiosRequestConfig) => {
+  const { data } = await instance.get('/?cmd=list_root&filter=dirs', config)
   return data
 }
 
-export const getPathEntries = async (path: string) => {
-  const { data } = await instance.get(`${path}?cmd=list`)
+export const getPathEntries = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.get(`${path}?cmd=list`, config)
   return data
 }
 
-export const getIsExist = async (path: string) => {
-  const { data } = await instance.get(`${path}?cmd=exists`)
+export const getIsExist = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.get(`${path}?cmd=exists`, config)
   return data
 }
 
-export const getDirSize = async (path: string) => {
-  const { data } = await instance.get(`${path}?cmd=dir_size`)
+export const getDirSize = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.get(`${path}?cmd=dir_size`, config)
   return data
 }
 
-export const addNewDir = async (path: string) => {
-  const { data } = await instance.put(`${path}?cmd=new_dir`)
+export const addNewDir = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.put(`${path}?cmd=new_dir`, undefined, config)
   return data
 }
 
-export const renameEntry = async (path: string, newPath: string) => {
-  const { data } = await instance.put(`${path}?cmd=rename&n=${encodeURIComponent(newPath)}`)
+export const renameEntry = async (path: string, newPath: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.put(`${path}?cmd=rename&n=${encodeURIComponent(newPath)}`, undefined, config)
   return data
 }
 
-export const deleteEntry = async (path: string) => {
-  const { data } = await instance.delete(`${path}?cmd=delete`)
+export const deleteEntry = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.delete(`${path}?cmd=delete`, config)
   return data
 }
 
-export const uploadFile = async (parentPath: string, filePack: IFilePack, onUploadProgress?: (e: ProgressEvent) => void) => {
+export const uploadFile = async (parentPath: string, filePack: IFilePack, config?: AxiosRequestConfig) => {
   const { file, fullPath } = filePack
   const { name, size, lastModified } = file
   const targetFileName = fullPath || `/${name}`
   const url = `${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`
-  const { data } = await instance.post(url, file, { onUploadProgress })
+  const { data } = await instance.post(url, file, config)
   return data
 }
 
-export const getTextFileContent = async (path: string) => {
-  const { data } = await instance.get(`${path}?cmd=text_file`)
+export const getTextFileContent = async (path: string, config?: AxiosRequestConfig) => {
+  const { data } = await instance.get(`${path}?cmd=text_file`, config)
   return data
 }
 

@@ -16,6 +16,7 @@ import {
   List16,
   ViewOff16,
   DocumentAdd16,
+  Close16,
 } from '@carbon/icons-react'
 import { Button, InputGroup } from '@blueprintjs/core'
 import ToolButton from '../../components/ToolButton'
@@ -51,6 +52,7 @@ interface ToolBarProps {
   onNavBack: () => void
   onNavForward: () => void
   onRefresh: () => void
+  onAbort: () => void
   onBackToTop: () => void
   onNewDir: () => void
   onNewTxt: () => void
@@ -76,6 +78,7 @@ export default function ToolBar(props: ToolBarProps) {
     onNavBack,
     onNavForward,
     onRefresh,
+    onAbort,
     onBackToTop,
     onNewDir,
     onNewTxt,
@@ -106,12 +109,19 @@ export default function ToolBar(props: ToolBarProps) {
           disabled={disabledMap.navForward}
           onClick={onNavForward}
         />
-        <ToolButton
-          title="刷新 [Shift + R]"
-          icon={<Renew16 />}
-          disabled={disabledMap.refresh}
-          onClick={onRefresh}
-        />
+        {disabledMap.refresh ? (
+          <ToolButton
+            title=""
+            icon={<Close16 />}
+            onClick={onAbort}
+          />
+        ) : (
+          <ToolButton
+            title="刷新 [Shift + R]"
+            icon={<Renew16 />}
+            onClick={onRefresh}
+          />
+        )}
         <ToolButton
           title="上级目录 [Shift + ↑]"
           icon={<ArrowUp16 />}

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import useFetch from '../../hooks/useFetch'
 import { line } from '../../utils'
 import { getIsExist, addNewDir, renameEntry, uploadFile } from '../../utils/api'
-import { IEntry, IFilePack } from '../../utils/types'
+import { IEntry } from '../../utils/types'
 
 export type NameFailType = 'cancel' | 'empty' | 'exist' | 'no_change' | 'net_error'
 
@@ -40,10 +40,10 @@ export default function NameLine(props: NameLineProps) {
     setInputValue(e.target.value)
   }, [])
 
-  const { fetch: fetchExist, loading: loadingExist } = useFetch((path: string) => getIsExist(path))
-  const { fetch: fetchNewDir, loading: loadingNewDir } = useFetch((path: string) => addNewDir(path))
-  const { fetch: fetchRename, loading: loadingRename } = useFetch((path: string, newPath: string) => renameEntry(path, newPath))
-  const { fetch: uploadFileToPath } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
+  const { fetch: fetchExist, loading: loadingExist } = useFetch(getIsExist)
+  const { fetch: fetchNewDir, loading: loadingNewDir } = useFetch(addNewDir)
+  const { fetch: fetchRename, loading: loadingRename } = useFetch(renameEntry)
+  const { fetch: uploadFileToPath } = useFetch(uploadFile)
 
   const handleName = useCallback(async (e: any) => {
     const oldName = entry?.name

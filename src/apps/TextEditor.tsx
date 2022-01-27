@@ -9,7 +9,7 @@ import { copy } from '../utils'
 import { getTextFileContent, uploadFile } from '../utils/api'
 import { APP_ID_MAP } from '../utils/appList'
 import { openedEntryListState } from '../utils/state'
-import { AppComponentProps, IFilePack, IOpenedEntry } from '../utils/types'
+import { AppComponentProps, IOpenedEntry } from '../utils/types'
 
 export default function TextEditor(props: AppComponentProps) {
 
@@ -20,8 +20,8 @@ export default function TextEditor(props: AppComponentProps) {
   const [value, setValue] = useState('')
   const [monoMode, setMonoMode] = useState(false)
 
-  const { fetch: fetchTextContent, loading: fetching, data: textContent, setData: setTextContent } = useFetch((path: string) => getTextFileContent(path))
-  const { fetch: uploadFileToPath, loading: saving } = useFetch((path: string, filePack: IFilePack) => uploadFile(path, filePack))
+  const { fetch: fetchTextContent, loading: fetching, data: textContent, setData: setTextContent } = useFetch(getTextFileContent)
+  const { fetch: uploadFileToPath, loading: saving } = useFetch(uploadFile)
 
   useEffect(() => setWindowLoading(fetching), [setWindowLoading, fetching])
 

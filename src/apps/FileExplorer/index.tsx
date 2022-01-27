@@ -54,16 +54,17 @@ export default function FileExplorer(props: AppComponentProps) {
   const [hiddenShow, setHiddenShow] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [uploadRatio, setUploadRatio] = useState(0)
+  const [abortController, setAbortController] = useState<AbortController | null>(null)
 
   const rectRef = useRef(null)
   const containerRef = useRef(null)       // containerInnerRef 的容器，y-scroll-auto
   const containerInnerRef = useRef(null)  // entryList 容器，最小高度与 containerRef 的一致，自动撑高
   const uploadInputRef = useRef(null)
 
-  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch((path: string) => getPathEntries(path))
-  const { fetch: deletePath, loading: deleting } = useFetch((path: string) => deleteEntry(path))
+  const { fetch: fetchPath, loading: fetching, data, setData } = useFetch(getPathEntries)
+  const { fetch: deletePath, loading: deleting } = useFetch(deleteEntry)
   const { fetch: uploadFileToPath, loading: uploading } = useFetch(uploadFile)
-  const { fetch: getSize, loading: getting } = useFetch((path: string) => getDirSize(path))
+  const { fetch: getSize, loading: getting } = useFetch(getDirSize)
 
   const { volumeList, volumeMountList } = useMemo(() => {
     const { volumeList } = rootInfo
@@ -138,7 +139,10 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const fetchPathData = useCallback((path: string, keepData?: boolean) => {
     !keepData && setData(null)
-    fetchPath(path)
+    const controller = new AbortController()
+    const config = { signal: controller.signal }
+    fetchPath(path, config)
+    setAbortController(controller)
     setNewDirMode(false)
   }, [setData, fetchPath])
 
@@ -215,11 +219,6 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
-  const updateUploadRatio = useCallback((e: ProgressEvent) => {
-    const { loaded, total } = e
-    setUploadRatio(loaded / total)
-  }, [])
-
   const handleUploadStart = useCallback(async (filePackList: IFilePack[], destDir?: string) => {
     if (!filePackList.length) {
       Toast.toast('无有效文件', 2000)
@@ -231,7 +230,11 @@ export default function FileExplorer(props: AppComponentProps) {
     const okList: boolean[] = []
     for (const filePack of filePackList) {
       const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
-      const data = await uploadFileToPath(parentPath, filePack, updateUploadRatio)
+      const onUploadProgress = (e: ProgressEvent) => {
+        const { loaded, total } = e
+        setUploadRatio(loaded / total)
+      }
+      const data = await uploadFileToPath(parentPath, filePack, { onUploadProgress })
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
         document.querySelector(`[data-name="${filePack.file.name}"]`)?.setAttribute('style', 'opacity:1;')
@@ -244,7 +247,7 @@ export default function FileExplorer(props: AppComponentProps) {
       setVirtualEntries([])
     }
     ;(uploadInputRef.current as any).value = ''
-  }, [currentDirPath, uploadFileToPath, handleRefresh, updateUploadRatio])
+  }, [currentDirPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
     if (e.button === 2) return  // oncontextmenu
@@ -531,6 +534,7 @@ export default function FileExplorer(props: AppComponentProps) {
             onNavBack={handleNavBack}
             onNavForward={handleNavForward}
             onRefresh={handleRefresh}
+            onAbort={() => abortController?.abort()}
             onBackToTop={handleBackToTop}
             onNewDir={() => handleCreate('dir')}
             onNewTxt={() => handleCreate('txt')}
