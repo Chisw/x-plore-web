@@ -5,7 +5,7 @@ import {
   ArrowRight16,
   Download16,
   Edit16,
-  Export16,
+  Upload16,
   Filter16,
   FolderAdd16,
   Grid16,
@@ -151,7 +151,7 @@ export default function ToolBar(props: ToolBarProps) {
         />
         <ToolButton
           title="上传 [Shift + U]"
-          icon={<Export16 />}
+          icon={<Upload16 />}
           onClick={onUpload}
         />
         <ToolButton

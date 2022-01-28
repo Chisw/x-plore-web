@@ -225,7 +225,7 @@ export default function FileExplorer(props: AppComponentProps) {
       return
     }
     if (!destDir) {
-      setVirtualEntries(filePackList.filter(p => '/' + p.file.name === p.fullPath).map(p => p.file))
+      setVirtualEntries(filePackList.filter(p => '/' + p.file.name === p.packPath).map(p => p.file))
     }
     const okList: boolean[] = []
     for (const filePack of filePackList) {

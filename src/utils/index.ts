@@ -162,7 +162,7 @@ export const getEntryFilePackList = async (entry: any) => {  // any: FileSystemE
         if (fileName !== '.DS_Store' && !fileName.startsWith('._')) {
           filePackList.push({
             file,
-            fullPath: entry.fullPath,
+            packPath: entry.packPath,
           })
         }
         resolve(true)

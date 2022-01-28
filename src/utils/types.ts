@@ -89,5 +89,13 @@ export interface IOffsetInfo {
 
 export interface IFilePack {
   file: File
-  fullPath?: string
+  packPath?: string  // 多层文件夹嵌套上传时的相对路径，包含文件名
+}
+
+export interface IUploadTask {
+  filePack: IFilePack
+  destDir?: string
+  startTime: number
+  endTime: number
+  abortController?: AbortController
 }

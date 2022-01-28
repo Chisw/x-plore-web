@@ -1,5 +1,5 @@
 import { Button, Classes, Popover } from '@blueprintjs/core'
-import { LogoGithub16, Wifi16 } from '@carbon/icons-react'
+import { Rocket16, LogoGithub16, Wifi16 } from '@carbon/icons-react'
 import { DateTime } from 'luxon'
 import { useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
@@ -110,6 +110,12 @@ export default function TopBar() {
             </div>
           )}
         />
+        <div className="flex-grow" />
+        <div className="px-2 h-full">
+          <div className="flex items-center mx-2 px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
+            <Rocket16 />
+          </div>
+        </div>
         <div className="px-2 font-din">
           <span>{timeStr}</span>
         </div>

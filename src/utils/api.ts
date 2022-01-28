@@ -75,9 +75,9 @@ export const deleteEntry = async (path: string, config?: AxiosRequestConfig) => 
 }
 
 export const uploadFile = async (parentPath: string, filePack: IFilePack, config?: AxiosRequestConfig) => {
-  const { file, fullPath } = filePack
+  const { file, packPath } = filePack
   const { name, size, lastModified } = file
-  const targetFileName = fullPath || `/${name}`
+  const targetFileName = packPath || `/${name}`
   const url = `${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`
   const { data } = await instance.post(url, file, config)
   return data

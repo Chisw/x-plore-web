@@ -1,5 +1,5 @@
 import { ContextMenu, Menu, MenuItem } from '@blueprintjs/core'
-import { Application16, Cube16, DocumentAdd16, Download16, Edit16, Export16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
+import { Application16, Cube16, DocumentAdd16, Download16, Edit16, Upload16, FolderAdd16, Renew16, TrashCan16 } from '@carbon/icons-react'
 import { IApp, IEntry, IOpenedEntry } from '../../utils/types'
 import APP_LIST from '../../utils/appList'
 import { useCallback, useMemo } from 'react'
@@ -160,7 +160,7 @@ export default function Menus(props: MenusProps) {
         onClick: () => updateDirSize(contextEntryList[0]),
       },
       {
-        icon: <Export16 />,
+        icon: <Upload16 />,
         text: '上传',
         isShow: isOnBlank,
         onClick: handleUploadClick,
