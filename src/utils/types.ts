@@ -87,13 +87,12 @@ export interface IOffsetInfo {
   offsetHeight: number
 }
 
-export interface IFilePack {
-  file: File
-  packPath?: string  // 多层文件夹嵌套上传时的相对路径，包含文件名
+export interface INestFile extends File {
+  nestPath?: string  // 多层文件夹上传时的嵌套路径，包含文件名
 }
 
 export interface IUploadTask {
-  filePack: IFilePack
+  nestFile: INestFile
   destDir?: string
   startTime: number
   endTime: number

@@ -1,5 +1,5 @@
 import { CALLABLE_APP_LIST } from './appList'
-import { IEntry, IFilePack, IOffsetInfo, IRectInfo } from './types'
+import { IEntry, INestFile, IOffsetInfo, IRectInfo } from './types'
 
 
 export const entrySorter = (a: IEntry, b: IEntry) => {
@@ -153,17 +153,14 @@ export function SpeedCounter(this: typeof SpeedCounter) {
   }
 }
 
-export const getEntryFilePackList = async (entry: any) => {  // any: FileSystemEntry
-  const filePackList: IFilePack[] = []
+export const getEntryNestFileList = async (entry: any) => {  // any: FileSystemEntry
+  const nestFileList: INestFile[] = []
   if (entry.isFile) {
     await new Promise((resolve, reject) => {
       (entry as any).file((file: File) => {  // any: FileSystemFileEntry
         const fileName = file.name
         if (fileName !== '.DS_Store' && !fileName.startsWith('._')) {
-          filePackList.push({
-            file,
-            packPath: entry.packPath,
-          })
+          nestFileList.push(Object.assign(file, { nestPath: entry.fullPath }))
         }
         resolve(true)
       })
@@ -173,28 +170,28 @@ export const getEntryFilePackList = async (entry: any) => {  // any: FileSystemE
       const reader = (entry as any).createReader()  // any: FileSystemDirectoryEntry
       reader.readEntries(async (entries: any) => {  // any: FileSystemEntry[]
         for (const entry of entries) {
-          const list = await getEntryFilePackList(entry)
-          filePackList.push(...list)
+          const list = await getEntryNestFileList(entry)
+          nestFileList.push(...list)
         }
         resolve(true)
       })
     })
   }
-  return filePackList
+  return nestFileList
 }
 
-export const getDTFilePackList = async (dataTransfer: DataTransfer) => {
-  const filePackList: IFilePack[] = []
+export const getDTNestFileList = async (dataTransfer: DataTransfer) => {
+  const nestFileList: INestFile[] = []
   const { items } = dataTransfer as any
   // don't use `for of`
   await Promise.all([...items].map(async (item) => {
     if (item.kind === 'file' && item.webkitGetAsEntry) {
       const entry = item.webkitGetAsEntry() as any // any: FileSystemEntry
-      const files = await getEntryFilePackList(entry)
-      filePackList.push(...files)
+      const files = await getEntryNestFileList(entry)
+      nestFileList.push(...files)
     } else if (item.kind === 'string') {
       // handle string
     }
   }))
-  return filePackList
+  return nestFileList
 }

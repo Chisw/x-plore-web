@@ -53,7 +53,7 @@ export default function Pagination(props: PaginationProps) {
   if (count <= 0) return <></>
 
   return (
-    <div className="flex p-1 bg-white rounded-lg shadow-lg">
+    <div className="flex p-1 bg-white rounded-lg shadow-lg select-none">
       <ButtonGroup className="bg-white font-din">
         <Button
           icon="chevron-left"

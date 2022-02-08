@@ -7,7 +7,7 @@ import { getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
-import { AppComponentProps, IEntry, IHistory, IRectInfo, IFilePack } from '../../utils/types'
+import { AppComponentProps, IEntry, IHistory, IRectInfo, INestFile } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -164,6 +164,7 @@ export default function FileExplorer(props: AppComponentProps) {
     pushPath?: boolean
     updateVolume?: boolean
   }) => {
+    abortController && abortController.abort()
     const { path, direction, pushPath, updateVolume } = props
     setPrevDirPath(currentDirPath)
     setCurrentPath(path)
@@ -173,7 +174,7 @@ export default function FileExplorer(props: AppComponentProps) {
       const mount = volumeMountList.find(m => path.startsWith(m))!
       setActiveVolume(mount)
     }
-  }, [currentDirPath, fetchPathData, volumeMountList, updateHistory])
+  }, [abortController, currentDirPath, fetchPathData, volumeMountList, updateHistory])
 
   const handleVolumeClick = useCallback((path: string) => {
     handlePathChange({ path, direction: 'forward', pushPath: true, updateVolume: true })
@@ -219,16 +220,17 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
-  const handleUploadStart = useCallback(async (filePackList: IFilePack[], destDir?: string) => {
-    if (!filePackList.length) {
+  const handleUploadStart = useCallback(async (nestFileList: INestFile[], destDir?: string) => {
+    if (!nestFileList.length) {
       Toast.toast('无有效文件', 2000)
       return
     }
+    // 只显示当前文件夹下的
     if (!destDir) {
-      setVirtualEntries(filePackList.filter(p => '/' + p.file.name === p.packPath).map(p => p.file))
+      setVirtualEntries(nestFileList.filter(f => '/' + f.name === f.nestPath).map(f => f))
     }
     const okList: boolean[] = []
-    for (const filePack of filePackList) {
+    for (const nestFile of nestFileList) {
       const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
       let lastUpload = { time: Date.now(), size: 0 }
       const onUploadProgress = (e: ProgressEvent) => {
@@ -241,10 +243,10 @@ export default function FileExplorer(props: AppComponentProps) {
         setUploadInfo({ ratio: loaded / total, speed })
         lastUpload = { time: now, size: loaded }
       }
-      const data = await uploadFileToPath(parentPath, filePack, { onUploadProgress })
+      const data = await uploadFileToPath(parentPath, nestFile, { onUploadProgress })
       const isUploaded = !!data?.hasDon
       if (isUploaded) {
-        document.querySelector(`[data-name="${filePack.file.name}"]`)?.setAttribute('style', 'opacity:1;')
+        document.querySelector(`[data-name="${nestFile.name}"]`)?.setAttribute('style', 'opacity:1;')
       }
       okList.push(isUploaded)
     }
@@ -473,9 +475,9 @@ export default function FileExplorer(props: AppComponentProps) {
     onLeaveContainer: () => {
       setWaitDropToCurrentPath(false)
     },
-    onUpload: (filePackList, destDir) => {
+    onUpload: (nestFileList, destDir) => {
       setWaitDropToCurrentPath(false)
-      handleUploadStart(filePackList, destDir)
+      handleUploadStart(nestFileList, destDir)
     },
   })
 
@@ -712,10 +714,7 @@ export default function FileExplorer(props: AppComponentProps) {
         ref={uploadInputRef}
         type="file"
         className="hidden"
-        onChange={(e: any) => {
-          const filePackList = [...e.target.files].map((file: File) => ({ file }))
-          handleUploadStart(filePackList)
-        }}
+        onChange={(e: any) => handleUploadStart([...e.target.files])}
       />
 
       <Confirmor {...downloadConfirmorProps} />

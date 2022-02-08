@@ -74,7 +74,7 @@ const ENTRY_ICON_LIST: IEntryIcon[] = [
   {
     type: 'code',
     icon: <Code20 />,
-    iconClassName: 'text-gray-900 bg-gray-300 border-gray-400',
+    iconClassName: 'text-indigo-900 bg-indigo-300 border-indigo-400',
     matchList: ['html', 'css', 'js', 'php'],
   },
   {

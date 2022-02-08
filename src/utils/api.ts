@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
-import { IFilePack } from './types'
+import { INestFile } from './types'
 import getPass from './pass'
 import Toast from '../components/EasyToast'
 
@@ -74,12 +74,11 @@ export const deleteEntry = async (path: string, config?: AxiosRequestConfig) => 
   return data
 }
 
-export const uploadFile = async (parentPath: string, filePack: IFilePack, config?: AxiosRequestConfig) => {
-  const { file, packPath } = filePack
-  const { name, size, lastModified } = file
-  const targetFileName = packPath || `/${name}`
+export const uploadFile = async (parentPath: string, nestFile: INestFile, config?: AxiosRequestConfig) => {
+  const { name, size, lastModified, nestPath } = nestFile
+  const targetFileName = nestPath || `/${name}`
   const url = `${parentPath}${targetFileName}?cmd=file&size=${size}&file_date=${lastModified}`
-  const { data } = await instance.post(url, file, config)
+  const { data } = await instance.post(url, nestFile, config)
   return data
 }
 
