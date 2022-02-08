@@ -53,7 +53,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [virtualEntries, setVirtualEntries] = useState<File[]>([])
   const [hiddenShow, setHiddenShow] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [uploadRatio, setUploadRatio] = useState(0)
+  const [uploadInfo, setUploadInfo] = useState({ ratio: 0, speed: '' })
   const [abortController, setAbortController] = useState<AbortController | null>(null)
 
   const rectRef = useRef(null)
@@ -230,9 +230,16 @@ export default function FileExplorer(props: AppComponentProps) {
     const okList: boolean[] = []
     for (const filePack of filePackList) {
       const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
+      let lastUpload = { time: Date.now(), size: 0 }
       const onUploadProgress = (e: ProgressEvent) => {
         const { loaded, total } = e
-        setUploadRatio(loaded / total)
+        const { time, size } = lastUpload
+        const now = Date.now()
+        const interval = (now - time) / 1000
+        const delta = loaded - size
+        const speed = getBytesSize(delta / interval) + '/s'
+        setUploadInfo({ ratio: loaded / total, speed })
+        lastUpload = { time: now, size: loaded }
       }
       const data = await uploadFileToPath(parentPath, filePack, { onUploadProgress })
       const isUploaded = !!data?.hasDon
@@ -564,7 +571,7 @@ export default function FileExplorer(props: AppComponentProps) {
           >
             <div
               ref={rectRef}
-              className="hidden absolute z-10 border box-content border-gray-400 bg-black-100"
+              className="hidden absolute z-10 border box-content border-gray-400 bg-black-100 pointer-events-none"
             />
             {/* empty tip */}
             {(!fetching && isEntryListEmpty) && (
@@ -582,11 +589,14 @@ export default function FileExplorer(props: AppComponentProps) {
               onContextMenu={handleContextMenu}
             >
               {uploading && (
-                <Spinner
-                  className="absolute right-0 top-0 m-1"
-                  size={12}
-                  value={uploadRatio}
-                />
+                <div className="absolute right-0 top-0 m-1 flex items-center">
+                  <span className="font-din text-xs text-gray-500">{uploadInfo.speed}</span>
+                  &nbsp;
+                  <Spinner
+                    size={12}
+                    value={uploadInfo.ratio}
+                  />
+                </div>
               )}
               {/* create */}
               {(newDirMode || newTxtMode) && (

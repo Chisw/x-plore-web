@@ -13,7 +13,7 @@ export const entrySorter = (a: IEntry, b: IEntry) => {
 
 export const getFileNameExtension = (name: string) => {
   if (!name || !name.includes('.') || name.startsWith('.')) return undefined
-  return name.split('.').reverse()[0].toLocaleLowerCase()
+  return name.split('.').reverse()[0].toLowerCase()
 }
 
 export const copy = (str: string) => {
