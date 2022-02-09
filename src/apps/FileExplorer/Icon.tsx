@@ -36,7 +36,7 @@ const THUMBNAIL_MATCH_LIST = [
 const DEFAULT_ENTRY_ICON: IEntryIcon = {
   type: 'unknown',
   icon: <Help20 />,
-  iconClassName: 'text-gray-500 bg-gray-100 border-gray-300',
+  iconClassName: 'text-gray-500 bg-gray-200 border-gray-200',
   matchList: [],
 }
 
@@ -74,7 +74,7 @@ const ENTRY_ICON_LIST: IEntryIcon[] = [
   {
     type: 'code',
     icon: <Code20 />,
-    iconClassName: 'text-indigo-900 bg-indigo-300 border-indigo-400',
+    iconClassName: 'text-green-400 bg-black-900 border-green-600',
     matchList: ['html', 'css', 'js', 'php'],
   },
   {

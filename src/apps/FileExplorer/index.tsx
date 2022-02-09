@@ -6,8 +6,8 @@ import useFetch from '../../hooks/useFetch'
 import { getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter, line, getMatchAppId } from '../../utils'
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
-import { openedEntryListState, rootInfoState, sizeMapState } from '../../utils/state'
-import { AppComponentProps, IEntry, IHistory, IRectInfo, INestFile } from '../../utils/types'
+import { openedEntryListState, rootInfoState, sizeMapState, uploadTaskListState } from '../../utils/state'
+import { AppComponentProps, IEntry, IHistory, IRectInfo, INestFile, IUploadTask } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -33,6 +33,7 @@ export default function FileExplorer(props: AppComponentProps) {
   const [rootInfo] = useRecoilState(rootInfoState)
   const [sizeMap, setSizeMap] = useRecoilState(sizeMapState)
   const [, setOpenedEntryList] = useRecoilState(openedEntryListState)
+  const [uploadTaskList, setUploadTaskList] = useRecoilState(uploadTaskListState)
   const [sideCollapse, setSideCollapse] = useState(false)
   const [currentDirPath, setCurrentPath] = useState('')
   const [prevDirPath, setPrevDirPath] = useState('')
@@ -229,6 +230,15 @@ export default function FileExplorer(props: AppComponentProps) {
     if (!destDir) {
       setVirtualEntries(nestFileList.filter(f => '/' + f.name === f.nestPath).map(f => f))
     }
+
+    const newTaskList: IUploadTask[] = nestFileList.map(file => ({
+      nestFile: file,
+      destDir,
+      state: 'waiting',
+    }))
+
+    setUploadTaskList([...uploadTaskList, ...newTaskList])
+
     const okList: boolean[] = []
     for (const nestFile of nestFileList) {
       const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
@@ -239,7 +249,7 @@ export default function FileExplorer(props: AppComponentProps) {
         const now = Date.now()
         const interval = (now - time) / 1000
         const delta = loaded - size
-        const speed = getBytesSize(delta / interval) + '/s'
+        const speed = getBytesSize({ bytes: delta / interval, keepFloat: true }) + '/s'
         setUploadInfo({ ratio: loaded / total, speed })
         lastUpload = { time: now, size: loaded }
       }
@@ -256,7 +266,7 @@ export default function FileExplorer(props: AppComponentProps) {
       setVirtualEntries([])
     }
     ;(uploadInputRef.current as any).value = ''
-  }, [currentDirPath, uploadFileToPath, handleRefresh])
+  }, [uploadTaskList, setUploadTaskList, currentDirPath, uploadFileToPath, handleRefresh])
 
   const handleCancelSelect = useCallback((e: any) => {
     if (e.button === 2) return  // oncontextmenu
@@ -632,8 +642,8 @@ export default function FileExplorer(props: AppComponentProps) {
                 const { name, type, hidden, size, lastModified } = entry
                 const isSelected = !!selectedEntryList.find(o => isSameEntry(o, entry))
                 const small = !gridMode
-                const _size = size === undefined ? sizeMap[`${currentDirPath}/${name}`] : size
-                const sizeLabel = _size === undefined ? '--' : getBytesSize(_size)
+                const bytes = size === undefined ? sizeMap[`${currentDirPath}/${name}`] : size
+                const sizeLabel = bytes === undefined ? '--' : getBytesSize({ bytes })
                 const dateLabel = lastModified ? DateTime.fromMillis(lastModified).toFormat('yyyy-MM-dd HH:mm') : ''
                 return (
                   <div

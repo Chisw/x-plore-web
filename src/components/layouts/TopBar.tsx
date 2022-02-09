@@ -1,18 +1,19 @@
 import { Button, Classes, Popover } from '@blueprintjs/core'
-import { Rocket16, LogoGithub16, Wifi16 } from '@carbon/icons-react'
+import { Upload16, LogoGithub16, Wifi16 } from '@carbon/icons-react'
 import { DateTime } from 'luxon'
 import { useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import useFetch from '../../hooks/useFetch'
 import { getRootInfo } from '../../utils/api'
 import { rootInfoConverter } from '../../utils/converters'
-import { rootInfoState } from '../../utils/state'
+import { rootInfoState, uploadTaskListState } from '../../utils/state'
 
 
 export default function TopBar() {
 
   const [timeStr, setTimerStr] = useState('')
   const [rootInfo, setRootInfo] = useRecoilState(rootInfoState)
+  const [uploadTaskList] = useRecoilState(uploadTaskListState)
 
   const { fetch, loading, data } = useFetch(getRootInfo)
 
@@ -113,7 +114,8 @@ export default function TopBar() {
         <div className="flex-grow" />
         <div className="px-2 h-full">
           <div className="flex items-center mx-2 px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
-            <Rocket16 />
+            <Upload16 />
+            {uploadTaskList.length}
           </div>
         </div>
         <div className="px-2 font-din">

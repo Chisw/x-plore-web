@@ -34,7 +34,9 @@ export const isSameEntry = (a: IEntry, b: IEntry) => {
   return a.name === b.name && a.type === b.type
 }
 
-export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => {
+export const getBytesSize = (params: { bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB', keepFloat?: boolean }) => {
+  let { bytes, unit, keepFloat } = params
+
   if (!unit) {
     if (0 <= bytes && bytes < 1024) {
       unit = 'B'
@@ -48,8 +50,9 @@ export const getBytesSize = (bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB') => 
   }
   const level = ['B', 'KB', 'MB', 'GB'].indexOf(unit)
   const divisor = [1, 1024, 1048576, 1073741824][level]
-  const result = `${(bytes / divisor).toFixed(unit === 'B' ? 0 : 1).replace('.0', '')} ${unit}`
-  return result
+  const fixedSize = (bytes / divisor).toFixed(unit === 'B' ? 0 : 1)
+  const size = keepFloat ? fixedSize : fixedSize.replace('.0', '')
+  return `${size} ${unit}`
 }
 
 export const getMatchAppId = (entry: IEntry) => {

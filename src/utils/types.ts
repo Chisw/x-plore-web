@@ -94,7 +94,6 @@ export interface INestFile extends File {
 export interface IUploadTask {
   nestFile: INestFile
   destDir?: string
-  startTime: number
-  endTime: number
+  state: 'waiting' | 'uploading' | 'success' | 'fail' | 'cancel'
   abortController?: AbortController
 }

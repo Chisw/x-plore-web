@@ -43,7 +43,7 @@ export default function VolumeList(props: VolumeListProps) {
                 <VmdkDisk16 className="flex-shrink-0" />
                 <span className="ml-1 truncate flex-grow">{title}</span>
                 <span className="font-din text-gray-500">
-                  {`${getBytesSize(spaceUsed)}/${getBytesSize(spaceTotal)}`.replace(/\s/g, '')}
+                  {`${getBytesSize({ bytes: spaceUsed })}/${getBytesSize({ bytes: spaceTotal })}`.replace(/\s/g, '')}
                 </span>
               </div>
               <div className="relative mt-1 h-1 text-gray-500 font-din bg-white rounded-sm overflow-hidden">
