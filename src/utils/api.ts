@@ -26,14 +26,20 @@ instance.interceptors.request.use(config => {
 })
 
 instance.interceptors.response.use(response => response, (error: AxiosError) => {
-  if (error.message === 'timeout-error') Toast.toast('请求超时，请重试')
-  if (!error.response) return
-  if (error.response.status === 401) {
+  const { message, response } = error
+  if (message === 'timeout-error') {
+    Toast.toast('请求超时，请重试')
+  }
+  if (!response) return
+  const { status } = response
+  if (status === 401) {
     const password = window.prompt('请输入访问密码？')
     if (password) {
       const pass = getPass(password)
       localStorage.setItem(PASS_KEY, pass)
     }
+  } else if (status === 502) {
+    Toast.toast('请求失败')
   }
 })
 
