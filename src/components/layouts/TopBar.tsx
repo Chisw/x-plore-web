@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRecoilState } from 'recoil'
 import useFetch from '../../hooks/useFetch'
 import { getRootInfo } from '../../utils/api'
+import { DOCUMENT_TITLE } from '../../utils/constant'
 import { rootInfoConverter } from '../../utils/converters'
 import { rootInfoState, uploadTaskListState } from '../../utils/state'
 
@@ -26,6 +27,10 @@ export default function TopBar() {
       setRootInfo(rootInfoConverter(data))
     }
   }, [data, setRootInfo])
+
+  useEffect(() => {
+    document.title = `${rootInfo ? `${rootInfo.deviceName} - ` : ''}${DOCUMENT_TITLE}`
+  }, [rootInfo])
 
   useEffect(() => {
     const tick = () => {
