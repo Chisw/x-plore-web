@@ -7,7 +7,7 @@ import { getBytesSize, getDownloadInfo, getIsContained, isSameEntry, entrySorter
 import { deleteEntry, downloadEntries, getDirSize, getPathEntries, uploadFile } from '../../utils/api'
 import { entryConverter } from '../../utils/converters'
 import { openedEntryListState, rootInfoState, sizeMapState, uploadTaskListState } from '../../utils/state'
-import { AppComponentProps, IEntry, IHistory, IRectInfo, INestFile, IUploadTask } from '../../utils/types'
+import { AppComponentProps, IEntry, IHistory, IRectInfo, INestedFile, IUploadTask } from '../../utils/types'
 import PathLink from './PathLink'
 import ToolBar, { IToolBarDisabledMap } from './ToolBar'
 import NameLine, { NameFailType } from './NameLine'
@@ -221,28 +221,32 @@ export default function FileExplorer(props: AppComponentProps) {
 
   const handleRename = useCallback(() => setRenameMode(true), [])
 
-  const handleUploadStart = useCallback(async (nestFileList: INestFile[], destDir?: string) => {
-    if (!nestFileList.length) {
+  const handleUploadStart = useCallback(async (nestedFileList: INestedFile[], destDir?: string) => {
+    if (!nestedFileList.length) {
       Toast.toast('无有效文件', 2000)
       return
     }
     // 只显示当前文件夹下的
     if (!destDir) {
-      setVirtualEntries(nestFileList.filter(f => '/' + f.name === f.nestPath).map(f => f))
+      setVirtualEntries(nestedFileList.filter(f => '/' + f.name === f.nestedPath).map(f => f))
     }
 
-    const newTaskList: IUploadTask[] = nestFileList.map(file => ({
-      nestFile: file,
+    const newTaskList: IUploadTask[] = nestedFileList.map(nestedFile => ({
+      id: Math.random().toString(36).slice(-8),
+      nestedFile,
       destDir,
-      state: 'waiting',
+      status: 'waiting',
     }))
 
-    setUploadTaskList([...uploadTaskList, ...newTaskList])
+    let allTaskList = [...uploadTaskList, ...newTaskList]
+
+    setUploadTaskList(allTaskList)
 
     const okList: boolean[] = []
-    for (const nestFile of nestFileList) {
+    for (const nestedFile of nestedFileList) {
       const parentPath = `${currentDirPath}${destDir ? `/${destDir}` : ''}`
       let lastUpload = { time: Date.now(), size: 0 }
+
       const onUploadProgress = (e: ProgressEvent) => {
         const { loaded, total } = e
         const { time, size } = lastUpload
@@ -253,10 +257,19 @@ export default function FileExplorer(props: AppComponentProps) {
         setUploadInfo({ ratio: loaded / total, speed })
         lastUpload = { time: now, size: loaded }
       }
-      const data = await uploadFileToPath(parentPath, nestFile, { onUploadProgress })
+
+      const data = await uploadFileToPath(parentPath, nestedFile, { onUploadProgress })
       const isUploaded = !!data?.hasDon
+
       if (isUploaded) {
-        document.querySelector(`[data-name="${nestFile.name}"]`)?.setAttribute('style', 'opacity:1;')
+        document.querySelector(`[data-name="${nestedFile.name}"]`)
+          ?.setAttribute('style', 'opacity:1;')
+        const list = [...allTaskList]
+        const task = list.find(t => t.nestedFile.nestedPath === nestedFile.nestedPath)!
+        const taskIndex = list.findIndex(t => t.nestedFile.nestedPath === nestedFile.nestedPath)
+        list.splice(taskIndex, 1, { ...task, status: 'success' })
+        allTaskList = list
+        setUploadTaskList(list)
       }
       okList.push(isUploaded)
     }
@@ -485,9 +498,9 @@ export default function FileExplorer(props: AppComponentProps) {
     onLeaveContainer: () => {
       setWaitDropToCurrentPath(false)
     },
-    onUpload: (nestFileList, destDir) => {
+    onUpload: (nestedFileList, destDir) => {
       setWaitDropToCurrentPath(false)
-      handleUploadStart(nestFileList, destDir)
+      handleUploadStart(nestedFileList, destDir)
     },
   })
 

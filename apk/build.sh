@@ -13,7 +13,7 @@ DIR_Z=/Users/$(whoami)/Library/Android/sdk/build-tools/30.0.0  # apksigner 目�
 
 # 同步 wifi 文件夹
 # cd $DIR_X && rm -rf assets/wifi && cp -r $DIR/wifi $DIR_X/assets/wifi && \
-cd $DIR_X && rm -rf assets/wifi/wfms && cp -r $DIR/build $DIR_X/assets/wifi/wfms && \1231233
+cd $DIR_X && rm -rf assets/wifi/wfms && cp -r $DIR/build $DIR_X/assets/wifi/wfms && \
 # 清空上次编译结果
 cd $DIR_X && rm -rf dist && \
 # 回编译

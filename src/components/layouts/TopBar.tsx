@@ -1,4 +1,4 @@
-import { Button, Classes, Popover } from '@blueprintjs/core'
+import { Button, Classes, Popover, Tag } from '@blueprintjs/core'
 import { Upload16, LogoGithub16, Wifi16 } from '@carbon/icons-react'
 import { DateTime } from 'luxon'
 import { useEffect, useMemo, useState } from 'react'
@@ -109,7 +109,7 @@ export default function TopBar() {
                 alignText="left"
                 className="hidden w-full"
                 icon={<LogoGithub16 />}
-                onClick={() => window.open('https://github.com/Chisw/x-plore-web')}
+                onClick={() => window.open('https://github.com/Chisw/x-plore-wfms')}
               >
                 GitHub
               </Button>
@@ -118,10 +118,44 @@ export default function TopBar() {
         />
         <div className="flex-grow" />
         <div className="px-2 h-full">
-          <div className="flex items-center mx-2 px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
-            <Upload16 />
-            {uploadTaskList.length}
-          </div>
+          <Popover
+            minimal
+            position="bottom"
+            targetTagName="div"
+            targetClassName="h-full"
+            disabled={!uploadTaskList.length}
+          >
+            <div className="flex items-center mx-2 px-2 h-full cursor-pointer hover:bg-white-700 hover:text-black active:bg-white-500">
+              <Upload16 />
+              <span className="ml-1 font-din">
+                {uploadTaskList.filter(t => t.status === 'success').length}
+                /{uploadTaskList.length}
+              </span>
+            </div>
+            <div className="p-1 w-80 max-h-80vh rounded overflow-hidden overflow-y-auto">
+              {uploadTaskList.map((task, taskIndex) => {
+                const { id, nestedFile: { name }, status } = task
+                const isSuccess = status === 'success'
+                const len = uploadTaskList.length.toString().length
+                const indexStr = `${(taskIndex + 1).toString().padStart(len, '0')}`
+                return (
+                  <div
+                    key={id}
+                    className="py-1 text-xs flex justify-between items-center"
+                  >
+                    <span>{indexStr}. {name}</span>
+                    &nbsp;
+                    <Tag
+                      round
+                      intent={isSuccess ? 'success' : 'none'}
+                    >
+                      {status}
+                    </Tag>
+                  </div>
+                )
+              })}
+            </div>
+          </Popover>
         </div>
         <div className="px-2 font-din">
           <span>{timeStr}</span>

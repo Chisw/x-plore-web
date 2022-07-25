@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import { getDTNestFileList } from '../utils'
-import { INestFile } from '../utils/types'
+import { getDTNestedFileList } from '../utils'
+import { INestedFile } from '../utils/types'
 
 interface useDragOperationsProps {
   containerInnerRef: any
   onEnterContainer: () => void
   onLeaveContainer: () => void
-  onUpload: (files: INestFile[], dir?: string) => void
+  onUpload: (files: INestedFile[], dir?: string) => void
 }
 
 const clear = () => document.querySelectorAll('.entry-node').forEach(el => el.removeAttribute('data-drag-hover'))
@@ -47,7 +47,7 @@ export default function useDragOperations(props: useDragOperationsProps) {
         onLeaveContainer()
       }
       if (type === 'drop') {
-        getDTNestFileList(dataTransfer).then(files => {
+        getDTNestedFileList(dataTransfer).then(files => {
           onUpload(files, destDir)
           clear()
         })

@@ -87,13 +87,14 @@ export interface IOffsetInfo {
   offsetHeight: number
 }
 
-export interface INestFile extends File {
-  nestPath?: string  // 多层文件夹上传时的嵌套路径，包含文件名
+export interface INestedFile extends File {
+  nestedPath?: string  // 多层文件夹上传时的嵌套路径，包含文件名
 }
 
 export interface IUploadTask {
-  nestFile: INestFile
+  id: string
+  nestedFile: INestedFile
   destDir?: string
-  state: 'waiting' | 'uploading' | 'success' | 'fail' | 'cancel'
+  status: 'waiting' | 'uploading' | 'success' | 'fail' | 'cancel'
   abortController?: AbortController
 }

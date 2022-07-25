@@ -1,5 +1,5 @@
 import { CALLABLE_APP_LIST } from './appList'
-import { IEntry, INestFile, IOffsetInfo, IRectInfo } from './types'
+import { IEntry, INestedFile, IOffsetInfo, IRectInfo } from './types'
 
 
 export const entrySorter = (a: IEntry, b: IEntry) => {
@@ -34,25 +34,25 @@ export const isSameEntry = (a: IEntry, b: IEntry) => {
   return a.name === b.name && a.type === b.type
 }
 
-export const getBytesSize = (params: { bytes: number, unit?: 'B' | 'KB' | 'MB' | 'GB', keepFloat?: boolean }) => {
+export const getBytesSize = (params: { bytes: number, unit?: 'B' | 'K' | 'M' | 'G', keepFloat?: boolean }) => {
   let { bytes, unit, keepFloat } = params
 
   if (!unit) {
     if (0 <= bytes && bytes < 1024) {
       unit = 'B'
     } else if (1024 <= bytes && bytes < 1048576) {
-      unit = 'KB'
+      unit = 'K'
     } else if (1048576 <= bytes && bytes < 1073741824) {
-      unit = 'MB'
+      unit = 'M'
     } else {
-      unit = 'GB'
+      unit = 'G'
     }
   }
-  const level = ['B', 'KB', 'MB', 'GB'].indexOf(unit)
+  const level = ['B', 'K', 'M', 'G'].indexOf(unit)
   const divisor = [1, 1024, 1048576, 1073741824][level]
   const fixedSize = (bytes / divisor).toFixed(unit === 'B' ? 0 : 1)
   const size = keepFloat ? fixedSize : fixedSize.replace('.0', '')
-  return `${size} ${unit}`
+  return `${size}${unit}`
 }
 
 export const getMatchAppId = (entry: IEntry) => {
@@ -156,14 +156,14 @@ export function SpeedCounter(this: typeof SpeedCounter) {
   }
 }
 
-export const getEntryNestFileList = async (entry: any) => {  // any: FileSystemEntry
-  const nestFileList: INestFile[] = []
+export const getEntryNestedFileList = async (entry: any) => {  // any: FileSystemEntry
+  const nestedFileList: INestedFile[] = []
   if (entry.isFile) {
     await new Promise((resolve, reject) => {
       (entry as any).file((file: File) => {  // any: FileSystemFileEntry
         const fileName = file.name
         if (fileName !== '.DS_Store' && !fileName.startsWith('._')) {
-          nestFileList.push(Object.assign(file, { nestPath: entry.fullPath }))
+          nestedFileList.push(Object.assign(file, { nestedPath: entry.fullPath }))
         }
         resolve(true)
       })
@@ -173,28 +173,28 @@ export const getEntryNestFileList = async (entry: any) => {  // any: FileSystemE
       const reader = (entry as any).createReader()  // any: FileSystemDirectoryEntry
       reader.readEntries(async (entries: any) => {  // any: FileSystemEntry[]
         for (const entry of entries) {
-          const list = await getEntryNestFileList(entry)
-          nestFileList.push(...list)
+          const list = await getEntryNestedFileList(entry)
+          nestedFileList.push(...list)
         }
         resolve(true)
       })
     })
   }
-  return nestFileList
+  return nestedFileList
 }
 
-export const getDTNestFileList = async (dataTransfer: DataTransfer) => {
-  const nestFileList: INestFile[] = []
+export const getDTNestedFileList = async (dataTransfer: DataTransfer) => {
+  const nestedFileList: INestedFile[] = []
   const { items } = dataTransfer as any
   // don't use `for of`
   await Promise.all([...items].map(async (item) => {
     if (item.kind === 'file' && item.webkitGetAsEntry) {
       const entry = item.webkitGetAsEntry() as any // any: FileSystemEntry
-      const files = await getEntryNestFileList(entry)
-      nestFileList.push(...files)
+      const files = await getEntryNestedFileList(entry)
+      nestedFileList.push(...files)
     } else if (item.kind === 'string') {
       // handle string
     }
   }))
-  return nestFileList
+  return nestedFileList
 }
